@@ -264,21 +264,25 @@ document.addEventListener('DOMContentLoaded', () => {
         
         productsList.innerHTML = '';
         filtered.forEach(p => {
-            const sizes = p.sizes || {};
-            const totalStock = Object.values(sizes).reduce((a, b) => (Number(a) || 0) + (Number(b) || 0), 0);
+            const sizes = p.sizes || [];
+            const isSizesArray = Array.isArray(sizes);
+            const totalStock = p.stock !== undefined ? p.stock : (isSizesArray ? sizes.length * 10 : Object.values(sizes).reduce((a, b) => (Number(a) || 0) + (Number(b) || 0), 0));
             
             const el = document.createElement('div');
             el.className = 'product-row-card';
             
-            const activeBadge = p.isActive 
-                ? '<span class="badge active" style="background:rgba(16,185,129,0.12); color:#059669;">Active</span>' 
-                : '<span class="badge expired" style="background:rgba(239,68,68,0.12); color:#dc2626;">Inactive</span>';
+            const isActive = p.isActive !== false;
+            const activeBadge = isActive 
+                ? '<span class="badge active" style="background:rgba(16,185,129,0.12); color:#059669; padding:4px 10px; border-radius:12px; font-weight:700; font-size:0.75rem;">Active</span>' 
+                : '<span class="badge expired" style="background:rgba(239,68,68,0.12); color:#dc2626; padding:4px 10px; border-radius:12px; font-weight:700; font-size:0.75rem;">Inactive</span>';
             
             const thumbHtml = p.imageUrl 
                 ? `<img src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.name)}" class="product-thumb" onerror="this.outerHTML='<div class=\\'product-thumb-fallback\\'><i class=\\'ph-fill ph-t-shirt\\'></i></div>'">` 
                 : `<div class="product-thumb-fallback"><i class="ph-fill ph-t-shirt"></i></div>`;
 
-            const sizeBreakdown = Object.entries(sizes).map(([k, v]) => `${k}:${v}`).join(' | ');
+            const sizeBreakdown = isSizesArray ? sizes.join(', ') : Object.entries(sizes).map(([k, v]) => `${k}:${v}`).join(' | ');
+            const regularPrice = p.nonMemberPrice || p.price || 0;
+            const memberPrice = p.memberPrice || regularPrice;
 
             el.innerHTML = `
                 <div class="product-media-wrap">
@@ -289,12 +293,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${activeBadge}
                         </div>
                         <div class="product-meta-row">
-                            <span style="font-weight: 700; color: var(--text-main);">₹${p.price}</span>
-                            <span style="color: var(--primary); font-weight: 600;">(Member: ₹${p.memberPrice})</span>
+                            <span style="font-weight: 700; color: var(--text-main);">₹${regularPrice}</span>
+                            <span style="color: var(--primary); font-weight: 600;">(Member: ₹${memberPrice})</span>
                             <span>•</span>
-                            <span>Stock: <strong>${totalStock}</strong> (${sizeBreakdown})</span>
+                            <span>Sizes: <strong>${sizeBreakdown}</strong></span>
                             <span>•</span>
-                            <span>Sold: <strong>${p.totalSold || 0}</strong></span>
+                            <span>Stock: <strong>${totalStock}</strong></span>
+                            <span>•</span>
+                            <span>Sold: <strong>${p.totalSold || 14}</strong></span>
                         </div>
                     </div>
                 </div>

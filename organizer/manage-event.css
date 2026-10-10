@@ -253,12 +253,11 @@ header {
 
 /* Layout */
 .container {
-    max-width: 1600px;
+    max-width: 1360px;
     margin: 0 auto;
     padding: 1.5rem 2rem;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Cards */
@@ -1767,11 +1766,13 @@ tbody tr:hover {
 
 /* ==================== RESPONSIVE ==================== */
 @media (min-width: 1024px) {
-    body {
+    body:has(.actions-column),
+    body.manage-event-page {
         height: 100vh;
     }
 
-    .container {
+    .container:has(.actions-column),
+    .split-container {
         grid-template-columns: 2fr 3fr;
         height: calc(100vh - 90px);
         overflow: hidden;
