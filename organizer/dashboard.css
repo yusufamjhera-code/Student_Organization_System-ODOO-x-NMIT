@@ -1761,6 +1761,11 @@ input[type="date"].valid {
     color: #7c3aed;
 }
 
+.kpi-icon.amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+}
+
 .kpi-val {
     font-family: var(--serif);
     font-size: 2.2rem;
@@ -1799,6 +1804,11 @@ input[type="date"].valid {
 .kpi-tag.purple {
     background: rgba(139, 92, 246, 0.12);
     color: #7c3aed;
+}
+
+.kpi-tag.amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
 }
 
 /* --- SECTION 2: HUB MODULES --- */
