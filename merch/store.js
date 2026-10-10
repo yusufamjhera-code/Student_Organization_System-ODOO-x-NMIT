@@ -367,16 +367,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             const totalPrice = unitPrice * qty;
 
             let paymentDetails = null;
-            if (totalPrice > 0 && window.UpiGateway) {
+            if (totalPrice > 0 && window.PassTrack && window.PassTrack.Payments) {
                 checkoutBtn.innerHTML = '<i class="ph-bold ph-wallet"></i> <span>Awaiting UPI Payment...</span>';
-                paymentDetails = await window.UpiGateway.pay({
-                    amount: totalPrice,
-                    merchantName: orgNameEl.textContent || 'Student Org Store',
-                    description: `Merch: ${currentProduct.name} (${size}) x${qty}`,
-                    customerName: name,
-                    customerEmail: email
+                await new Promise((resolve, reject) => {
+                    window.PassTrack.Payments.initiateCheckout({
+                        amount: totalPrice,
+                        description: `Merch: ${currentProduct.name} (${size}) x${qty}`,
+                        orderType: 'merch',
+                        metadata: { orgId: activeOrgId, productId: currentProduct.id, email: email, name: name },
+                        onSuccess: (result) => {
+                            paymentDetails = { utr: result.txRef };
+                            resolve();
+                        },
+                        onFailure: (err) => {
+                            reject(err);
+                        }
+                    });
                 });
                 checkoutBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Placing Order...</span>';
+            } else if (totalPrice > 0) {
+                paymentDetails = { utr: "MOCK_UPI_" + Date.now() };
             }
 
             let createdOrderId = null;

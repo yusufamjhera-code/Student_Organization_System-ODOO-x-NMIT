@@ -1,0 +1,18 @@
+{
+  "gateway_execution_engine": "Option B: Hardened Dynamic UPI Gateway (Pure dynamic UPI intent links with timer)",
+  "checkout_modules_to_hook": [
+    "Event Ticket Storefront (tickets/buy.html)",
+    "Club Merchandise Storefront (merch/store.html)",
+    "Student Membership Dues (members/register.html)"
+  ],
+  "inventory_race_condition_handling": "Atomic Commit on Verified Payment: Verify stock availability inside a Firestore atomic transaction right before issuing order.",
+  "automated_treasury_ledger_integration": [
+    "Automatically write credit entry to Firestore /treasury collection",
+    "Update organization cash balance atomically",
+    "Generate an encrypted receipt token stored on /orders/{orderId}"
+  ],
+  "payment_ui_user_feedback": [
+    "High-fidelity payment modal with soundbox audio feedback, progress steps, and animated success checkmark",
+    "Printable PDF / HTML Order Receipt with cryptographic QR code for door redemption"
+  ]
+}

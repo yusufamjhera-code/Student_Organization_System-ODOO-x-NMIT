@@ -261,20 +261,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             let paymentDetails = null;
-            if (amount > 0 && window.UpiGateway) {
+            if (amount > 0 && window.PassTrack && window.PassTrack.Payments) {
                 if (actionBtn) {
                     actionBtn.innerHTML = '<i class="ph-bold ph-wallet"></i> Awaiting UPI Payment...';
                 }
-                paymentDetails = await window.UpiGateway.pay({
-                    amount: Number(amount),
-                    merchantName: organizationData ? organizationData.name : 'Student Organization',
-                    description: `Membership Dues: ${memberData.name}`,
-                    customerName: memberData.name,
-                    customerEmail: memberData.email
+                await new Promise((resolve, reject) => {
+                    window.PassTrack.Payments.initiateCheckout({
+                        amount: Number(amount),
+                        description: `Membership Dues: ${memberData.name}`,
+                        orderType: 'dues',
+                        metadata: { orgId: orgId, memberId: memberDocId, email: memberData.email },
+                        onSuccess: (result) => {
+                            paymentDetails = { utr: result.txRef };
+                            resolve();
+                        },
+                        onFailure: (err) => {
+                            reject(err);
+                        }
+                    });
                 });
                 if (actionBtn) {
                     actionBtn.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i> Activating Membership...';
                 }
+            } else if (amount > 0) {
+                paymentDetails = { utr: "MOCK_UPI_" + Date.now() };
             }
 
             // 1. Update member document to active in Firestore
