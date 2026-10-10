@@ -1,249 +1,459 @@
 /* ==========================================================================
-   PassTrack Landing & Global Style System
-   Harmonized with Sonnet Clip Editorial Warm Luxury Theme
+   PassTrack Universal Home & Auth Ecosystem
+   Sonnet Clip Dual-Column Editorial + Universal Role-Based Login Architecture
    ========================================================================== */
 
 @import url('lib/theme.css');
 @import url('lib/components.css');
 
-/* =========================================================================
-   COMPACT ZERO-SCROLL PC LANDING PAGE DESIGN
-   ========================================================================= */
-body.landing-page {
+/* --- Root Page Layout --- */
+body.sonnet-home {
     min-height: 100vh;
     min-height: 100dvh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1.5rem;
-    overflow-x: hidden;
     background-color: var(--bg);
-}
-
-@media (min-width: 1024px) and (min-height: 600px) {
-    body.landing-page {
-        height: 100vh;
-        max-height: 100vh;
-        overflow-y: hidden; /* Zero scroll on desktop PC */
-        padding: 1.25rem 2rem;
-    }
-
-    .landing-container {
-        height: 100%;
-        max-height: 94vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-}
-
-.landing-container {
-    max-width: 1120px;
-    width: 100%;
-    margin: 0 auto;
-    text-align: center;
-    animation: slideUpFade 0.6s var(--bezier);
-}
-
-@keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(20px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* --- Header Section --- */
-.landing-header {
-    margin-bottom: 1.25rem;
-}
-
-.badge-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--accent-soft);
-    border: 1px solid var(--accent-border);
-    color: var(--accent);
-    padding: 5px 16px;
-    border-radius: var(--r-pill);
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
-}
-
-.pulse-dot {
-    width: 7px;
-    height: 7px;
-    background: var(--accent);
-    border-radius: var(--r-pill);
-    box-shadow: 0 0 0 rgba(226, 91, 46, 0.4);
-    animation: pulseDot 2s infinite;
-}
-
-@keyframes pulseDot {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(226, 91, 46, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(226, 91, 46, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(226, 91, 46, 0); }
-}
-
-.landing-header h1 {
-    font-family: var(--serif);
-    font-size: clamp(2.2rem, 4.2vw, 3.6rem);
-    font-weight: 400;
-    letter-spacing: -0.015em;
-    margin-bottom: 0.35rem;
     color: var(--ink);
-    line-height: 1.05;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
 }
 
-.landing-header h1 em,
-.gradient-text {
-    font-style: italic;
-    color: var(--accent);
-    background: none;
-    -webkit-text-fill-color: initial;
-    padding-right: 0.04em;
-}
-
-.landing-header p {
-    font-size: clamp(0.88rem, 1.25vw, 1.05rem);
-    color: var(--ink-2);
-    font-weight: 400;
-    max-width: 620px;
-    margin: 0 auto;
-    line-height: 1.5;
-}
-
-/* --- 6 Card Portal Grid: 3 cols x 2 rows on PC --- */
-.portal-grid {
+.sonnet-layout {
+    min-height: 100vh;
+    min-height: 100dvh;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.15rem;
-    width: 100%;
+    grid-template-columns: minmax(0, 1.15fr) minmax(380px, 0.85fr);
 }
 
-.portal-card {
+/* ==========================================================================
+   LEFT PANEL: EDITORIAL SHOWCASE (Sonnet Clip Style)
+   ========================================================================== */
+.editorial-panel {
     background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--r);
-    padding: 1.25rem 1.4rem;
-    text-decoration: none;
-    color: var(--ink);
+    border-right: 1px solid var(--line);
+    padding: clamp(36px, 5vw, 64px) clamp(28px, 5vw, 72px);
     display: flex;
-    align-items: center;
-    gap: 1.15rem;
-    text-align: left;
-    box-shadow: var(--shadow);
-    transition: 
-        transform var(--transition-normal),
-        box-shadow var(--transition-normal),
-        border-color var(--transition-normal);
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 36px;
     position: relative;
     overflow: hidden;
 }
 
-.portal-card::before {
+.editorial-brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--ink);
+}
+
+.brand-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: var(--ink);
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    font-size: 19px;
+    box-shadow: 0 4px 12px -2px rgba(23, 19, 15, 0.25);
+    flex-shrink: 0;
+}
+
+.brand-name {
+    font-family: var(--serif);
+    font-size: 1.65rem;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    line-height: 1;
+}
+
+.brand-name em {
+    font-style: italic;
+    color: var(--accent);
+    padding-right: 0.03em;
+}
+
+.campus-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 5px 14px;
+    border-radius: var(--r-pill);
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.campus-pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--r-pill);
+    background: var(--accent);
+    box-shadow: 0 0 8px rgba(226, 91, 46, 0.6);
+}
+
+/* Hero Center */
+.editorial-hero {
+    max-width: 580px;
+    margin: 16px 0;
+}
+
+.editorial-hero .kicker {
+    margin-bottom: 16px;
+}
+
+.editorial-hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.5rem, 4.5vw, 4.2rem);
+    line-height: 1.04;
+    letter-spacing: -0.018em;
+    color: var(--ink);
+    margin-bottom: 18px;
+}
+
+.editorial-hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+}
+
+.editorial-hero p.lead {
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    color: var(--ink-2);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Feature Rows matching Sonnet Clip */
+.features-stack {
+    display: grid;
+    gap: 16px;
+    max-width: 540px;
+    margin-bottom: 12px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.feature-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.feature-content h4 {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 2px;
+    letter-spacing: -0.01em;
+}
+
+.feature-content p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.45;
+    margin: 0;
+}
+
+/* Editorial Footer */
+.editorial-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+}
+
+.guest-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.guest-action-bar span {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+/* ==========================================================================
+   RIGHT PANEL: UNIVERSAL AUTH CARD (Sonnet Clip Style)
+   ========================================================================= */
+.auth-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(24px, 4vw, 48px);
+    background-color: var(--bg);
+}
+
+.auth-card-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-lg);
+    padding: clamp(28px, 4vw, 40px);
+    width: 100%;
+    max-width: 430px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s var(--bezier);
+}
+
+.auth-card-box::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 4px;
-    height: 100%;
-    opacity: 0;
-    transition: opacity var(--transition-fast);
+    right: 0;
+    height: 4px;
+    background: var(--accent);
 }
 
-.portal-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--line-strong);
+.auth-card-header {
+    margin-bottom: 24px;
+    text-align: left;
 }
 
-.portal-card:hover::before {
-    opacity: 1;
-}
-
-.card-icon-wrap {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--r-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.45rem;
-    flex-shrink: 0;
-    transition: transform var(--transition-fast);
-}
-
-.portal-card:hover .card-icon-wrap {
-    transform: scale(1.08);
-}
-
-.portal-card-body {
-    flex: 1;
-    min-width: 0;
-}
-
-.portal-card-body h2 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin-bottom: 0.2rem;
+.auth-card-header h2 {
+    font-family: var(--serif);
+    font-size: 2rem;
+    font-weight: 400;
     color: var(--ink);
-    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+    line-height: 1.1;
 }
 
-.portal-card-body p {
-    font-size: 0.81rem;
-    color: var(--muted);
-    line-height: 1.35;
-    margin: 0;
-}
-
-.portal-card-action {
-    color: var(--muted);
-    font-size: 1.1rem;
-    opacity: 0.4;
-    transition: all var(--transition-fast);
-    flex-shrink: 0;
-}
-
-.portal-card:hover .portal-card-action {
-    opacity: 1;
-    transform: translateX(3px);
+.auth-card-header h2 em {
+    font-style: italic;
     color: var(--accent);
 }
 
-/* --- Portal Theme Accent Colors --- */
-.theme-organizer .card-icon-wrap { background: var(--accent-soft); color: var(--accent); }
-.theme-organizer::before { background: var(--accent); }
-
-.theme-staff .card-icon-wrap { background: var(--good-soft); color: var(--good); }
-.theme-staff::before { background: var(--good); }
-
-.theme-member .card-icon-wrap { background: rgba(30, 122, 77, 0.1); color: var(--good); }
-.theme-member::before { background: var(--good); }
-
-.theme-tickets .card-icon-wrap { background: var(--accent-soft); color: var(--accent); }
-.theme-tickets::before { background: var(--accent); }
-
-.theme-notice .card-icon-wrap { background: var(--warn-soft); color: var(--warn); }
-.theme-notice::before { background: var(--warn); }
-
-.theme-merch .card-icon-wrap { background: rgba(226, 91, 46, 0.12); color: var(--accent); }
-.theme-merch::before { background: var(--accent); }
-
-/* --- Landing Footer --- */
-.landing-footer {
-    margin-top: 1.25rem;
-    font-size: 0.8rem;
+.auth-card-header p {
+    font-size: 13.5px;
     color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
 }
 
-.landing-footer strong {
+/* Google Sign-In */
+.google-signin-wrap {
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+.google-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+    padding: 12px 20px;
+    border-radius: var(--r-pill);
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.google-btn:hover {
+    background: var(--surface-2);
+    border-color: var(--ink-2);
+    transform: translateY(-1px);
+}
+
+.google-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* Divider */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 4px 0 18px;
+    color: var(--faint);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+}
+
+.auth-divider span {
+    padding: 0 12px;
+}
+
+/* Universal Credentials Form */
+.universal-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 700;
     color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-/* --- Dynamic Selector Modal Box --- */
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-container i {
+    position: absolute;
+    left: 14px;
+    color: var(--muted);
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.input-container input {
+    width: 100%;
+    padding: 12px 14px 12px 42px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    font-family: var(--ui);
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input-container input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.input-hint-text {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+/* Feedback message */
+.auth-message-box {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    display: none;
+}
+
+.auth-message-box.info {
+    display: block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+}
+
+.auth-message-box.success {
+    display: block;
+    background: var(--good-soft);
+    color: var(--good);
+    border: 1px solid var(--good-border);
+}
+
+.auth-message-box.error {
+    display: block;
+    background: var(--bad-soft);
+    color: var(--bad);
+    border: 1px solid var(--bad-border);
+}
+
+/* Active Session Card (Rendered if user is already logged in) */
+.active-session-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    padding: 12px 0;
+}
+
+.user-avatar-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--r-pill);
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    border: 1px solid var(--accent-border);
+}
+
+.user-session-info h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+}
+
+.user-session-info p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+/* ==========================================================================
+   PUBLIC EXPLORATION MODAL (SELECTOR)
+   ========================================================================== */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -262,8 +472,8 @@ body.landing-page {
     border: 1px solid var(--line);
     border-radius: var(--r);
     padding: 24px;
-    max-width: 460px;
-    width: 90%;
+    max-width: 480px;
+    width: 100%;
     box-shadow: var(--shadow-lg);
     animation: toastEnter 0.25s var(--bezier) forwards;
 }
@@ -280,6 +490,7 @@ body.landing-page {
     color: var(--ink) !important;
     font-family: var(--ui) !important;
     font-size: 14px !important;
+    width: 100%;
 }
 
 .selector-item-btn:hover {
@@ -287,56 +498,25 @@ body.landing-page {
     border-color: var(--accent) !important;
 }
 
-.secondary-btn {
-    background: transparent;
-    border: 1px solid var(--line-strong);
-    color: var(--ink-2);
-    border-radius: var(--r-pill);
-    font-weight: 600;
-    cursor: pointer;
-    transition: background var(--transition-fast);
-}
-
-.secondary-btn:hover {
-    background: var(--surface-2);
-    color: var(--ink);
-}
-
-/* --- Tablet & Mobile Breakpoints --- */
-@media (max-width: 1023px) {
-    .portal-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
-    body.landing-page {
-        overflow-y: auto;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-}
-
-@media (max-width: 640px) {
-    .portal-grid {
+/* ==========================================================================
+   RESPONSIVE LAYOUT
+   ========================================================================== */
+@media (max-width: 992px) {
+    .sonnet-layout {
         grid-template-columns: 1fr;
-        gap: 0.85rem;
     }
-    .landing-header {
-        margin-bottom: 1.25rem;
+
+    .editorial-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+        padding: 36px 24px;
     }
-    .landing-header h1 {
-        font-size: 2.1rem;
+
+    .auth-panel {
+        padding: 40px 20px;
     }
-    .portal-card {
-        padding: 1rem 1.15rem;
-        border-radius: var(--r-sm);
-    }
-    .card-icon-wrap {
-        width: 44px;
-        height: 44px;
-        font-size: 1.3rem;
-    }
-    .landing-footer {
-        margin-top: 1.5rem;
-        font-size: 0.75rem;
+
+    .auth-card-box {
+        max-width: 100%;
     }
 }

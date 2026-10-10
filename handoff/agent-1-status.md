@@ -1,72 +1,42 @@
 # 🎨 Agent 1 (UI, Styling & Design System) Status Report
 > **Branch:** `feature/agent-1-ui`  
 > **Aesthetic Foundation:** Sonnet Clip Warm Editorial Luxury (`/Users/yusufamjherawala/Sonnet Clip`)  
-> **Status:** Phase 1 Complete (Design Tokens, Components, Toast Engine, Unified Auth, Universal CSS Harmonization)
+> **Status:** Universal Home Page & Automated Role Routing Complete
 
 ---
 
 ## 🏛️ 1. Deliverables Completed
 
-### A. Design Tokens (`lib/theme.css`)
-- **Paper Canvas Background:** `--bg: #f6f3ee` with fixed ambient warm radial gradient mesh.
-- **Editorial Typography:** Google Fonts `Instrument Serif` (`--serif`) for hero & portal display headers, and `Inter Tight` (`--ui`) for body & form fields.
-- **Warm Luxury Palette:**
-  - Ink: `--ink: #17130f`, `--ink-2: #4b443b`, `--muted: #8c8578`, `--faint: #b4ac9e`
-  - Terracotta Accent: `--accent: #e25b2e`, `--accent-hover: #cc4d22`, `--accent-soft: #fbebe3`
-  - Forest Good / Verified: `--good: #1e7a4d`, `--good-soft: #e7f2ec`
-  - Amber Warning: `--warn: #a8680a`, `--warn-soft: #f6eddc`
-  - Rust Danger: `--bad: #b3402f`, `--bad-soft: #f7e7e4`
-- **Signature Sprockets Motif:** Drift-animated film / ticket perforation strip (`.sprockets` & `.sprockets--soft`).
-- **Ticket Perforations:** Perforated ticket punch divider with radial notch punchouts (`.ticket-perforation`).
+### A. Universal Split-Screen Homepage ([`index.html`](file:///Users/yusufamjherawala/Student_Organization_System-ODOO-x-NMIT/index.html) & [`style.css`](file:///Users/yusufamjherawala/Student_Organization_System-ODOO-x-NMIT/style.css))
+* Replaced the previous 6-card role selection grid with the **Sonnet Clip 2-Column Architecture**:
+  * **Left Panel (Editorial Showcase):**
+    - Brand mark with icon badge and `Pass<em>Track</em>` typography in Instrument Serif.
+    - Odoo x NMIT Hackathon 2026 campus badge.
+    - Large display headline: *"One campus platform. Every event, pass, and club unified."*
+    - 3 Editorial feature blocks matching Sonnet Clip (Smart Role Routing, Fast Passes & Camera Check-in, Autonomous Treasury & UPI Reconcile).
+    - Drift-animated perforation strip (`.sprockets--soft`).
+    - Quick guest exploration bar allowing unauthenticated attendees to browse events, tickets, and merch without signing in.
+  * **Right Panel (Universal Auth Card):**
+    - Centered crisp hairline card (`.auth-card-box`).
+    - Primary **"Continue with Google"** OAuth button.
+    - Elegant **"or with credentials"** divider.
+    - Unified Email & Password / Staff Access Key form.
+    - Active Session state: If the user is already signed in, dynamically displays their avatar, email, detected role badge, and single-click **"Enter Workspace"** button.
 
-### B. Interactive Components (`lib/components.css`)
-- **Buttons (`.btn`):** High-contrast pill buttons (`.btn--primary`, `.btn--accent`, `.btn--ghost`, `.btn--quiet`, `.btn--danger`, `.btn--sm`, `.btn--md`, `.btn--lg`).
-- **Cards (`.card`):** Hairline bordered cards with smooth cubic-bezier lift on hover.
-- **Form Fields (`.field`):** Standardized input controls, floating labels, focus-visible glowing rings.
-- **Status Chips (`.status-chip`):** Pill status chips with glowing indicator dot.
-- **Skeleton Loaders (`.pt-skeleton`):** Shimmering placeholder blocks (`.pt-skeleton--card`, `.pt-skeleton--line`, `.pt-skeleton--circle`).
-- **Glass Modal Engine (`.pt-modal-overlay` & `.pt-modal`):** Smooth fade/scale backdrop blur modal.
-- **Mobile Responsive Drawer:** Off-canvas responsive navigation drawer (`.pt-drawer`).
-- **Sticky Floating Action Bar:** Floating checkout / confirmation bar (`.pt-floating-bar`).
+### B. Automated Role Detection & Routing Engine ([`index.js`](file:///Users/yusufamjherawala/Student_Organization_System-ODOO-x-NMIT/index.js))
+* Users never have to choose between 6 roles upfront.
+* On Google or Email/Password/Access Code authentication:
+  1. Checks Firestore `organizations` for club ownership ➔ routes directly to **Organizer Command Center** (`organizer/dashboard.html`).
+  2. If new organizer without club ➔ routes to **Setup Organization** (`organizer/setup-org.html`).
+  3. Checks `members` collection for verified club membership ➔ routes directly to **Member Directory** (`members/directory.html`).
+  4. Checks `events` for 8-character collaborator staff access keys ➔ authenticates and routes to **Event Management / Scanner**.
+* Preserved `openSelector()` and `closeSelector()` for seamless guest event and merchandise browsing.
 
-### C. Floating Toast Engine (`lib/toast.js`)
-- Exposes `window.PassTrackToast`:
-  - `PassTrackToast.show(msg, type, duration)`
-  - `PassTrackToast.success(msg)`
-  - `PassTrackToast.error(msg)`
-  - `PassTrackToast.info(msg)`
-- Auto-mounts top-center pill container (`.pt-toast-container`).
-- Click-to-dismiss, auto-dismiss, smooth cubic-bezier physics.
-- Wired directly into `window.PassTrack.UI.toast()`.
-
-### D. Single Unified Login Portal (`auth/login.html` & `auth/login.js`)
-- Replaced confusing tab switcher with a **Single Unified Login Portal**:
-  1. Primary "Continue with Google" button.
-  2. Elegant "or with credentials" divider.
-  3. Email & Password / Staff Access Key form.
-- Automated Role Resolver:
-  - Organizers -> routed to `organizer/dashboard.html` (or `setup-org.html` if first time).
-  - Registered Members -> routed to `members/directory.html`.
-  - Event Staff / Collaborators -> routed to `organizer/dashboard.html`.
-
-### E. Universal Project Harmonization
-- Updated all stylesheets across the workspace to inherit the Sonnet Clip design tokens:
-  - `style.css` (Landing Page)
-  - `auth/login.css` & `organizer/setup-org.html`
-  - `tickets/buy.css` & `tickets/buy.html`
-  - `merch/store.css` & `merch/store.html`
-  - `members/register.css` & `members/register.html`
-  - `members/directory.css`
-  - `organizer/dashboard.css`
-  - `organizer/manage-event.css`
-  - `treasury/dashboard.css`
-  - `tasks/board.css`
-  - `announcements/admin.css` & `announcements/board.css`
-  - `distributor/distributor.css` & `distributor/scanner.css`
+### C. Design System & Components (`lib/theme.css`, `lib/components.css`, `lib/toast.js`)
+* Full design tokens, buttons, cards, status chips, modals, skeletons, and floating pill toast notifications.
 
 ---
 
 ## 🔒 2. Safety & Deployment Guards
-- **Strictly Local Branch:** Working tree is exclusively on `feature/agent-1-ui`.
-- **Zero Push Guarantee:** No remote git pushes executed. Awaiting explicit user approval.
-- **DOM ID Integrity:** All critical existing functional IDs (`#google-signin-btn`, `#delegated-login-form`, `#delegated-email`, `#access-code`, `#selector-modal`, etc.) preserved 100%.
+* **Dedicated Branch:** `feature/agent-1-ui`.
+* **Zero Remote Pushes:** All work committed strictly to the local Git branch. Awaiting explicit user approval before pushing.
