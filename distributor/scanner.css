@@ -1,21 +1,22 @@
-/* File: distributor/scanner.css - Premium Dark Theme */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+/* File: distributor/scanner.css - Harmonized with Agent 1 Theme */
+@import url('../lib/theme.css');
+@import url('../lib/components.css');
 
 :root {
-    --primary: #e25b2e;
-    --primary-light: #ea6d43;
-    --accent: #e25b2e;
+    --primary: var(--accent);
+    --primary-light: var(--accent-hover);
+    --accent: var(--accent);
     --accent-glow: rgba(226, 91, 46, 0.4);
-    --success: #1e7a4d;
+    --success: var(--good);
     --success-glow: rgba(30, 122, 77, 0.3);
-    --danger: #b3402f;
+    --danger: var(--bad);
     --danger-glow: rgba(179, 64, 47, 0.3);
-    --dark-bg: #17130f;
-    --dark-surface: rgba(23, 19, 15, 0.9);
-    --dark-card: rgba(35, 30, 24, 0.95);
+    --dark-bg: var(--ink);
+    --dark-surface: rgba(23, 19, 15, 0.92);
+    --dark-card: rgba(35, 30, 24, 0.96);
     --white: #ffffff;
-    --text-sub: #b4ac9e;
-    --border-glow: rgba(255, 255, 255, 0.1);
+    --text-sub: var(--faint);
+    --border-glow: rgba(255, 255, 255, 0.12);
     --glass-bg: rgba(255, 255, 255, 0.08);
     --shadow-deep: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 }
@@ -27,9 +28,8 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--ui);
     background: var(--dark-bg);
-    background: radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0f 50%, #000 100%);
     color: var(--white);
     height: 100vh;
     height: 100dvh;
@@ -92,7 +92,7 @@ header {
     gap: 6px;
     margin-top: 4px;
     padding: 4px 10px;
-    background: linear-gradient(135deg, rgba(0, 245, 212, 0.15) 0%, rgba(106, 17, 203, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(0, 245, 212, 0.15) 0%, rgba(226, 91, 46, 0.15) 100%);
     border-radius: 20px;
     border: 1px solid rgba(0, 245, 212, 0.25);
     color: var(--accent);
@@ -172,7 +172,7 @@ header {
 
 /* Enhanced Camera Button */
 .camera-btn {
-    background: linear-gradient(135deg, rgba(0, 245, 212, 0.15) 0%, rgba(106, 17, 203, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(0, 245, 212, 0.15) 0%, rgba(226, 91, 46, 0.15) 100%);
     border: 1px solid rgba(0, 245, 212, 0.3);
     padding: 0.5rem 0.85rem;
     border-radius: 12px;
@@ -192,7 +192,7 @@ header {
 
 .camera-btn:hover,
 .camera-btn:active {
-    background: linear-gradient(135deg, rgba(0, 245, 212, 0.25) 0%, rgba(106, 17, 203, 0.25) 100%);
+    background: linear-gradient(135deg, rgba(0, 245, 212, 0.25) 0%, rgba(226, 91, 46, 0.25) 100%);
     border-color: var(--accent);
     transform: scale(1.02);
     box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
@@ -238,13 +238,13 @@ header {
 }
 
 .station-card {
-    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    background: #ffffff;
     width: 100%;
     max-width: 400px;
     max-height: 85vh;
     border-radius: 28px;
     padding: 2rem;
-    color: #0f172a;
+    color: var(--ink);
     text-align: center;
     box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
     display: flex;
@@ -280,7 +280,7 @@ header {
     margin: 0 0 0.5rem 0;
     font-size: 1.5rem;
     font-weight: 900;
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    background: linear-gradient(135deg, #e25b2e 0%, #17130f 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -345,7 +345,7 @@ header {
     transform: translateX(4px);
     background: #ffffff !important;
     border-color: var(--primary) !important;
-    box-shadow: 0 8px 24px rgba(106, 17, 203, 0.15);
+    box-shadow: 0 8px 24px rgba(226, 91, 46, 0.15);
 }
 
 .station-btn:hover::before,
@@ -544,8 +544,8 @@ header {
     bottom: max(1.5rem, env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, rgba(106, 17, 203, 0.25) 0%, rgba(37, 117, 252, 0.2) 100%);
-    border: 1.5px solid rgba(139, 92, 246, 0.35);
+    background: linear-gradient(135deg, rgba(226, 91, 46, 0.3) 0%, rgba(23, 19, 15, 0.4) 100%);
+    border: 1.5px solid rgba(226, 91, 46, 0.35);
     color: white;
     padding: 0.9rem 2rem;
     border-radius: 50px;
@@ -558,16 +558,16 @@ header {
     font-size: 0.9rem;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 12px 32px -8px rgba(106, 17, 203, 0.4);
+    box-shadow: 0 12px 32px -8px rgba(226, 91, 46, 0.4);
     z-index: 50;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
 }
 
 .secondary-action-btn:hover {
-    background: linear-gradient(135deg, rgba(106, 17, 203, 0.4) 0%, rgba(37, 117, 252, 0.35) 100%);
+    background: linear-gradient(135deg, rgba(226, 91, 46, 0.45) 0%, rgba(23, 19, 15, 0.6) 100%);
     transform: translateX(-50%) translateY(-2px);
-    box-shadow: 0 16px 40px -8px rgba(106, 17, 203, 0.5);
+    box-shadow: 0 16px 40px -8px rgba(226, 91, 46, 0.5);
 }
 
 .secondary-action-btn:active {

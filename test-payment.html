@@ -4,143 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PassTrack Dynamic UPI Payment Sandbox</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Agent 1 Global Theme & Components -->
+    <link rel="stylesheet" href="lib/theme.css">
+    <link rel="stylesheet" href="lib/components.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        :root {
-            --bg: #090d16;
-            --card-bg: rgba(15, 23, 42, 0.75);
-            --card-border: rgba(51, 65, 85, 0.8);
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --accent: #38bdf8;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
         body {
             background-color: var(--bg);
-            background-image: 
-                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.12) 0%, transparent 40%);
-            color: var(--text-main);
+            color: var(--ink);
             min-height: 100vh;
             padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            font-family: var(--ui);
         }
 
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 960px;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+
+        .brand-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--ink);
+            font-family: var(--serif);
+            font-size: 1.25rem;
+        }
+
+        .brand-badge {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            color: #ffffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
         }
 
         header {
             text-align: center;
-            margin-bottom: 35px;
+            margin-bottom: 36px;
         }
 
-        .badge {
+        .kicker {
             display: inline-block;
-            background: rgba(99, 102, 241, 0.2);
-            color: #818cf8;
-            border: 1px solid rgba(99, 102, 241, 0.35);
-            padding: 6px 14px;
-            border-radius: 9999px;
-            font-size: 0.82rem;
+            font-size: 11px;
             font-weight: 700;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.16em;
             text-transform: uppercase;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border: 1px solid var(--accent-border);
+            padding: 5px 14px;
+            border-radius: var(--r-pill);
             margin-bottom: 12px;
         }
 
         h1 {
-            font-size: 2.4rem;
-            font-weight: 800;
+            font-family: var(--serif);
+            font-size: clamp(2.2rem, 4vw, 3rem);
+            font-weight: 400;
             letter-spacing: -0.02em;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            color: var(--ink);
+            line-height: 1.15;
+        }
+
+        h1 em {
+            font-style: italic;
+            color: var(--accent);
         }
 
         p.subtitle {
-            color: var(--text-muted);
+            color: var(--muted);
             font-size: 1.05rem;
-            max-width: 600px;
+            max-width: 620px;
             margin: 0 auto;
+            line-height: 1.5;
         }
 
         .grid {
             display: grid;
             grid-template-columns: 1.1fr 0.9fr;
-            gap: 25px;
+            gap: 24px;
             margin-bottom: 30px;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 800px) {
             .grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
+        .sandbox-card {
+            background: var(--surface);
+            border: 1px solid var(--line-strong);
+            border-radius: var(--r);
             padding: 28px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            box-shadow: var(--shadow);
         }
 
         .card-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 18px;
+            font-family: var(--serif);
+            font-size: 1.35rem;
+            font-weight: 400;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
-            color: var(--text-main);
+            color: var(--ink);
         }
 
-        .field-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #cbd5e1;
-            margin-bottom: 6px;
-        }
-
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 12px 14px;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid #334155;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        .card-title i {
+            color: var(--accent);
+            font-size: 1.25rem;
         }
 
         .preset-buttons {
@@ -151,57 +141,114 @@
         }
 
         .preset-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            color: #e2e8f0;
-            padding: 10px 8px;
-            font-size: 0.82rem;
+            background: var(--surface-2);
+            border: 1px solid var(--line-strong);
+            border-radius: var(--r-pill);
+            color: var(--ink-2);
+            padding: 9px 10px;
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transition-fast);
             text-align: center;
+            font-family: var(--ui);
         }
 
         .preset-btn:hover {
-            background: rgba(99, 102, 241, 0.18);
-            border-color: rgba(99, 102, 241, 0.4);
-            color: #fff;
+            background: var(--accent-soft);
+            border-color: var(--accent-border);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .field-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--ink-2);
+            margin-bottom: 6px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--surface-2);
+            border: 1px solid var(--line-strong);
+            border-radius: var(--r-sm);
+            color: var(--ink);
+            font-size: 0.95rem;
+            font-family: var(--ui);
+            outline: none;
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(226, 91, 46, 0.15);
+            background: var(--surface);
         }
 
         .btn-checkout {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            color: #fff;
+            background: var(--accent);
+            color: var(--accent-ink);
             border: none;
-            border-radius: 12px;
-            font-size: 1.05rem;
-            font-weight: 700;
+            border-radius: var(--r-pill);
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
-            transition: all 0.2s;
+            box-shadow: 0 4px 14px -3px rgba(226, 91, 46, 0.4);
+            transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+            font-family: var(--ui);
         }
 
         .btn-checkout:hover {
+            background: var(--accent-hover);
             transform: translateY(-1px);
-            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.45);
+            box-shadow: 0 8px 20px -4px rgba(226, 91, 46, 0.5);
+        }
+
+        .info-pill {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: var(--accent-soft);
+            border: 1px solid var(--accent-border);
+            border-radius: var(--r-sm);
+            padding: 12px 16px;
+            margin-top: 20px;
+            font-size: 0.88rem;
+            color: var(--ink);
+            line-height: 1.45;
+        }
+
+        .info-pill i {
+            color: var(--accent);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-top: 1px;
         }
 
         /* Live Terminal Logs */
         .terminal {
-            background: #050811;
-            border: 1px solid #1e293b;
-            border-radius: 14px;
+            background: var(--ink);
+            border: 1px solid var(--line-strong);
+            border-radius: var(--r-sm);
             padding: 16px;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--mono);
             font-size: 0.82rem;
-            color: #10b981;
-            height: 280px;
+            color: #4ade80;
+            height: 295px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -214,48 +261,41 @@
         }
 
         .log-time {
-            color: #64748b;
+            color: var(--muted);
             margin-right: 6px;
         }
 
         .log-tag-init { color: #38bdf8; }
-        .log-tag-success { color: #10b981; font-weight: 700; }
-        .log-tag-err { color: #f43f5e; }
-        .log-tag-info { color: #a855f7; }
-
-        .info-pill {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(56, 189, 248, 0.08);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-top: 18px;
-            font-size: 0.85rem;
-            color: #bae6fd;
-        }
-
-        .info-pill svg {
-            flex-shrink: 0;
-        }
+        .log-tag-success { color: #4ade80; font-weight: 700; }
+        .log-tag-err { color: #f87171; }
+        .log-tag-info { color: #fbbf24; }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <div class="top-nav">
+            <a href="index.html" class="brand-pill">
+                <span class="brand-badge"><i class="ph-bold ph-ticket"></i></span>
+                <span>Pass<em>Track</em></span>
+            </a>
+            <a href="index.html" class="btn btn--ghost">
+                <i class="ph-bold ph-caret-left"></i> Back to Home
+            </a>
+        </div>
+
         <header>
-            <div class="badge">PassTrack v2.0 • Payment Module Sandbox</div>
-            <h1>UPI Gateway Live Test</h1>
-            <p class="subtitle">Test the real-time dynamic UPI QR code generator, 5-minute countdown, 12-digit UTR verification, and Web Audio chimes.</p>
+            <div class="kicker">Payment Gateway & Live Audit Engine</div>
+            <h1>Dynamic UPI Checkout <em>Sandbox</em></h1>
+            <p class="subtitle">Simulate real-time dynamic UPI QR code generation, 5-minute checkout countdown, 12-digit UTR reconciliation, and Web Audio chimes.</p>
         </header>
 
         <div class="grid">
             <!-- Left Card: Controls -->
-            <div class="card">
+            <div class="sandbox-card">
                 <div class="card-title">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                    Checkout Simulator
+                    <i class="ph-bold ph-credit-card"></i>
+                    <span>Checkout Simulator</span>
                 </div>
 
                 <div class="preset-buttons">
@@ -280,20 +320,21 @@
                 </div>
 
                 <button class="btn-checkout" id="btn-launch" onclick="launchTestPayment()">
-                    <span>🚀 Launch UPI Payment Modal</span>
+                    <i class="ph-bold ph-qr-code"></i>
+                    <span>Launch Dynamic UPI Checkout</span>
                 </button>
 
                 <div class="info-pill">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                    <span><strong>Pro Tip:</strong> You can enter your personal UPI ID above and scan the QR with Google Pay or PhonePe on your phone to verify the payee name and amount!</span>
+                    <i class="ph-bold ph-info"></i>
+                    <span><strong>Pro Tip:</strong> Enter your personal UPI ID above and scan the generated QR code with Google Pay, PhonePe, or Paytm to verify the payee name and exact amount.</span>
                 </div>
             </div>
 
             <!-- Right Card: Live Audit Stream -->
-            <div class="card">
+            <div class="sandbox-card">
                 <div class="card-title">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                    Live Event & Audit Stream
+                    <i class="ph-bold ph-activity"></i>
+                    <span>Live Event & Audit Stream</span>
                 </div>
 
                 <div class="terminal" id="terminal-logs">
@@ -301,13 +342,16 @@
                 </div>
 
                 <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
-                    <button onclick="clearLogs()" style="background: none; border: none; color: #64748b; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">Clear Audit Stream</button>
+                    <button onclick="clearLogs()" class="btn btn--quiet" style="font-size: 0.82rem; color: var(--muted);">
+                        <i class="ph-bold ph-trash"></i> Clear Audit Stream
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Load Agent 3 Payment Engine -->
+    <!-- Core Contracts & Agent 3 Payment Engine -->
+    <script src="lib/contracts/passtrack-core.js"></script>
     <script src="lib/payment-engine.js"></script>
 
     <script>
@@ -338,22 +382,12 @@
             addLog('PRESET', 'info', `Applied ${type} preset: ₹${amt} (${desc})`);
         }
 
-        // Hook onto custom events emitted by Agent 3
-        window.addEventListener('load', () => {
-            if (window.PassTrack && window.PassTrack.events) {
-                // If event bus available
-            }
-        });
-
         function launchTestPayment() {
             const upiId = document.getElementById('inp-upi').value.trim() || 'nmit.passtrack@okaxis';
             const amount = parseFloat(document.getElementById('inp-amount').value) || 150;
             const description = document.getElementById('inp-desc').value.trim() || 'PassTrack Test';
 
             addLog('CHECKOUT', 'init', `Starting checkout: ₹${amount} for "${description}" -> UPI: ${upiId}`);
-
-            // Temporary override if custom UPI ID was provided
-            const originalInitiate = window.PassTrack.Payments.initiateCheckout;
 
             window.PassTrack.Payments.initiateCheckout({
                 amount: amount,

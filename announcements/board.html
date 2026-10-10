@@ -4,16 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Notice Board | Pass Track</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../lib/theme.css">
+    <link rel="stylesheet" href="../lib/components.css">
     <link rel="stylesheet" href="board.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- XSS Sanitization -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 </head>
-<body class="centered-layout" style="align-items: flex-start; padding-top: 50px;">
+<body class="centered-layout" style="align-items: flex-start; padding-top: 36px;">
     
     <div class="board-container">
+        <div class="board-nav-bar">
+            <a href="../index.html" class="board-nav-btn" id="nav-back-home">
+                <i class="ph-bold ph-caret-left"></i> <span>Back to Home</span>
+            </a>
+        </div>
+
         <div class="board-header">
             <h1 id="org-name">Loading...</h1>
             <p>Official Announcements & Notices</p>

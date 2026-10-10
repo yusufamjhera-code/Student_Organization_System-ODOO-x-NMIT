@@ -249,7 +249,7 @@ header {
     border-color: var(--primary);
     color: var(--primary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(106, 17, 203, 0.15);
+    box-shadow: 0 4px 14px rgba(226, 91, 46, 0.2);
 }
 
 .module-icon {
@@ -655,7 +655,7 @@ input[type="date"].valid {
 .date-field input[type="date"]:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+    box-shadow: 0 0 0 3px rgba(226, 91, 46, 0.15);
 }
 
 /* Time Row */
@@ -690,7 +690,7 @@ input[type="date"].valid {
 .time-field input[type="time"]:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+    box-shadow: 0 0 0 3px rgba(226, 91, 46, 0.15);
 }
 
 /* Station Tags */
@@ -798,7 +798,7 @@ input[type="date"].valid {
 
 .primary-btn:hover:not(:disabled) {
     transform: translateY(-3px);
-    box-shadow: 0 12px 40px -4px rgba(106, 17, 203, 0.4);
+    box-shadow: 0 12px 40px -4px rgba(226, 91, 46, 0.4);
     background: var(--primary-grad-hover);
 }
 
@@ -848,7 +848,7 @@ input[type="date"].valid {
     border-radius: var(--radius-pill);
     font-size: 0.9rem;
     font-weight: 800;
-    border: 1px solid rgba(106, 17, 203, 0.15);
+    border: 1px solid rgba(226, 91, 46, 0.2);
 }
 
 .scrollable-list {

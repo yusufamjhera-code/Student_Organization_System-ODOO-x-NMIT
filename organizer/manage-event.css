@@ -22,7 +22,7 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--ui);
     background: var(--bg);
     color: var(--text-main);
     line-height: 1.6;
@@ -151,23 +151,26 @@ header {
 }
 
 .back-link {
-    color: var(--primary);
-    font-size: 1.5rem;
+    color: var(--ink);
+    font-size: 1.25rem;
     text-decoration: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #eff6ff;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    transition: all 0.3s;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-pill);
+    transition: all var(--transition-fast);
     flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
 }
 
 .back-link:hover {
-    background: #dbeafe;
-    transform: scale(1.05);
+    background: var(--surface-2);
+    transform: translateY(-1px);
+    color: var(--accent);
 }
 
 .event-title-meta {
@@ -175,25 +178,32 @@ header {
     overflow: hidden;
 }
 
+.event-title-meta h1 {
+    font-family: var(--serif);
+    font-size: 1.55rem;
+    font-weight: 400;
+    color: var(--ink);
+}
+
 /* Edit Event Button in Header */
 .edit-event-btn {
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    color: var(--primary);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
     width: 32px;
     height: 32px;
-    border-radius: 8px;
+    border-radius: var(--r-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
     flex-shrink: 0;
     margin-left: 0.5rem;
 }
 
 .edit-event-btn:hover {
-    background: rgba(139, 92, 246, 0.2);
+    background: rgba(226, 91, 46, 0.2);
     transform: scale(1.05);
 }
 
@@ -551,15 +561,15 @@ hr.access-divider {
     letter-spacing: 0.04em;
     padding: 0.4rem 0.7rem;
     border-radius: 8px;
-    background: rgba(139, 92, 246, 0.2);
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: rgba(226, 91, 46, 0.2);
+    border: 1px solid rgba(226, 91, 46, 0.3);
     transition: all 0.2s;
     margin-top: 10px;
 }
 
 .mini-checkbox:hover {
-    background: rgba(139, 92, 246, 0.35);
-    border-color: rgba(139, 92, 246, 0.5);
+    background: rgba(226, 91, 46, 0.35);
+    border-color: rgba(226, 91, 46, 0.5);
 }
 
 .mini-checkbox input {
@@ -570,7 +580,7 @@ hr.access-divider {
 }
 
 .mini-btn {
-    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    background: linear-gradient(135deg, #e25b2e 0%, #17130f 100%);
     border: none;
     color: #fff;
     padding: 0.5rem 0.9rem;
@@ -582,12 +592,12 @@ hr.access-divider {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 2px 8px rgba(226, 91, 46, 0.3);
 }
 
 .mini-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 6px 16px rgba(226, 91, 46, 0.5);
 }
 
 /* Selectable log items */
@@ -710,7 +720,7 @@ input:focus,
 select:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(106, 17, 203, 0.1);
+    box-shadow: 0 0 0 4px rgba(226, 91, 46, 0.1);
     background: #fff;
 }
 
@@ -751,7 +761,7 @@ input::placeholder {
 
 .perm-row:hover {
     border-color: var(--primary);
-    box-shadow: 0 2px 8px rgba(106, 17, 203, 0.08);
+    box-shadow: 0 2px 8px rgba(226, 91, 46, 0.08);
 }
 
 .perm-row input {
@@ -797,7 +807,7 @@ input::placeholder {
 }
 
 .perm-date {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(226, 91, 46, 0.1);
     color: var(--primary);
     padding: 0.2rem 0.5rem;
     border-radius: 5px;
@@ -913,7 +923,7 @@ input::placeholder {
 }
 
 .permission-chip input:checked+.chip-content .chip-time {
-    background: rgba(106, 17, 203, 0.1);
+    background: rgba(226, 91, 46, 0.1);
     color: var(--primary);
 }
 
@@ -1034,7 +1044,7 @@ input::placeholder {
 .custom-select:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(106, 17, 203, 0.1);
+    box-shadow: 0 0 0 4px rgba(226, 91, 46, 0.1);
 }
 
 .search-wrapper {
@@ -1319,7 +1329,7 @@ input::placeholder {
     font-size: 1.05rem;
     font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 8px 15px -3px rgba(37, 117, 252, 0.3);
+    box-shadow: 0 8px 15px -3px var(--accent-soft);
     transition: all 0.3s;
     display: flex;
     align-items: center;
@@ -1329,7 +1339,7 @@ input::placeholder {
 
 .primary-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 20px -5px rgba(37, 117, 252, 0.4);
+    box-shadow: 0 12px 20px -5px var(--accent-border);
 }
 
 .primary-btn:disabled {
@@ -1669,7 +1679,7 @@ tbody tr:hover {
     color: white;
     padding: 0.75rem 1.25rem;
     border-radius: 50px;
-    box-shadow: 0 10px 30px rgba(106, 17, 203, 0.35), 0 0 0 4px rgba(106, 17, 203, 0.15);
+    box-shadow: 0 10px 30px rgba(226, 91, 46, 0.35), 0 0 0 4px rgba(226, 91, 46, 0.15);
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
@@ -1735,12 +1745,12 @@ tbody tr:hover {
     height: 0;
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
-    border-bottom: 10px solid #6a11cb;
+    border-bottom: 10px solid #e25b2e;
 }
 
 .hint-bubble:hover {
     transform: scale(1.05);
-    box-shadow: 0 15px 40px rgba(106, 17, 203, 0.45), 0 0 0 6px rgba(106, 17, 203, 0.2);
+    box-shadow: 0 15px 40px rgba(226, 91, 46, 0.45), 0 0 0 6px rgba(226, 91, 46, 0.2);
 }
 
 .hint-bubble:hover::before {
@@ -2136,7 +2146,7 @@ tbody tr:hover {
 
 .access-point-item:hover {
     border-color: var(--primary);
-    box-shadow: 0 2px 8px rgba(106, 17, 203, 0.08);
+    box-shadow: 0 2px 8px rgba(226, 91, 46, 0.08);
 }
 
 .ap-info {
@@ -2206,7 +2216,7 @@ tbody tr:hover {
 
 /* Add Point Button in Card Header */
 .add-point-btn {
-    background: linear-gradient(135deg, rgba(106, 17, 203, 0.1) 0%, rgba(37, 117, 252, 0.1) 100%) !important;
+    background: var(--accent-soft) !important;
     color: var(--primary) !important;
     border-radius: 50% !important;
     width: 36px !important;
@@ -2216,7 +2226,7 @@ tbody tr:hover {
 }
 
 .add-point-btn:hover {
-    background: linear-gradient(135deg, rgba(106, 17, 203, 0.15) 0%, rgba(37, 117, 252, 0.15) 100%) !important;
+    background: var(--accent-border) !important;
     transform: rotate(90deg) scale(1.05);
 }
 
@@ -2249,7 +2259,7 @@ tbody tr:hover {
 .time-inputs-row input[type="time"]:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(106, 17, 203, 0.1);
+    box-shadow: 0 0 0 4px rgba(226, 91, 46, 0.1);
 }
 
 /* Modal Actions */
@@ -2536,8 +2546,8 @@ tbody tr:hover {
 
 /* Info Notes Styling */
 .help-note-accent {
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: rgba(226, 91, 46, 0.1);
+    border: 1px solid rgba(226, 91, 46, 0.3);
     border-radius: 8px;
     padding: 0.75rem 1rem;
     display: flex;
@@ -2589,7 +2599,7 @@ tbody tr:hover {
 #edit-event-modal input[type="date"]:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 0 4px rgba(226, 91, 46, 0.15);
 }
 
 #edit-event-modal input[type="text"] {
@@ -2607,7 +2617,7 @@ tbody tr:hover {
 #edit-event-modal input[type="text"]:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 0 4px rgba(226, 91, 46, 0.15);
 }
 
 #edit-event-modal .time-inputs-row {
@@ -2639,9 +2649,9 @@ tbody tr:hover {
     flex-wrap: wrap;
     margin-bottom: 1rem;
     padding: 0.75rem 1rem;
-    background: rgba(139, 92, 246, 0.05);
+    background: rgba(226, 91, 46, 0.05);
     border-radius: 12px;
-    border: 1px solid rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(226, 91, 46, 0.1);
 }
 
 .date-toggle-section .all-days-toggle {
@@ -2708,12 +2718,12 @@ tbody tr:hover {
 .date-input-wrapper input[type="date"]:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.15);
+    box-shadow: 0 0 0 3px rgba(226, 91, 46, 0.15);
 }
 
 /* Date Badge in Access Point List */
 .ap-date-badge {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(226, 91, 46, 0.1);
     color: var(--primary);
     padding: 0.25rem 0.6rem;
     border-radius: 6px;
@@ -2772,7 +2782,7 @@ tbody tr:hover {
 }
 
 .ap-btn.edit {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(226, 91, 46, 0.1);
     color: var(--primary);
 }
 
@@ -2815,7 +2825,7 @@ tbody tr:hover {
 
 /* Permission Chip Date Badge */
 .chip-date {
-    background: rgba(139, 92, 246, 0.15);
+    background: rgba(226, 91, 46, 0.15);
     color: var(--primary);
     padding: 0.15rem 0.4rem;
     border-radius: 4px;
@@ -2931,7 +2941,7 @@ tbody tr:hover {
 .date-range-block {
     margin-bottom: 1rem;
     padding: 1rem;
-    background: rgba(139, 92, 246, 0.03);
+    background: rgba(226, 91, 46, 0.03);
     border-radius: 12px;
     border: 1px solid var(--border);
 }
@@ -2983,7 +2993,7 @@ tbody tr:hover {
 .date-field input[type="date"]:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+    box-shadow: 0 0 0 3px rgba(226, 91, 46, 0.1);
 }
 
 /* Desktop: Compact access point modal to fit without scrolling */
@@ -3089,7 +3099,7 @@ tbody tr:hover {
 }
 
 .ap-date-badge {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(226, 91, 46, 0.1);
     color: var(--primary);
     min-width: 80px;
     text-align: center;
@@ -3121,7 +3131,7 @@ tbody tr:hover {
 }
 
 .ap-btn.edit {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(226, 91, 46, 0.1);
     color: var(--primary);
 }
 
@@ -3350,13 +3360,13 @@ tbody tr:hover {
 
 .collab-item:hover {
     border-color: var(--primary);
-    box-shadow: 0 2px 8px rgba(106, 17, 203, 0.08);
+    box-shadow: 0 2px 8px rgba(226, 91, 46, 0.08);
 }
 
 .collab-avatar {
     width: 36px;
     height: 36px;
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    background: linear-gradient(135deg, #e25b2e 0%, #17130f 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -3385,7 +3395,7 @@ tbody tr:hover {
     font-size: 0.7rem;
     color: var(--text-sub);
     font-family: 'JetBrains Mono', monospace;
-    background: rgba(139, 92, 246, 0.08);
+    background: rgba(226, 91, 46, 0.08);
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
     margin-top: 0.25rem;
@@ -3421,12 +3431,12 @@ tbody tr:hover {
 }
 
 .collab-btn.resend {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(226, 91, 46, 0.1);
     color: var(--primary);
 }
 
 .collab-btn.resend:hover {
-    background: rgba(139, 92, 246, 0.2);
+    background: rgba(226, 91, 46, 0.2);
     transform: scale(1.05);
 }
 
@@ -3459,7 +3469,7 @@ tbody tr:hover {
 }
 
 .collab-count {
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%) !important;
+    background: linear-gradient(135deg, #e25b2e 0%, #17130f 100%) !important;
     color: #fff !important;
 }
 
@@ -3518,8 +3528,8 @@ tbody tr:hover {
     align-items: center;
     justify-content: space-between;
     padding: 0.6rem 0.85rem;
-    background: rgba(139, 92, 246, 0.06);
-    border: 1px solid rgba(139, 92, 246, 0.15);
+    background: rgba(226, 91, 46, 0.06);
+    border: 1px solid rgba(226, 91, 46, 0.15);
     border-radius: 10px;
     margin-bottom: 0.75rem;
     gap: 0.75rem;
@@ -3561,7 +3571,7 @@ tbody tr:hover {
 }
 
 .bulk-btn.send {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(226, 91, 46, 0.1);
     color: var(--primary);
 }
 
@@ -3647,8 +3657,8 @@ tbody tr:hover {
 
 /* ========== Date Range Block Fixes ========== */
 .date-range-block {
-    background: rgba(139, 92, 246, 0.04);
-    border: 1px solid rgba(139, 92, 246, 0.12);
+    background: rgba(226, 91, 46, 0.04);
+    border: 1px solid rgba(226, 91, 46, 0.12);
     border-radius: 10px;
     padding: 0.75rem;
     margin-bottom: 1rem;
@@ -3668,7 +3678,7 @@ tbody tr:hover {
     display: block;
     font-size: 0.7rem;
     font-weight: 600;
-    color: #8b5cf6;
+    color: #e25b2e;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 0.35rem;
@@ -3689,16 +3699,16 @@ tbody tr:hover {
     align-items: center;
     justify-content: space-between;
     padding: 0.85rem 1rem;
-    background: rgba(139, 92, 246, 0.03);
-    border: 1px solid rgba(139, 92, 246, 0.1);
+    background: rgba(226, 91, 46, 0.03);
+    border: 1px solid rgba(226, 91, 46, 0.1);
     border-radius: 12px;
     margin-bottom: 0.6rem;
     transition: all 0.2s ease;
 }
 
 .access-point-item:hover {
-    background: rgba(139, 92, 246, 0.06);
-    border-color: rgba(139, 92, 246, 0.2);
+    background: rgba(226, 91, 46, 0.06);
+    border-color: rgba(226, 91, 46, 0.2);
 }
 
 .ap-content {
@@ -3744,8 +3754,8 @@ tbody tr:hover {
 }
 
 .ap-menu-btn:hover {
-    background: rgba(139, 92, 246, 0.1);
-    color: var(--primary, #8b5cf6);
+    background: rgba(226, 91, 46, 0.1);
+    color: var(--primary, #e25b2e);
 }
 
 .ap-menu-btn i {
@@ -3792,7 +3802,7 @@ tbody tr:hover {
 }
 
 .ap-dropdown-item:hover {
-    background: rgba(139, 92, 246, 0.08);
+    background: rgba(226, 91, 46, 0.08);
 }
 
 .ap-dropdown-item i {
@@ -3800,7 +3810,7 @@ tbody tr:hover {
 }
 
 .ap-dropdown-item.edit i {
-    color: var(--primary, #8b5cf6);
+    color: var(--primary, #e25b2e);
 }
 
 .ap-dropdown-item.delete {
@@ -3855,7 +3865,7 @@ tbody tr:hover {
 
 .collapsible-card .collapse-icon:hover {
     opacity: 1;
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(226, 91, 46, 0.1);
 }
 
 .collapsible-card.collapsed .collapse-icon {
@@ -3976,13 +3986,13 @@ tbody tr:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    background: linear-gradient(135deg, #e25b2e, #17130f);
     color: white;
     width: 28px;
     height: 28px;
     border-radius: 50%;
     font-size: 0.9rem;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 4px 12px rgba(226, 91, 46, 0.5);
 }
 
 /* Simple line connecting to info button */
@@ -4000,7 +4010,7 @@ tbody tr:hover {
     height: 0;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-bottom: 8px solid #8b5cf6;
+    border-bottom: 8px solid #e25b2e;
 }
 
 @keyframes pulse-hint {

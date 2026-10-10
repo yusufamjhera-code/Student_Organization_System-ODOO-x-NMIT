@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Merch Store | Pass Track</title>
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../lib/theme.css">
+    <link rel="stylesheet" href="../lib/components.css">
     <link rel="stylesheet" href="store.css">
     <link rel="stylesheet" href="../lib/upi-gateway.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -41,12 +42,12 @@
 
     <!-- Order Modal -->
     <div id="order-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 500px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:30px; position:relative; margin:auto;">
-            <button class="close-modal" id="close-order-modal" style="position:absolute; top:15px; right:15px; background:transparent; border:none; color:white; font-size:1.5rem; cursor:pointer;" aria-label="Close modal">
+        <div class="modal-content" style="max-width: 500px; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r); padding:32px; position:relative; margin:auto; box-shadow:var(--shadow-lg); color:var(--ink);">
+            <button class="close-modal" id="close-order-modal" style="position:absolute; top:18px; right:18px; background:transparent; border:none; color:var(--muted); font-size:1.5rem; cursor:pointer;" aria-label="Close modal">
                 <i class="ph ph-x"></i>
             </button>
-            <h2 id="order-modal-title" style="margin-top:0; color:white; font-size:1.5rem;">Buy Item</h2>
-            <div id="order-product-name" style="color:var(--text-muted); margin-bottom:20px; font-weight:600;"></div>
+            <h2 id="order-modal-title" style="margin-top:0; color:var(--ink); font-family:var(--serif); font-size:1.8rem; font-weight:400;">Buy Item</h2>
+            <div id="order-product-name" style="color:var(--muted); margin-bottom:20px; font-weight:600;"></div>
             
             <form id="order-form">
                 <input type="hidden" id="order-product-id">
@@ -61,7 +62,7 @@
                 <div class="input-group">
                     <label for="order-quantity">Quantity *</label>
                     <input type="number" id="order-quantity" value="1" min="1" max="10" required>
-                    <small id="stock-warning" style="color:var(--danger); display:none;">Not enough stock!</small>
+                    <small id="stock-warning" style="color:var(--bad); display:none;">Not enough stock!</small>
                 </div>
 
                 <div class="input-group">
@@ -77,14 +78,14 @@
                 <div class="input-group">
                     <label for="buyer-phone">Phone Number *</label>
                     <input type="tel" id="buyer-phone" required placeholder="e.g. 9876543210" minlength="10" maxlength="15">
-                    <small style="color:var(--text-muted); font-size:0.75rem;">10-digit mobile number for order & pickup verification</small>
+                    <small style="color:var(--muted); font-size:0.75rem;">10-digit mobile number for order & pickup verification</small>
                 </div>
 
                 <div id="member-verification-status" class="alert-box" style="display:none; padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.9rem; align-items:center; gap:10px;"></div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border); padding-top:15px; margin-bottom:20px;">
-                    <span style="color:var(--text-muted);">Total Amount:</span>
-                    <strong id="order-total" style="font-size:1.5rem; color:var(--primary);">₹0</strong>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--line-strong); padding-top:15px; margin-bottom:20px;">
+                    <span style="color:var(--muted);">Total Amount:</span>
+                    <strong id="order-total" style="font-size:1.5rem; color:var(--accent);">₹0</strong>
                 </div>
 
                 <button type="submit" class="primary-btn full-width" id="checkout-btn" style="width:100%; justify-content:center;">
@@ -96,18 +97,18 @@
 
     <!-- My Orders / History Modal -->
     <div id="my-orders-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 580px; background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:30px; position:relative; margin:auto;">
-            <button class="close-modal" id="close-my-orders-modal" style="position:absolute; top:15px; right:15px; background:transparent; border:none; color:white; font-size:1.5rem; cursor:pointer;" aria-label="Close modal">
+        <div class="modal-content" style="max-width: 580px; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r); padding:32px; position:relative; margin:auto; box-shadow:var(--shadow-lg); color:var(--ink);">
+            <button class="close-modal" id="close-my-orders-modal" style="position:absolute; top:18px; right:18px; background:transparent; border:none; color:var(--muted); font-size:1.5rem; cursor:pointer;" aria-label="Close modal">
                 <i class="ph ph-x"></i>
             </button>
-            <h2 style="margin-top:0; color:white; font-size:1.4rem; display:flex; align-items:center; gap:10px;">
-                <i class="ph-bold ph-receipt" style="color:var(--primary);"></i>
+            <h2 style="margin-top:0; color:var(--ink); font-family:var(--serif); font-size:1.75rem; font-weight:400; display:flex; align-items:center; gap:10px;">
+                <i class="ph-bold ph-receipt" style="color:var(--accent);"></i>
                 <span>My Merchandise Orders</span>
             </h2>
-            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">Look up your merchandise purchase history and order pickup status using your registered email.</p>
+            <p style="color:var(--muted); font-size:0.9rem; margin-bottom:20px;">Look up your merchandise purchase history and order pickup status using your registered email.</p>
 
             <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <input type="email" id="lookup-email-input" placeholder="Enter your email address" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; padding:12px 14px; color:#fff; font-size:0.95rem;">
+                <input type="email" id="lookup-email-input" placeholder="Enter your email address" style="flex:1; background:var(--surface-2); border:1px solid var(--line-strong); border-radius:var(--r-sm); padding:12px 14px; color:var(--ink); font-size:0.95rem; font-family:var(--ui); outline:none;">
                 <button type="button" id="lookup-orders-btn" class="primary-btn" style="white-space:nowrap; padding:12px 20px;">
                     <i class="ph-bold ph-magnifying-glass"></i> <span>Search</span>
                 </button>

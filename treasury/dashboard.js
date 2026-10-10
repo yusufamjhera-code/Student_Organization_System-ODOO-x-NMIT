@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (trendChart) trendChart.destroy();
         
         Chart.defaults.color = '#64748b';
-        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.font.family = "'Inter Tight', sans-serif";
 
         trendChart = new Chart(trendCtx, {
             type: 'bar',
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const catLabels = Object.keys(catTotals);
         const displayCatLabels = catLabels.length > 0 ? catLabels : ['No Expenses'];
         const catData = catLabels.length > 0 ? catLabels.map(l => catTotals[l]) : [1];
-        const catColors = ['#6a11cb', '#2563eb', '#ec4899', '#f97316', '#eab308', '#14b8a6', '#8b5cf6'];
+        const catColors = ['#e25b2e', '#17130f', '#847971', '#d97706', '#059669', '#2563eb', '#9333ea'];
 
         const catCtx = document.getElementById('categoryChart').getContext('2d');
         if (categoryChart) categoryChart.destroy();

@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const btn = document.createElement('a');
                     btn.href = `register.html?org=${doc.id}`;
                     btn.className = 'secondary-btn';
-                    btn.style.cssText = 'padding: 12px 16px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; color: #fff;';
+                    btn.style.cssText = 'padding: 12px 16px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text-main);';
                     btn.innerHTML = `<strong>${escapeHtml(doc.data().name)}</strong> <i class="ph-bold ph-arrow-right"></i>`;
                     selectorList.appendChild(btn);
                 });
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     tabRegisterBtn.addEventListener('click', () => {
         tabRegisterBtn.style.background = 'var(--primary)';
         tabRegisterBtn.style.color = '#fff';
-        tabDuesBtn.style.background = 'rgba(255,255,255,0.05)';
+        tabDuesBtn.style.background = 'var(--bg-card)';
         tabDuesBtn.style.color = 'var(--text-muted)';
         registerForm.style.display = 'block';
         duesPanel.style.display = 'none';
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     tabDuesBtn.addEventListener('click', () => {
         tabDuesBtn.style.background = 'var(--primary)';
         tabDuesBtn.style.color = '#fff';
-        tabRegisterBtn.style.background = 'rgba(255,255,255,0.05)';
+        tabRegisterBtn.style.background = 'var(--bg-card)';
         tabRegisterBtn.style.color = 'var(--text-muted)';
         registerForm.style.display = 'none';
         duesPanel.style.display = 'block';
@@ -164,22 +164,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Pending dues
                     const amount = Number(member.duesAmount || organizationData.membershipFee || 0);
                     duesResult.innerHTML = `
-                        <div style="background: rgba(106, 17, 203, 0.08); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-top: 15px; text-align: left;">
+                        <div style="background: var(--accent-soft); border: 1px solid var(--accent-border); border-radius: 14px; padding: 22px; margin-top: 15px; text-align: left;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                                <h3 style="margin: 0; color: #fff; font-size:1.15rem;">Member: ${escapeHtml(member.name)}</h3>
-                                <span style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700;">
+                                <h3 style="margin: 0; color: var(--text-main); font-size:1.15rem; font-family: var(--serif);">Member: ${escapeHtml(member.name)}</h3>
+                                <span style="background:rgba(245,158,11,0.15); color:#b45309; border:1px solid rgba(245,158,11,0.3); padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700;">
                                     Pending Activation
                                 </span>
                             </div>
                             <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">
-                                <div>Email: <strong style="color:#fff;">${escapeHtml(member.email)}</strong></div>
-                                ${member.studentId ? `<div>Student ID: <strong style="color:#fff;">${escapeHtml(member.studentId)}</strong></div>` : ''}
-                                <div style="margin-top:6px;">Amount Due: <strong style="color:var(--primary); font-size:1.25rem;">₹${amount}</strong></div>
+                                <div>Email: <strong style="color:var(--text-main);">${escapeHtml(member.email)}</strong></div>
+                                ${member.studentId ? `<div>Student ID: <strong style="color:var(--text-main);">${escapeHtml(member.studentId)}</strong></div>` : ''}
+                                <div style="margin-top:6px;">Amount Due: <strong style="color:var(--accent); font-size:1.25rem;">₹${amount}</strong></div>
                             </div>
                             <button type="button" id="pay-dues-action-btn" class="primary-btn" style="width: 100%; justify-content: center; margin-bottom: 12px;">
                                 <i class="ph-bold ph-credit-card"></i> Pay Dues (₹${amount}) & Activate
                             </button>
-                            <div style="font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px dashed var(--border);">
+                            <div style="font-size: 0.85rem; color: var(--text-muted); background: var(--bg-card); padding: 10px; border-radius: 8px; border: 1px dashed var(--border);">
                                 <i class="ph-bold ph-info"></i> <strong>Paying in Cash or Offline?</strong> You can also pay directly to your club treasurer, who will activate your membership in the Member Directory.
                             </div>
                         </div>
@@ -205,34 +205,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 24px; margin-top: 15px; text-align: left;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <i class="ph-fill ph-shield-check" style="color:#10b981; font-size:1.5rem;"></i>
-                        <span style="font-size:1.15rem; font-weight:700; color:#fff;">Membership Active</span>
+                        <i class="ph-fill ph-shield-check" style="color:#059669; font-size:1.5rem;"></i>
+                        <span style="font-size:1.15rem; font-weight:700; color:var(--text-main); font-family:var(--serif);">Membership Active</span>
                     </div>
-                    <span style="background:rgba(16, 185, 129, 0.2); color:#10b981; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; letter-spacing:0.5px;">
+                    <span style="background:rgba(16, 185, 129, 0.15); color:#059669; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; letter-spacing:0.5px;">
                         VERIFIED MEMBER
                     </span>
                 </div>
                 
-                <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid var(--border);">
-                    <div style="font-size:1.2rem; font-weight:800; color:#fff; margin-bottom:4px;">${escapeHtml(member.name)}</div>
+                <div style="background:var(--bg-card); border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid var(--border);">
+                    <div style="font-size:1.2rem; font-weight:800; color:var(--text-main); margin-bottom:4px; font-family:var(--serif);">${escapeHtml(member.name)}</div>
                     <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:8px;">${escapeHtml(member.email)}</div>
                     
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.85rem; padding-top:10px; border-top:1px dashed var(--border);">
                         <div>
                             <span style="color:var(--text-muted);">Student ID:</span><br>
-                            <strong style="color:#fff;">${escapeHtml(member.studentId || 'N/A')}</strong>
+                            <strong style="color:var(--text-main);">${escapeHtml(member.studentId || 'N/A')}</strong>
                         </div>
                         <div>
                             <span style="color:var(--text-muted);">Member Since:</span><br>
-                            <strong style="color:#fff;">${member.membershipStartDate || 'Active'}</strong>
+                            <strong style="color:var(--text-main);">${member.membershipStartDate || 'Active'}</strong>
                         </div>
                         <div>
                             <span style="color:var(--text-muted);">Valid Until:</span><br>
-                            <strong style="color:#10b981;">${member.membershipEndDate || 'Active'}</strong>
+                            <strong style="color:#059669;">${member.membershipEndDate || 'Active'}</strong>
                         </div>
                         <div>
                             <span style="color:var(--text-muted);">Dues Status:</span><br>
-                            <strong style="color:#10b981;">Paid in Full</strong>
+                            <strong style="color:#059669;">Paid in Full</strong>
                         </div>
                     </div>
                 </div>
@@ -431,17 +431,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 successEl.innerHTML = `
                     <div style="padding: 10px 0; text-align: left;">
-                        <div style="font-size: 1.2rem; font-weight: 700; color: #10b981; margin-bottom: 8px;">
+                        <div style="font-size: 1.2rem; font-weight: 700; color: #059669; margin-bottom: 8px;">
                             <i class="ph-bold ph-check-circle"></i> Registration Recorded!
                         </div>
-                        <p style="color: #fff; margin-bottom: 8px;">Welcome, <strong>${escapeHtml(name)}</strong>!</p>
+                        <p style="color: var(--text-main); margin-bottom: 8px;">Welcome, <strong>${escapeHtml(name)}</strong>!</p>
                         <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 16px;">
-                            Your membership status is currently <span style="color: #f59e0b; font-weight: 600;">Pending Activation</span>. Pay your dues of <strong>₹${fee}</strong> to activate your membership and unlock member benefits.
+                            Your membership status is currently <span style="color: #b45309; font-weight: 600;">Pending Activation</span>. Pay your dues of <strong>₹${fee}</strong> to activate your membership and unlock member benefits.
                         </p>
                         <button type="button" id="instant-pay-dues-btn" class="primary-btn" style="width: 100%; justify-content: center; margin-bottom: 12px;">
                             <i class="ph-bold ph-credit-card"></i> Pay Dues (₹${fee}) & Activate Now
                         </button>
-                        <div style="font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px dashed var(--border);">
+                        <div style="font-size: 0.85rem; color: var(--text-muted); background: var(--bg-card); padding: 10px; border-radius: 8px; border: 1px dashed var(--border);">
                             <i class="ph-bold ph-info"></i> <strong>Paying Offline?</strong> You can also pay cash or UPI to your club treasurer, who will activate your membership in the Member Directory.
                         </div>
                     </div>
