@@ -33,39 +33,86 @@ document.addEventListener('DOMContentLoaded', () => {
     let announcementsData = [];
     let editDocId = null;
 
+    function loadDemoAnnouncements() {
+        currentOrgId = 'demo-org-acm';
+        if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
+        if (viewBoardLink) viewBoardLink.href = `board.html?org=${currentOrgId}`;
+
+        announcementsData = [
+            {
+                id: 'ann-1',
+                title: 'HackNMIT 2026: Problem Statements & Evaluation Rubrics Released',
+                content: 'We are thrilled to announce that the **HackNMIT 2026** problem statements are now live across all 4 tracks:\n\n1. AI & Autonomous Systems\n2. Web3 & Distributed Ledgers\n3. FinTech & Next-Gen Banking\n4. Open Innovation\n\nMentors will be available at Lab 3 starting at 10:00 AM on Saturday.',
+                category: 'urgent',
+                isPinned: true,
+                authorName: 'ACM Executive Committee',
+                createdAt: { toMillis: () => Date.now() - 3600000 * 5 }
+            },
+            {
+                id: 'ann-2',
+                title: 'Official Club Merchandise & Hoodie Collection Desk Timings',
+                content: 'Pre-ordered **ACM Heavyweight Hoodies** and minimal tees can be collected from the Ground Floor Student Lounge desk between 1:00 PM and 4:30 PM. Please have your Order ID ready upon arrival.',
+                category: 'events',
+                isPinned: false,
+                authorName: 'Treasury & Logistics Desk',
+                createdAt: { toMillis: () => Date.now() - 3600000 * 28 }
+            },
+            {
+                id: 'ann-3',
+                title: 'General Body Meeting & Annual Executive Board Elections',
+                content: 'Nominations for the 2026-2027 Executive Core Committee are now open for all active student members in good standing. Interested members must submit their candidacy statement by Friday.',
+                category: 'general',
+                isPinned: false,
+                authorName: 'Faculty Coordinator',
+                createdAt: { toMillis: () => Date.now() - 3600000 * 72 }
+            }
+        ];
+        renderList();
+    }
+
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-            window.location.href = '../auth/login.html';
-            return;
-        }
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
 
-        currentUser = user;
-        if (sessionStorage.getItem('authType') !== 'collaborator') {
-            sessionStorage.setItem('authType', 'admin');
-        }
-
-        try {
-            const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
-            if (orgsSnapshot.empty) {
-                showToast('Organization not found.', 'error');
-                return;
-            }
-            
-            const orgDoc = orgsSnapshot.docs[0];
-            currentOrgId = orgDoc.id;
-            orgNameMeta.textContent = orgDoc.data().name;
-
-            // Wire up public links
-            if (viewBoardLink) {
-                viewBoardLink.href = `board.html?org=${currentOrgId}`;
+        if (user) {
+            currentUser = user;
+            if (sessionStorage.getItem('authType') !== 'collaborator') {
+                sessionStorage.setItem('authType', 'admin');
             }
 
-            setupRealtimeListeners();
-            
-        } catch (error) {
-            console.error("Initialization error:", error);
-            showToast('Failed to load announcements data.', 'error');
+            try {
+                const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
+                if (orgsSnapshot.empty) {
+                    if (isDemo) loadDemoAnnouncements();
+                    else showToast('Organization not found.', 'error');
+                    return;
+                }
+                
+                const orgDoc = orgsSnapshot.docs[0];
+                currentOrgId = orgDoc.id;
+                orgNameMeta.textContent = orgDoc.data().name;
+
+                // Wire up public links
+                if (viewBoardLink) {
+                    viewBoardLink.href = `board.html?org=${currentOrgId}`;
+                }
+
+                setupRealtimeListeners();
+                
+            } catch (error) {
+                if (isDemo) loadDemoAnnouncements();
+                else {
+                    console.error("Initialization error:", error);
+                    showToast('Failed to load announcements data.', 'error');
+                }
+            }
+        } else if (isDemo) {
+            currentUser = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in' };
+            loadDemoAnnouncements();
+        } else {
+            window.location.href = '../index.html';
         }
     });
 

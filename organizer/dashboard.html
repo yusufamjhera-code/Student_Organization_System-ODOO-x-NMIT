@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Organizer Dashboard | Pass Track</title>
+    <title>Organizer Executive Dashboard | Pass Track</title>
+    <link rel="stylesheet" href="../lib/theme.css">
+    <link rel="stylesheet" href="../lib/components.css">
     <link rel="stylesheet" href="dashboard.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
@@ -13,78 +15,217 @@
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <header>
+    <!-- Executive Header -->
+    <header class="executive-header">
         <div class="header-left">
-            <div class="logo-icon">
-                <i class="ph-bold ph-ticket"></i>
+            <div class="logo-mark">
+                <span class="logo-text">PT</span>
             </div>
             <div class="header-text">
-                <h1 id="org-name-header">Your Dashboard</h1>
-                <span class="header-subtitle">Event Management</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <h1 id="org-name-header">ACM Student Chapter &bull; NMIT</h1>
+                    <span class="status-chip status-chip--good" style="padding: 2px 8px; font-size: 11px;">
+                        <span class="live-dot"></span> Live
+                    </span>
+                </div>
+                <span class="header-subtitle">Executive Command Center</span>
             </div>
         </div>
-        <button id="logout-btn" class="logout-btn">
-            <i class="ph-bold ph-sign-out"></i> <span>Logout</span>
-        </button>
+        <div class="header-actions">
+            <button type="button" id="open-create-modal-btn" class="btn btn--primary">
+                <i class="ph-bold ph-plus-circle"></i>
+                <span>Create New Event</span>
+            </button>
+            <button id="logout-btn" class="logout-btn">
+                <i class="ph-bold ph-sign-out"></i> <span>Logout</span>
+            </button>
+        </div>
     </header>
 
-    <main class="container" id="main-container" style="opacity: 0; transition: opacity 0.2s;">
-        <!-- LEFT COLUMN: Event Creation -->
-        <div class="actions-column">
-            <div class="card creation-card">
-                <div class="card-title">
+    <main class="dashboard-main" id="main-container" style="opacity: 0; transition: opacity 0.3s ease;">
+        
+        <!-- SECTION 1: Executive KPI Metrics Bar -->
+        <section class="kpi-section">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Active Events</span>
+                        <div class="kpi-icon accent"><i class="ph-bold ph-calendar-check"></i></div>
+                    </div>
+                    <div class="kpi-val" id="kpi-events-count">2</div>
+                    <div class="kpi-sub"><span class="kpi-tag good">Live &bull; Verified</span> 1 draft scheduled</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Total Passes Issued</span>
+                        <div class="kpi-icon blue"><i class="ph-bold ph-ticket"></i></div>
+                    </div>
+                    <div class="kpi-val">350</div>
+                    <div class="kpi-sub"><span class="kpi-tag blue">82% Capacity</span> 300 hackathon &bull; 50 summit</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Treasury Balance</span>
+                        <div class="kpi-icon good"><i class="ph-bold ph-coins"></i></div>
+                    </div>
+                    <div class="kpi-val">₹1,27,000</div>
+                    <div class="kpi-sub"><span class="kpi-tag good">+ ₹84k Inflow</span> Net available funds</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-top">
+                        <span class="kpi-label">Organization Roster</span>
+                        <div class="kpi-icon purple"><i class="ph-bold ph-users-three"></i></div>
+                    </div>
+                    <div class="kpi-val">42</div>
+                    <div class="kpi-sub"><span class="kpi-tag purple">Active Roster</span> 6 core leads &bull; 36 members</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Organization Operations Command Grid -->
+        <section class="org-hub-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Organization Operational Modules</h2>
+                    <p class="section-desc">Direct control over chapter membership, accounting, task sprints, announcements, and storefront.</p>
+                </div>
+            </div>
+
+            <div class="hub-modules-grid">
+                <!-- Member Directory -->
+                <a href="../members/directory.html" class="hub-module-card">
+                    <div class="hub-module-top">
+                        <div class="hub-module-icon users">
+                            <i class="ph-bold ph-users"></i>
+                        </div>
+                        <span class="hub-badge">42 Members</span>
+                    </div>
+                    <h3 class="hub-module-title">Member Directory</h3>
+                    <p class="hub-module-desc">Manage student roster, assign executive roles, filter departments, and verify active dues.</p>
+                    <div class="hub-module-cta">
+                        <span>Open Directory</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Treasury -->
+                <a href="../treasury/dashboard.html" class="hub-module-card">
+                    <div class="hub-module-top">
+                        <div class="hub-module-icon coins">
+                            <i class="ph-bold ph-coins"></i>
+                        </div>
+                        <span class="hub-badge good">₹1.27L Net</span>
+                    </div>
+                    <h3 class="hub-module-title">Treasury & Accounting</h3>
+                    <p class="hub-module-desc">Real-time revenue ledgers, ticket payment reconciliation, expense approvals, and audit reports.</p>
+                    <div class="hub-module-cta">
+                        <span>Manage Ledger</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Task Board -->
+                <a href="../tasks/board.html" class="hub-module-card">
+                    <div class="hub-module-top">
+                        <div class="hub-module-icon kanban">
+                            <i class="ph-bold ph-kanban"></i>
+                        </div>
+                        <span class="hub-badge warn">Sprint Active</span>
+                    </div>
+                    <h3 class="hub-module-title">Task Kanban Board</h3>
+                    <p class="hub-module-desc">Organize logistics sprints, assign volunteers to stations, set deadlines, and track deliverables.</p>
+                    <div class="hub-module-cta">
+                        <span>Open Board</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Announcements -->
+                <a href="../announcements/admin.html" class="hub-module-card">
+                    <div class="hub-module-top">
+                        <div class="hub-module-icon megaphone">
+                            <i class="ph-bold ph-megaphone"></i>
+                        </div>
+                        <span class="hub-badge">Live Broadcasts</span>
+                    </div>
+                    <h3 class="hub-module-title">Announcements & Push</h3>
+                    <p class="hub-module-desc">Draft markdown bulletins, push real-time schedule changes, and broadcast alerts to attendee boards.</p>
+                    <div class="hub-module-cta">
+                        <span>Create Notice</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Merch Store -->
+                <a href="../merch/manage-merch.html" class="hub-module-card">
+                    <div class="hub-module-top">
+                        <div class="hub-module-icon merch">
+                            <i class="ph-bold ph-t-shirt"></i>
+                        </div>
+                        <span class="hub-badge">Official Store</span>
+                    </div>
+                    <h3 class="hub-module-title">Manage Merch</h3>
+                    <p class="hub-module-desc">Track apparel inventory, process pre-orders, and validate attendee pickups at the collection desk.</p>
+                    <div class="hub-module-cta">
+                        <span>Store Management</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Events Portfolio & Live Status -->
+        <section class="events-portfolio-section">
+            <div class="portfolio-card">
+                <div class="portfolio-header">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <h2 class="section-title">Your Events Portfolio</h2>
+                            <span class="badge" id="event-count">0</span>
+                        </div>
+                        <p class="section-desc">Manage ticketing access control, door scanner passes, station hours, and attendee rosters.</p>
+                    </div>
+                    <div class="portfolio-actions">
+                        <button type="button" class="btn btn--primary" id="open-create-modal-btn-2">
+                            <i class="ph-bold ph-plus-circle"></i>
+                            <span>Create Event</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Event List Container -->
+                <div id="event-list" class="events-grid">
+                    <div class="loading-shimmer-wrapper">
+                        <div class="shimmer-item"></div>
+                        <div class="shimmer-item"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- CREATE NEW EVENT MODAL / DRAWER (Opened only on organizer request) -->
+    <div id="create-event-modal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-header-info">
                     <div class="title-icon">
                         <i class="ph-bold ph-plus-circle"></i>
                     </div>
                     <div>
                         <h2>Create New Event</h2>
-                        <p class="card-subtitle">Set up access control for your event</p>
+                        <p class="card-subtitle">Set up access control, credentials, and scan points</p>
                     </div>
                 </div>
+                <button type="button" id="close-modal-btn" class="modal-close-btn" aria-label="Close">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
 
-                <div class="org-quick-hub">
-                    <div class="org-quick-hub-header">
-                        <span><i class="ph-bold ph-squares-four"></i> Organization Modules</span>
-                    </div>
-                    <div class="org-modules-grid">
-                        <a href="../members/directory.html" class="org-module-chip">
-                            <span class="module-icon users"><i class="ph-bold ph-users"></i></span>
-                            <span class="module-info">
-                                <span class="module-name">Member Directory</span>
-                            </span>
-                            <i class="ph-bold ph-arrow-up-right module-arrow"></i>
-                        </a>
-                        <a href="../treasury/dashboard.html" class="org-module-chip">
-                            <span class="module-icon coins"><i class="ph-bold ph-coins"></i></span>
-                            <span class="module-info">
-                                <span class="module-name">Treasury</span>
-                            </span>
-                            <i class="ph-bold ph-arrow-up-right module-arrow"></i>
-                        </a>
-                        <a href="../announcements/admin.html" class="org-module-chip">
-                            <span class="module-icon megaphone"><i class="ph-bold ph-megaphone"></i></span>
-                            <span class="module-info">
-                                <span class="module-name">Announcements</span>
-                            </span>
-                            <i class="ph-bold ph-arrow-up-right module-arrow"></i>
-                        </a>
-                        <a href="../tasks/board.html" class="org-module-chip">
-                            <span class="module-icon kanban"><i class="ph-bold ph-kanban"></i></span>
-                            <span class="module-info">
-                                <span class="module-name">Task Board</span>
-                            </span>
-                            <i class="ph-bold ph-arrow-up-right module-arrow"></i>
-                        </a>
-                        <a href="../merch/manage-merch.html" class="org-module-chip">
-                            <span class="module-icon merch"><i class="ph-bold ph-t-shirt"></i></span>
-                            <span class="module-info">
-                                <span class="module-name">Manage Merch</span>
-                            </span>
-                            <i class="ph-bold ph-arrow-up-right module-arrow"></i>
-                        </a>
-                    </div>
-                </div>
-                
+            <div class="modal-body actions-column">
                 <form id="create-event-form">
                     <!-- Event Name -->
                     <div class="input-group">
@@ -187,64 +328,13 @@
                         <div id="station-tags-container" class="tags-container"></div>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="primary-btn" disabled>
-                        <i class="ph-bold ph-rocket-launch"></i> Initialize Event
-                    </button>
+                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+                        <button type="button" id="cancel-create-btn" class="btn btn--secondary">Cancel</button>
+                        <button type="submit" id="submit-btn" class="btn btn--primary" disabled>
+                            <i class="ph-bold ph-rocket-launch"></i> Initialize Event
+                        </button>
+                    </div>
                 </form>
-            </div>
-        </div>
-
-        <!-- RIGHT COLUMN: Event List -->
-        <div class="main-content-column">
-            <div class="card list-card">
-                <div class="card-header-flex">
-                    <div class="header-title">
-                        <div class="title-icon purple">
-                            <i class="ph-bold ph-calendar-check"></i>
-                        </div>
-                        <h2>Your Events</h2>
-                    </div>
-                    <span class="badge" id="event-count">0</span>
-                </div>
-
-                <!-- Event List -->
-                <div id="event-list" class="scrollable-list">
-                    <div class="loading-shimmer-wrapper">
-                        <div class="shimmer-item"></div>
-                        <div class="shimmer-item"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Popup Stack -->
-    <div class="popup-stack">
-        <!-- Default Entry Point Notice -->
-        <div class="help-card card popup-item info-theme" id="entry-point-popup">
-            <button class="close-popup" onclick="this.parentElement.style.display='none'">
-                <i class="ph ph-x"></i>
-            </button>
-            <div class="popup-icon">
-                <i class="ph-bold ph-door-open"></i>
-            </div>
-            <div class="popup-content">
-                <h3>Default Access Point</h3>
-                <p>'Entrance' is pre-configured. You can customize access per user later.</p>
-            </div>
-        </div>
-
-        <!-- Help Center -->
-        <div class="help-card card popup-item" id="help-center">
-            <button class="close-popup" id="close-help-btn" title="Dismiss">
-                <i class="ph ph-x"></i>
-            </button>
-            <div class="popup-icon purple">
-                <i class="ph-bold ph-question"></i>
-            </div>
-            <div class="popup-content">
-                <h3>Access Control</h3>
-                <p>Tokens scanned outside set hours will be flagged as 'Access Denied'.</p>
             </div>
         </div>
     </div>
