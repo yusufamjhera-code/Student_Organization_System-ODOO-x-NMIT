@@ -14,7 +14,7 @@
              LEFT PANEL: EDITORIAL SHOWCASE (Sonnet Clip Style)
              ================================================================ -->
         <aside class="editorial-panel">
-            <!-- Brand & Campus Pill Row -->
+            <!-- Brand Row -->
             <div class="editorial-brand-row">
                 <a href="index.html" class="brand-mark">
                     <span class="brand-icon">
@@ -24,10 +24,10 @@
                         Pass<em>Track</em>
                     </span>
                 </a>
-                <div class="campus-pill">
-                    <span class="campus-pill-dot"></span>
-                    <span>Unified Campus System</span>
-                </div>
+                <a href="#auth-card-box" class="btn btn--accent btn--sm mobile-quick-auth-btn" id="mobile-auth-jump-btn" aria-label="Quick jump to Login or Sign Up">
+                    <i class="ph-bold ph-sign-in"></i>
+                    <span>Login / Sign Up</span>
+                </a>
             </div>
 
             <!-- Hero Headline -->
@@ -91,7 +91,7 @@
                 <div class="sprockets--soft" aria-hidden="true"></div>
                 <div class="guest-action-bar">
                     <span>Looking to explore without logging in?</span>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <div class="guest-btn-group">
                         <button type="button" onclick="openSelector('event', 'tickets/buy.html')" class="btn btn--quiet btn--sm">
                             <i class="ph-bold ph-ticket"></i> Buy Tickets
                         </button>
@@ -109,8 +109,8 @@
         <!-- ================================================================
              RIGHT PANEL: UNIVERSAL AUTH CARD (Sonnet Clip Style)
              ================================================================ -->
-        <main class="auth-panel">
-            <div class="auth-card-box">
+        <main class="auth-panel" id="auth-panel">
+            <div class="auth-card-box" id="auth-card-box">
                 <!-- Header -->
                 <div class="auth-card-header">
                     <h2>Welcome to <em>PassTrack</em></h2>
@@ -232,6 +232,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="lib/firebase-config.js"></script>
     <script src="lib/contracts/passtrack-core.js"></script>
+    <script src="lib/session-manager.js"></script>
+    <script src="lib/auth-guard.js"></script>
     <script src="lib/toast.js"></script>
     <script src="index.js"></script>
 </body>
