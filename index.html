@@ -7,135 +7,232 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
-<body class="landing-page">
+<body class="sonnet-home">
 
-    <div class="main-container landing-container">
-        <!-- Branding Header -->
-        <header class="landing-header">
-            <h1>PassTrack <span class="gradient-text">Ecosystem</span></h1>
-            <p>The unified digital platform for student organizations, ticketing, memberships, and financial operations.</p>
-        </header>
+    <div class="sonnet-layout">
+        <!-- ================================================================
+             LEFT PANEL: EDITORIAL SHOWCASE (Sonnet Clip Style)
+             ================================================================ -->
+        <aside class="editorial-panel">
+            <!-- Brand & Campus Pill Row -->
+            <div class="editorial-brand-row">
+                <a href="index.html" class="brand-mark">
+                    <span class="brand-icon">
+                        <i class="ph-bold ph-shield-check"></i>
+                    </span>
+                    <span class="brand-name">
+                        Pass<em>Track</em>
+                    </span>
+                </a>
+                <div class="campus-pill">
+                    <span class="campus-pill-dot"></span>
+                    <span>Unified Campus System</span>
+                </div>
+            </div>
 
-        <!-- 6 Portal Command Cards -->
-        <div class="portal-grid">
-            <!-- 1. ORGANIZER PORTAL -->
-            <a href="auth/login.html" class="portal-card theme-organizer">
-                <div class="card-icon-wrap">
-                    <i class="ph-bold ph-key"></i>
-                </div>
-                <div class="portal-card-body">
-                    <h2>Organizer Portal</h2>
-                    <p>Create events, manage teams, track treasury, and broadcast announcements.</p>
-                </div>
-                <div class="portal-card-action">
-                    <i class="ph-bold ph-caret-right card-arrow"></i>
-                </div>
-            </a>
+            <!-- Hero Headline -->
+            <div class="editorial-hero">
+                <div class="kicker">Campus Events, Passes &amp; Operations</div>
+                <h1>
+                    One campus platform.<br>
+                    Every event, pass, and <em>club</em> unified.
+                </h1>
+                <p class="lead">
+                    Single universal entry point for all organizers, door volunteers, club members, and attendees. 
+                    Your verified campus account automatically unlocks your authorized operational workspace.
+                </p>
+            </div>
 
-            <!-- 2. STAFF / SCANNER PORTAL -->
-            <a href="distributor/distributor.html" class="portal-card theme-staff">
-                <div class="card-icon-wrap">
-                    <i class="ph-bold ph-qr-code"></i>
+            <!-- Editorial Feature Callouts -->
+            <div class="features-stack">
+                <div class="feature-item">
+                    <div class="feature-icon-box">
+                        <i class="ph ph-fingerprint-simple"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Smart Role-Based Routing</h4>
+                        <p>Sign in once with Google or your campus email. Organizers, scanners, and members are detected instantly.</p>
+                    </div>
                 </div>
-                <div class="portal-card-body">
-                    <h2>Staff Check-in</h2>
-                    <p>High-speed camera scanner for multi-station entry validation and live attendance.</p>
-                </div>
-                <div class="portal-card-action">
-                    <i class="ph-bold ph-caret-right card-arrow"></i>
-                </div>
-            </a>
-            
-            <!-- 3. JOIN AS MEMBER -->
-            <a href="#" onclick="openSelector('org', 'members/register.html')" class="portal-card theme-member">
-                <div class="card-icon-wrap">
-                    <i class="ph-bold ph-user-plus"></i>
-                </div>
-                <div class="portal-card-body">
-                    <h2>Join as Member</h2>
-                    <p>Self-service club registration, dues activation, and instant member discounts.</p>
-                </div>
-                <div class="portal-card-action">
-                    <i class="ph-bold ph-caret-right card-arrow"></i>
-                </div>
-            </a>
 
-            <!-- 4. BUY TICKETS -->
-            <a href="#" onclick="openSelector('event', 'tickets/buy.html')" class="portal-card theme-tickets">
-                <div class="card-icon-wrap">
-                    <i class="ph-bold ph-ticket"></i>
+                <div class="feature-item">
+                    <div class="feature-icon-box">
+                        <i class="ph ph-qr-code"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>High-Speed Passes &amp; Live Door Check-In</h4>
+                        <p>Instant cryptographic QR tickets with sub-second camera scanning and soundbox audio confirmation.</p>
+                    </div>
                 </div>
-                <div class="portal-card-body">
-                    <h2>Buy Tickets</h2>
-                    <p>Book passes for upcoming campus events with member discounts and instant QR passes.</p>
-                </div>
-                <div class="portal-card-action">
-                    <i class="ph-bold ph-caret-right card-arrow"></i>
-                </div>
-            </a>
 
-            <!-- 5. ANNOUNCEMENTS -->
-            <a href="#" onclick="openSelector('org', 'announcements/board.html')" class="portal-card theme-notice">
-                <div class="card-icon-wrap">
-                    <i class="ph-bold ph-megaphone"></i>
+                <div class="feature-item">
+                    <div class="feature-icon-box">
+                        <i class="ph ph-coins"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Autonomous Treasury &amp; Storefronts</h4>
+                        <p>Ticket revenue, club membership dues, and merchandise sales reconcile directly into your organization ledger.</p>
+                    </div>
                 </div>
-                <div class="portal-card-body">
-                    <h2>Notice Board</h2>
-                    <p>Official club bulletin board with real-time event updates and announcements.</p>
-                </div>
-                <div class="portal-card-action">
-                    <i class="ph-bold ph-caret-right card-arrow"></i>
-                </div>
-            </a>
 
-            <!-- 6. MERCH STORE -->
-            <a href="#" onclick="openSelector('org', 'merch/store.html')" class="portal-card theme-merch">
-                <div class="card-icon-wrap">
-                    <i class="ph-bold ph-t-shirt"></i>
+                <div class="feature-item">
+                    <div class="feature-icon-box">
+                        <i class="ph ph-broadcast"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Live Announcements &amp; Real-Time Broadcasts</h4>
+                        <p>Push instant schedule updates and urgent bulletins directly to attendee notice boards with audit logging.</p>
+                    </div>
                 </div>
-                <div class="portal-card-body">
-                    <h2>Merch Store</h2>
-                    <p>Order official hoodies, t-shirts, and club gear with live inventory and pickup tracking.</p>
-                </div>
-                <div class="portal-card-action">
-                    <i class="ph-bold ph-caret-right card-arrow"></i>
-                </div>
-            </a>
-        </div>
+            </div>
 
-        <!-- Sleek Footer -->
-        <footer class="landing-footer">
-            <p>
-                &copy; 2026 <strong>PassTrack</strong> Security Ecosystem &bull; Designed &amp; Developed by <strong>Team ByteSmiths for Odoo x NMIT.</strong>
-            </p>
-        </footer>
+            <!-- Perforation Motif & Guest Navigation -->
+            <div class="editorial-footer">
+                <div class="sprockets--soft" aria-hidden="true"></div>
+                <div class="guest-action-bar">
+                    <span>Looking to explore without logging in?</span>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" onclick="openSelector('event', 'tickets/buy.html')" class="btn btn--quiet btn--sm">
+                            <i class="ph-bold ph-ticket"></i> Buy Tickets
+                        </button>
+                        <button type="button" onclick="openSelector('org', 'merch/store.html')" class="btn btn--quiet btn--sm">
+                            <i class="ph-bold ph-t-shirt"></i> Merch Store
+                        </button>
+                        <button type="button" onclick="openSelector('org', 'announcements/board.html')" class="btn btn--quiet btn--sm">
+                            <i class="ph-bold ph-megaphone"></i> Notice Board
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ================================================================
+             RIGHT PANEL: UNIVERSAL AUTH CARD (Sonnet Clip Style)
+             ================================================================ -->
+        <main class="auth-panel">
+            <div class="auth-card-box">
+                <!-- Header -->
+                <div class="auth-card-header">
+                    <h2>Welcome to <em>PassTrack</em></h2>
+                    <p id="auth-subtitle">Universal sign-in. Your verified role is determined automatically.</p>
+                </div>
+
+                <!-- Unauthenticated Flow (Default) -->
+                <div id="unauth-container">
+                    <!-- Google Single Sign-On -->
+                    <div class="google-signin-wrap">
+                        <button type="button" id="google-signin-btn" class="google-btn">
+                            <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                                <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                                <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                                <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                                <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.904,36.218,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                            </svg>
+                            <span>Continue with Google</span>
+                        </button>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="auth-divider">
+                        <span>or with credentials</span>
+                    </div>
+
+                    <!-- Universal Email / Password / Access Code Form -->
+                    <form id="delegated-login-form" class="universal-login-form">
+                        <div class="form-group">
+                            <label for="delegated-email">Email Address</label>
+                            <div class="input-container">
+                                <i class="ph ph-envelope"></i>
+                                <input type="email" id="delegated-email" placeholder="name@college.edu" required autocomplete="email">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="access-code">Password / Staff Access Code</label>
+                            <div class="input-container">
+                                <i class="ph ph-lock-key"></i>
+                                <input type="password" id="access-code" placeholder="Password or 8-char staff code" required autocomplete="current-password">
+                            </div>
+                            <span class="input-hint-text">Door volunteers can enter their 8-character access key</span>
+                        </div>
+
+                        <button type="submit" id="delegated-signin-btn" class="btn btn--primary btn--md btn--block">
+                            <i class="ph-bold ph-sign-in"></i>
+                            <span>Sign In</span>
+                        </button>
+
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); text-align: center;">
+                            <span style="font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: var(--muted); display: block; margin-bottom: 8px;">Quick Preview / Testing Access</span>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" id="preview-organizer-btn" class="btn btn--accent btn--sm" style="flex: 1;">
+                                    <i class="ph-bold ph-squares-four"></i> Organizer
+                                </button>
+                                <button type="button" id="preview-member-btn" class="btn btn--ghost btn--sm" style="flex: 1;">
+                                    <i class="ph-bold ph-users"></i> Member Directory
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Authenticated Session View (Auto-Displayed If User Is Already Signed In) -->
+                <div id="auth-session-container" style="display: none;">
+                    <div class="active-session-card">
+                        <div class="user-avatar-circle" id="user-avatar-initials">
+                            <i class="ph-bold ph-user"></i>
+                        </div>
+                        <div class="user-session-info">
+                            <h3 id="user-session-name">Logged In User</h3>
+                            <p id="user-session-email">user@college.edu</p>
+                            <span class="status-chip status-chip--accent" id="user-role-badge">Detecting role...</span>
+                        </div>
+                        
+                        <button type="button" id="enter-workspace-btn" class="btn btn--accent btn--md btn--block">
+                            <i class="ph-bold ph-arrow-right"></i>
+                            <span>Enter Workspace</span>
+                        </button>
+
+                        <button type="button" id="signout-session-btn" class="btn btn--ghost btn--sm">
+                            <i class="ph-bold ph-sign-out"></i>
+                            <span>Sign Out</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback Message -->
+                <div id="message" class="auth-message-box" role="alert"></div>
+            </div>
+        </main>
     </div>
 
-    <!-- Dynamic Selector Modal -->
+    <!-- Dynamic Selector Modal (For Public Guest Exploration) -->
     <div id="selector-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content selector-modal-box">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 id="selector-title" style="margin:0; font-size:1.25rem; color:var(--text-main); font-weight:700;">Select Option</h3>
-                <button type="button" onclick="closeSelector()" style="background:transparent; border:none; color:var(--text-sub); font-size:1.25rem; cursor:pointer;" aria-label="Close modal">
-                    <i class="ph ph-x"></i>
+                <h3 id="selector-title" style="margin:0; font-family:var(--serif); font-size:1.45rem; color:var(--ink); font-weight:400;">Select Option</h3>
+                <button type="button" onclick="closeSelector()" class="btn btn--quiet btn--sm" aria-label="Close modal">
+                    <i class="ph ph-x" style="font-size: 18px;"></i>
                 </button>
             </div>
-            <p id="selector-subtitle" style="color:var(--text-sub); font-size:0.88rem; margin-bottom:16px;">Loading options...</p>
+            <p id="selector-subtitle" style="color:var(--muted); font-size:0.88rem; margin-bottom:16px;">Loading options...</p>
             
             <div id="selector-list" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; padding-right:4px;">
                 <!-- Dynamically populated -->
             </div>
 
-            <button type="button" onclick="closeSelector()" class="secondary-btn" style="margin-top:16px; width:100%; justify-content:center; padding:10px;">
+            <button type="button" onclick="closeSelector()" class="btn btn--ghost btn--sm btn--block" style="margin-top:16px;">
                 Cancel
             </button>
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs & Contracts -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="lib/firebase-config.js"></script>
+    <script src="lib/contracts/passtrack-core.js"></script>
+    <script src="lib/toast.js"></script>
     <script src="index.js"></script>
 </body>
 </html>

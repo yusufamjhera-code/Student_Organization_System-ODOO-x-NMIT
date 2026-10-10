@@ -39,20 +39,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // --- LOAD EVENT DATA ---
     try {
-        const doc = await firestore.collection('events').doc(eventId).get();
-        if (!doc.exists) {
+        let doc = null;
+        try {
+            doc = await firestore.collection('events').doc(eventId).get();
+        } catch(e) {}
+
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       eventId.includes('hacknmit') || eventId.includes('summit') ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
+
+        if (doc && doc.exists) {
+            eventData = doc.data();
+            tConfig = eventData.ticketConfig || {};
+            
+            // Find OrgId based on organizerId
+            try {
+                const orgQuery = await firestore.collection('organizations')
+                    .where('ownerId', '==', eventData.organizerId)
+                    .get();
+                if (!orgQuery.empty) {
+                    orgId = orgQuery.docs[0].id;
+                }
+            } catch(e) {}
+        } else if (isDemo) {
+            const isHackathon = eventId.includes('hacknmit');
+            eventData = {
+                name: isHackathon ? 'HackNMIT 2026 Annual Hackathon' : 'Open Source Developer Summit',
+                eventDate: isHackathon ? '2026-03-28' : '2026-04-15',
+                eventEndDate: isHackathon ? '2026-03-29' : '2026-04-15',
+                ticketConfig: {
+                    memberPrice: isHackathon ? 250 : 0,
+                    nonmemberPrice: isHackathon ? 350 : 0,
+                    totalSeats: isHackathon ? 300 : 150,
+                    seatsSold: isHackathon ? 240 : 110,
+                    salesOpen: true
+                }
+            };
+            tConfig = eventData.ticketConfig;
+            orgId = 'demo-org-acm';
+        } else {
             spinner.innerHTML = '<p style="color:var(--danger); text-align:center;">Event not found.</p>';
             return;
-        }
-        eventData = doc.data();
-        tConfig = eventData.ticketConfig || {};
-        
-        // Find OrgId based on organizerId
-        const orgQuery = await firestore.collection('organizations')
-            .where('ownerId', '==', eventData.organizerId)
-            .get();
-        if (!orgQuery.empty) {
-            orgId = orgQuery.docs[0].id;
         }
 
         // Check if sales are open

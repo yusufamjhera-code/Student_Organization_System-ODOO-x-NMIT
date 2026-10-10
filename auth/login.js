@@ -1,104 +1,135 @@
 // File: auth/login.js
+// Single Unified Login Engine with Automatic Role Routing
 document.addEventListener('DOMContentLoaded', () => {
     const googleBtn = document.getElementById('google-signin-btn');
     const delegatedForm = document.getElementById('delegated-login-form');
     const delegatedBtn = document.getElementById('delegated-signin-btn');
     const messageEl = document.getElementById('message');
-    const authTabs = document.querySelectorAll('.auth-tab');
-    const authPanels = document.querySelectorAll('.auth-panel');
 
     const auth = firebase.auth();
     const firestore = firebase.firestore();
 
-    // --- TAB SWITCHING ---
-    authTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const targetPanel = tab.dataset.tab;
+    // Helper: show feedback message
+    const showMessage = (text, type = 'info') => {
+        if (!messageEl) return;
+        messageEl.textContent = text;
+        messageEl.className = `message-area ${type}`;
+        if (window.PassTrackToast) {
+            window.PassTrackToast.show(text, type);
+        }
+    };
 
-            // Update tabs
-            authTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            // Update panels
-            authPanels.forEach(p => p.classList.remove('active'));
-            document.getElementById(`${targetPanel}-login`).classList.add('active');
-
-            // Clear messages
-            messageEl.textContent = '';
-            messageEl.className = 'message-area';
-        });
-    });
-
-    // Button loading state helper
-    const setButtonLoading = (btn, isLoading, originalContent = null) => {
+    // Helper: set button loading state
+    const setButtonLoading = (btn, isLoading, loadingText = 'Signing in...') => {
+        if (!btn) return;
         if (isLoading) {
             btn.disabled = true;
-            btn.dataset.originalContent = btn.innerHTML;
+            btn.dataset.originalHtml = btn.innerHTML;
             btn.innerHTML = `
-                <svg class="google-icon spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;">
-                    <circle cx="12" cy="12" r="10"></circle>
-                </svg>
-                <span>Signing in...</span>
+                <span class="pt-spinner" style="border-top-color: currentColor;"></span>
+                <span>${loadingText}</span>
             `;
-            btn.style.opacity = '0.7';
+            btn.style.opacity = '0.75';
         } else {
             btn.disabled = false;
-            btn.innerHTML = btn.dataset.originalContent || originalContent;
+            if (btn.dataset.originalHtml) {
+                btn.innerHTML = btn.dataset.originalHtml;
+            }
             btn.style.opacity = '1';
         }
     };
 
-    // Show message helper
-    const showMessage = (text, type) => {
-        messageEl.textContent = text;
-        messageEl.className = `message-area ${type}`;
-    };
+    // Routing resolver: determine appropriate destination based on user roles
+    async function resolveUserRoleAndRedirect(user) {
+        showMessage('✓ Authenticated! Detecting your role...', 'success');
 
-    // --- ADMIN LOGIN (GOOGLE) ---
+        try {
+            // 1. Check if user is an Organizer
+            const organizerDoc = await firestore.collection('organizers').doc(user.uid).get();
+            if (!organizerDoc.exists) {
+                // Ensure record exists
+                await firestore.collection('organizers').doc(user.uid).set({
+                    organizerId: user.uid,
+                    email: user.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            }
+
+            // Check if organization exists for this user
+            const orgSnap = await firestore.collection('organizations')
+                .where('ownerId', '==', user.uid)
+                .limit(1)
+                .get();
+
+            if (!orgSnap.empty) {
+                sessionStorage.setItem('authType', 'admin');
+                sessionStorage.setItem('orgId', orgSnap.docs[0].id);
+                setTimeout(() => {
+                    window.location.href = '../organizer/dashboard.html';
+                }, 600);
+                return;
+            }
+
+            // 2. Check if user email is registered as an active Member
+            if (user.email) {
+                const memberSnap = await firestore.collection('members')
+                    .where('email', '==', user.email.toLowerCase())
+                    .limit(1)
+                    .get();
+
+                if (!memberSnap.empty) {
+                    sessionStorage.setItem('authType', 'member');
+                    sessionStorage.setItem('memberEmail', user.email.toLowerCase());
+                    const mData = memberSnap.docs[0].data();
+                    if (mData.orgId) sessionStorage.setItem('orgId', mData.orgId);
+                    setTimeout(() => {
+                        window.location.href = '../members/directory.html';
+                    }, 600);
+                    return;
+                }
+
+                // 3. Check if user is an event collaborator
+                const eventSnap = await firestore.collection('events')
+                    .where('collaboratorEmails', 'array-contains', user.email.toLowerCase())
+                    .limit(1)
+                    .get();
+
+                if (!eventSnap.empty) {
+                    sessionStorage.setItem('authType', 'collaborator');
+                    sessionStorage.setItem('collaboratorEmail', user.email.toLowerCase());
+                    setTimeout(() => {
+                        window.location.href = '../organizer/dashboard.html';
+                    }, 600);
+                    return;
+                }
+            }
+
+            // Default for newly registered organizers with no created org yet
+            sessionStorage.setItem('authType', 'admin');
+            setTimeout(() => {
+                window.location.href = '../organizer/setup-org.html';
+            }, 600);
+
+        } catch (err) {
+            console.error("Role resolution error:", err);
+            // Fallback to organizer dashboard
+            window.location.href = '../organizer/dashboard.html';
+        }
+    }
+
+    // --- 1. GOOGLE SIGN-IN ---
     if (googleBtn) {
         googleBtn.addEventListener('click', async () => {
-            setButtonLoading(googleBtn, true);
-            showMessage('Opening Google Sign-in...', 'info');
+            setButtonLoading(googleBtn, true, 'Connecting Google...');
+            showMessage('Opening Google sign-in popup...', 'info');
 
             const provider = new firebase.auth.GoogleAuthProvider();
 
             try {
                 const result = await auth.signInWithPopup(provider);
-                const user = result.user;
-
-                showMessage('✓ Verified! Setting up your account...', 'success');
-
-                // Create organizer profile if it doesn't exist (minimal — no org name)
-                const organizerDoc = await firestore.collection('organizers').doc(user.uid).get();
-                if (!organizerDoc.exists) {
-                    await firestore.collection('organizers').doc(user.uid).set({
-                        organizerId: user.uid,
-                        email: user.email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-
-                // Store auth type in session
-                sessionStorage.setItem('authType', 'admin');
-                sessionStorage.removeItem('collaboratorEmail');
-
-                // Check if organization exists for this user
-                const orgSnap = await firestore.collection('organizations')
-                    .where('ownerId', '==', user.uid)
-                    .limit(1)
-                    .get();
-
-                // Redirect: new users go to org setup, existing users go to dashboard
-                const redirectUrl = orgSnap.empty
-                    ? '../organizer/setup-org.html'
-                    : '../organizer/dashboard.html';
-
-                setTimeout(() => {
-                    window.location.href = redirectUrl;
-                }, 800);
-
+                await resolveUserRoleAndRedirect(result.user);
             } catch (error) {
-                console.error("Auth error:", error);
+                console.error("Google Auth error:", error);
                 setButtonLoading(googleBtn, false);
 
                 if (error.code === 'auth/popup-closed-by-user') {
@@ -112,89 +143,85 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- DELEGATED USER LOGIN (EMAIL + CODE) ---
+    // --- 2. UNIFIED CREDENTIAL / ACCESS CODE SIGN-IN ---
     if (delegatedForm) {
         delegatedForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const email = document.getElementById('delegated-email').value.trim().toLowerCase();
-            const code = document.getElementById('access-code').value.trim().toUpperCase();
+            const emailInput = document.getElementById('delegated-email');
+            const codeInput = document.getElementById('access-code');
 
-            if (!email || !code) {
-                return showMessage('Please fill in all fields.', 'error');
+            const email = (emailInput ? emailInput.value : '').trim().toLowerCase();
+            const credential = (codeInput ? codeInput.value : '').trim();
+
+            if (!email || !credential) {
+                return showMessage('Please provide both email and password / access code.', 'error');
             }
 
-            if (code.length !== 8) {
-                return showMessage('Access code must be 8 characters.', 'error');
-            }
-
-            setButtonLoading(delegatedBtn, true);
+            setButtonLoading(delegatedBtn, true, 'Verifying...');
             showMessage('Verifying credentials...', 'info');
 
+            // Strategy A: Try Firebase standard email/password first
             try {
-                // Search events where user is a collaborator
-                const eventsSnapshot = await firestore.collection('events')
-                    .where('collaboratorEmails', 'array-contains', email)
-                    .get();
-                
-                let foundEvent = null;
-                let collaboratorData = null;
+                const userCred = await auth.signInWithEmailAndPassword(email, credential);
+                if (userCred && userCred.user) {
+                    return await resolveUserRoleAndRedirect(userCred.user);
+                }
+            } catch (firebaseAuthErr) {
+                // If not standard email/pass, check if it's a staff 8-character access code
+                const isPossibleAccessCode = credential.length === 8;
 
-                for (const doc of eventsSnapshot.docs) {
-                    const eventData = doc.data();
-                    const collaborators = eventData.collaborators || [];
-
-                    const match = collaborators.find(c =>
-                        c.email.trim().toLowerCase() === email &&
-                        (c.accessCode || '').trim().toUpperCase() === code
-                    );
-
-                    if (match) {
-                        foundEvent = { id: doc.id, ...eventData };
-                        collaboratorData = match;
-                        break;
+                if (!isPossibleAccessCode) {
+                    setButtonLoading(delegatedBtn, false);
+                    if (firebaseAuthErr.code === 'auth/wrong-password' || firebaseAuthErr.code === 'auth/user-not-found') {
+                        return showMessage('Invalid email or password. If you are a staff volunteer, check your 8-character access code.', 'error');
                     }
+                    return showMessage(firebaseAuthErr.message || 'Authentication failed.', 'error');
                 }
 
-                if (!foundEvent) {
-                    throw new Error('invalid-credentials');
-                }
-
-                showMessage('✓ Access verified! Signing in...', 'success');
-
-                // Attempt anonymous sign-in for Firestore tokens, but do not block if restricted in Firebase Console
+                // Strategy B: Check collaborator access code in events
                 try {
-                    await auth.signInAnonymously();
-                } catch (anonErr) {
-                    console.warn("Anonymous auth restricted or skipped, continuing with verified collaborator session:", anonErr.code || anonErr.message);
-                }
+                    const codeUpper = credential.toUpperCase();
+                    const eventsSnapshot = await firestore.collection('events')
+                        .where('collaboratorEmails', 'array-contains', email)
+                        .get();
 
-                // Store collaborator info in session
-                sessionStorage.setItem('authType', 'collaborator');
-                sessionStorage.setItem('collaboratorEmail', email);
+                    let matchedEvent = null;
+                    for (const doc of eventsSnapshot.docs) {
+                        const eventData = doc.data();
+                        const collaborators = eventData.collaborators || [];
+                        const match = collaborators.find(c =>
+                            c.email && c.email.toLowerCase() === email &&
+                            c.accessCode && c.accessCode.toUpperCase() === codeUpper
+                        );
+                        if (match) {
+                            matchedEvent = doc.id;
+                            break;
+                        }
+                    }
 
-                // Redirect to dashboard
-                setTimeout(() => {
-                    window.location.href = '../organizer/dashboard.html';
-                }, 600);
+                    if (matchedEvent) {
+                        // Sign in anonymously to acquire Firestore privileges
+                        await auth.signInAnonymously();
+                        sessionStorage.setItem('authType', 'collaborator');
+                        sessionStorage.setItem('collaboratorEmail', email);
+                        showMessage('✓ Staff credentials verified!', 'success');
+                        setTimeout(() => {
+                            window.location.href = '../organizer/dashboard.html';
+                        }, 600);
+                        return;
+                    }
 
-            } catch (error) {
-                console.error("Delegated auth error:", error);
-                setButtonLoading(delegatedBtn, false);
-
-                if (error.message === 'invalid-credentials') {
+                    // If neither matched
+                    setButtonLoading(delegatedBtn, false);
                     showMessage('Invalid email or access code.', 'error');
-                } else if (error.code === 'auth/network-request-failed') {
-                    showMessage('Network error. Check your connection.', 'error');
-                } else {
-                    showMessage('Sign-in failed. Please try again.', 'error');
+
+                } catch (staffErr) {
+                    console.error("Staff access code error:", staffErr);
+                    setButtonLoading(delegatedBtn, false);
+                    showMessage('Verification failed. Please try again.', 'error');
                 }
             }
         });
     }
-
-    // Add spin animation for loading
-    const style = document.createElement('style');
-    style.textContent = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
-    document.head.appendChild(style);
 });

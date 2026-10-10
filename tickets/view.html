@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>View Tickets | Pass Track</title>
-    <link rel="stylesheet" href="../organizer/manage-event.css">
+    <link rel="stylesheet" href="view.css?v=2">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
@@ -21,24 +21,34 @@
     </header>
 
     <main class="container">
-        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
-            <div class="stat-card" style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
-                <div style="font-size: 0.85rem; color: var(--text-muted);">Total Revenue</div>
-                <div style="font-size: 1.8rem; font-weight: bold; color: var(--success);" id="stat-revenue">₹0</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon revenue"><i class="ph-bold ph-currency-inr"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Total Revenue</span>
+                    <span class="stat-value" id="stat-revenue" style="color: var(--success);">₹0</span>
+                </div>
             </div>
-            <div class="stat-card" style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
-                <div style="font-size: 0.85rem; color: var(--text-muted);">Tickets Sold</div>
-                <div style="font-size: 1.8rem; font-weight: bold;" id="stat-sold">0</div>
+            <div class="stat-card">
+                <div class="stat-icon tickets"><i class="ph-bold ph-ticket"></i></div>
+                <div class="stat-details">
+                    <span class="stat-label">Tickets Sold</span>
+                    <span class="stat-value" id="stat-sold">0</span>
+                </div>
             </div>
         </div>
 
-        <div class="card list-card" style="width: 100%;">
+        <div class="card list-card">
             <div class="list-sticky-header">
                 <div class="list-header">
-                    <h2>Purchased Tickets</h2>
+                    <h2>Purchased Passes</h2>
+                    <div class="search-bar">
+                        <i class="ph-bold ph-magnifying-glass"></i>
+                        <input type="text" id="ticket-search" placeholder="Search attendee, token...">
+                    </div>
                 </div>
             </div>
-            <div id="ticket-list" class="scrollable-list directory-list">
+            <div id="ticket-list" class="scrollable-list">
                 <div class="empty-state">
                     <i class="ph-bold ph-spinner-gap spin"></i>
                     <p>Loading tickets...</p>
@@ -58,29 +68,89 @@
             const urlParams = new URLSearchParams(window.location.search);
             const eventId = urlParams.get('event');
             
-            document.getElementById('back-to-manage').href = `../organizer/manage-event.html?id=${eventId}`;
+            document.getElementById('back-to-manage').href = `../organizer/manage-event.html?id=${eventId || 'demo'}`;
             
-            if (!eventId) return;
-
             auth.onAuthStateChanged(async (user) => {
-                if (!user) {
+                const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                               sessionStorage.getItem('authType') === 'admin' ||
+                               (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY") ||
+                               !eventId;
+
+                if (!user && !isDemo) {
                     window.location.href = '../auth/login.html';
                     return;
                 }
 
                 try {
-                    const eventDoc = await firestore.collection('events').doc(eventId).get();
-                    if (!eventDoc.exists) return;
+                    let eventDoc = null;
+                    if (eventId) {
+                        try {
+                            eventDoc = await firestore.collection('events').doc(eventId).get();
+                        } catch(e) {}
+                    }
+
+                    if (!eventDoc || !eventDoc.exists) {
+                        if (isDemo) {
+                            document.getElementById('event-name-meta').textContent = 'HackNMIT 2026 Annual Hackathon';
+                            document.getElementById('stat-sold').textContent = '240';
+                            document.getElementById('stat-revenue').textContent = '₹84,000';
+                            
+                            const demoTickets = [
+                                { name: 'Aarav Sharma', email: 'aarav.sharma@nmit.ac.in', token: 'TKN-ACM-8821', type: 'member', price: 250 },
+                                { name: 'Priya Patel', email: 'priya.p@nmit.ac.in', token: 'TKN-ACM-9104', type: 'member', price: 250 },
+                                { name: 'Rohan Deshmukh', email: 'rohan.d@nmit.ac.in', token: 'TKN-ACM-5532', type: 'general', price: 350 },
+                                { name: 'Sneha Kulkarni', email: 'sneha.k@nmit.ac.in', token: 'TKN-ACM-4419', type: 'member', price: 250 },
+                                { name: 'Aditya Nair', email: 'aditya.n@nmit.ac.in', token: 'TKN-ACM-7720', type: 'general', price: 350 }
+                            ];
+                            
+                            function renderDemoTickets(filter = '') {
+                                const listEl = document.getElementById('ticket-list');
+                                const filtered = demoTickets.filter(t => 
+                                    t.name.toLowerCase().includes(filter) ||
+                                    t.email.toLowerCase().includes(filter) ||
+                                    t.token.toLowerCase().includes(filter)
+                                );
+                                
+                                if (filtered.length === 0) {
+                                    listEl.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-muted); font-weight:600;">No matching tickets found.</div>';
+                                    return;
+                                }
+
+                                listEl.innerHTML = filtered.map(t => `
+                                    <div class="ticket-item">
+                                        <div class="ticket-buyer-wrap">
+                                            <div class="buyer-avatar"><i class="ph-bold ph-user"></i></div>
+                                            <div>
+                                                <div class="buyer-name">${t.name}</div>
+                                                <div class="buyer-meta">${t.email} &bull; Token: <strong>${t.token}</strong></div>
+                                            </div>
+                                        </div>
+                                        <span class="pass-badge ${t.type}">
+                                            ${t.type === 'member' ? 'MEMBER PASS' : 'GENERAL PASS'} (₹${t.price})
+                                        </span>
+                                    </div>
+                                `).join('');
+                            }
+                            
+                            renderDemoTickets();
+                            const searchEl = document.getElementById('ticket-search');
+                            if (searchEl) {
+                                searchEl.addEventListener('input', (e) => renderDemoTickets(e.target.value.toLowerCase().trim()));
+                            }
+                            return;
+                        }
+                        return;
+                    }
                     
                     const eventData = eventDoc.data();
                     
                     // Verify user is the event organizer
-                    if (eventData.organizerId !== user.uid) {
+                    if (user && eventData.organizerId !== user.uid && !isDemo) {
                         window.location.href = '../organizer/dashboard.html';
                         return;
                     }
-                document.getElementById('event-name-meta').textContent = eventData.name;
-                const tConfig = eventData.ticketConfig || {};
+                    document.getElementById('event-name-meta').textContent = eventData.name;
+                    const tConfig = eventData.ticketConfig || {};
 
                 // Get users for this event that have a ticketType
                 firestore.collection('users')
@@ -105,22 +175,20 @@
                             revenue += price;
                             
                             const item = document.createElement('div');
-                            item.className = 'list-item card';
-                            item.style.display = 'flex';
-                            item.style.justifyContent = 'space-between';
-                            item.style.padding = '15px';
-                            item.style.alignItems = 'center';
+                            item.className = 'ticket-item';
+                            const isMember = (t.ticketType || '').toLowerCase() === 'member';
                             
                             item.innerHTML = `
-                                <div>
-                                    <div style="font-weight:bold;">${t.name}</div>
-                                    <div style="font-size:0.8rem; color:var(--text-muted);">${t.contact}</div>
+                                <div class="ticket-buyer-wrap">
+                                    <div class="buyer-avatar"><i class="ph-bold ph-user"></i></div>
+                                    <div>
+                                        <div class="buyer-name">${t.name}</div>
+                                        <div class="buyer-meta">${t.contact || ''} ${t.token ? `&bull; Token: <strong>${t.token}</strong>` : ''}</div>
+                                    </div>
                                 </div>
-                                <div style="text-align:right;">
-                                    <span class="badge" style="background:rgba(106,17,203,0.1); color:var(--primary); padding:4px 8px; border-radius:12px; font-size:0.8rem;">
-                                        ${t.ticketType.toUpperCase()} (₹${price})
-                                    </span>
-                                </div>
+                                <span class="pass-badge ${isMember ? 'member' : 'general'}">
+                                    ${(t.ticketType || 'Pass').toUpperCase()} (₹${price})
+                                </span>
                             `;
                             listEl.appendChild(item);
                         });

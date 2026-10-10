@@ -1,13 +1,16 @@
-/* File: tasks/board.css - Modern Responsive Kanban Board */
+/* File: tasks/board.css - Harmonized with Sonnet Clip Theme */
+@import url('../lib/theme.css');
+@import url('../lib/components.css');
+
 :root {
-    --bg-card: #ffffff;
-    --card: #ffffff;
-    --primary: #6a11cb;
-    --border: #e2e8f0;
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-    --success: #10b981;
-    --danger: #ef4444;
+    --bg-card: var(--surface);
+    --card: var(--surface);
+    --primary: var(--accent);
+    --border: var(--line-strong);
+    --text-main: var(--ink);
+    --text-muted: var(--muted);
+    --success: var(--good);
+    --danger: var(--bad);
 }
 
 /* Mobile Column Switcher */
@@ -55,24 +58,26 @@
 
 /* Kanban Container */
 .kanban-container {
-    display: flex;
-    gap: 20px;
+    max-width: 1320px;
+    margin: 28px auto;
+    padding: 0 24px 40px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
     align-items: flex-start;
-    overflow-x: auto;
-    padding-bottom: 25px;
     min-height: calc(100vh - 140px);
+    box-sizing: border-box;
 }
 
 .kanban-column {
-    flex: 1;
-    min-width: 320px;
-    max-width: 400px;
-    background: #f8fafc;
+    width: 100%;
+    background: #ffffff;
     border: 1px solid var(--border);
     border-radius: 16px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    overflow: hidden;
 }
 
 .column-header {
@@ -118,13 +123,15 @@
 }
 
 .column-body {
-    padding: 16px;
+    padding: 18px;
     overflow-y: auto;
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    min-height: 250px;
+    gap: 16px;
+    min-height: 460px;
+    background: #faf8f5;
+    border-radius: 0 0 16px 16px;
 }
 
 .column-body.drag-over {
@@ -381,6 +388,14 @@
 }
 
 /* RESPONSIVE BEHAVIOR */
+@media (max-width: 1024px) {
+    .kanban-container {
+        grid-template-columns: repeat(3, minmax(290px, 1fr));
+        overflow-x: auto;
+        padding-bottom: 24px;
+    }
+}
+
 @media (max-width: 768px) {
     .kanban-mobile-tabs {
         display: flex;
@@ -389,6 +404,7 @@
     .kanban-container {
         display: block;
         padding: 14px;
+        margin: 12px auto;
     }
 
     .kanban-column {

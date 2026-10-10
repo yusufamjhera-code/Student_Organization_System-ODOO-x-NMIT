@@ -51,37 +51,154 @@ document.addEventListener('DOMContentLoaded', () => {
     let unsubscribe = null;
     let activeMemberDocId = null;
 
+    function loadDemoMembers() {
+        currentOrgId = 'demo-org-acm';
+        if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
+        membersData = [
+            {
+                id: 'mem-1',
+                name: 'Arjun Nambiar',
+                fullName: 'Arjun Nambiar',
+                email: 'arjun.nambiar@nmit.ac.in',
+                usn: '1NT23CS042',
+                department: 'Computer Science',
+                clubRole: 'President',
+                membershipStatus: 'active',
+                duesPaid: true,
+                paymentStatus: 'paid',
+                membershipStartDate: '2025-08-01',
+                membershipEndDate: '2026-07-31',
+                joinedDate: '2025-08-01',
+                phone: '+91 98451 22345'
+            },
+            {
+                id: 'mem-2',
+                name: 'Ananya Sharma',
+                fullName: 'Ananya Sharma',
+                email: 'ananya.s@nmit.ac.in',
+                usn: '1NT23IS019',
+                department: 'Information Science',
+                clubRole: 'Vice President & Tech Lead',
+                membershipStatus: 'active',
+                duesPaid: true,
+                paymentStatus: 'paid',
+                membershipStartDate: '2025-08-01',
+                membershipEndDate: '2026-07-31',
+                joinedDate: '2025-08-01',
+                phone: '+91 98860 33412'
+            },
+            {
+                id: 'mem-3',
+                name: 'Karthik Hegde',
+                fullName: 'Karthik Hegde',
+                email: 'karthik.hegde@nmit.ac.in',
+                usn: '1NT23EC088',
+                department: 'Electronics & Comm.',
+                clubRole: 'Treasury Lead',
+                membershipStatus: 'active',
+                duesPaid: true,
+                paymentStatus: 'paid',
+                membershipStartDate: '2025-08-01',
+                membershipEndDate: '2026-07-31',
+                joinedDate: '2025-08-05',
+                phone: '+91 97412 88910'
+            },
+            {
+                id: 'mem-4',
+                name: 'Disha Ranganath',
+                fullName: 'Disha Ranganath',
+                email: 'disha.r@nmit.ac.in',
+                usn: '1NT24AI015',
+                department: 'AI & Data Science',
+                clubRole: 'Event Operations Lead',
+                membershipStatus: 'active',
+                duesPaid: true,
+                paymentStatus: 'paid',
+                membershipStartDate: '2025-09-01',
+                membershipEndDate: '2026-08-31',
+                joinedDate: '2025-09-01',
+                phone: '+91 94480 66723'
+            },
+            {
+                id: 'mem-5',
+                name: 'Sameer Kulkarni',
+                fullName: 'Sameer Kulkarni',
+                email: 'sameer.k@nmit.ac.in',
+                usn: '1NT24ME052',
+                department: 'Mechanical Engg.',
+                clubRole: 'Core Volunteer',
+                membershipStatus: 'pending',
+                duesPaid: false,
+                paymentStatus: 'pending',
+                membershipStartDate: '2026-01-10',
+                membershipEndDate: '2027-01-09',
+                joinedDate: '2026-01-10',
+                phone: '+91 99001 44556'
+            },
+            {
+                id: 'mem-6',
+                name: 'Pooja Iyer',
+                fullName: 'Pooja Iyer',
+                email: 'pooja.iyer@nmit.ac.in',
+                usn: '1NT22CS110',
+                department: 'Computer Science',
+                clubRole: 'Senior Advisor (Alumni)',
+                membershipStatus: 'expired',
+                duesPaid: false,
+                paymentStatus: 'expired',
+                membershipStartDate: '2024-08-01',
+                membershipEndDate: '2025-07-31',
+                joinedDate: '2024-08-01',
+                phone: '+91 98110 55432'
+            }
+        ];
+        updateStats(membersData);
+        renderMembers();
+    }
+
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-            window.location.href = '../auth/login.html';
-            return;
-        }
-        
-        currentUser = user;
-        if (sessionStorage.getItem('authType') !== 'collaborator') {
-            sessionStorage.setItem('authType', 'admin');
-        }
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
 
-        try {
-            // Get Organization
-            const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
-            if (orgsSnapshot.empty) {
-                showToast('Organization not found. Redirecting to setup...', 'error');
-                setTimeout(() => window.location.href = '../organizer/setup-org.html', 1500);
-                return;
+        if (user) {
+            currentUser = user;
+            if (sessionStorage.getItem('authType') !== 'collaborator') {
+                sessionStorage.setItem('authType', 'admin');
             }
-            
-            const orgDoc = orgsSnapshot.docs[0];
-            currentOrgId = orgDoc.id;
-            orgNameMeta.textContent = orgDoc.data().name;
 
-            // Load Members in real-time
-            setupRealtimeListeners();
-            
-        } catch (error) {
-            console.error("Initialization error:", error);
-            showToast('Failed to load organization data.', 'error');
+            try {
+                // Get Organization
+                const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
+                if (orgsSnapshot.empty) {
+                    if (isDemo) loadDemoMembers();
+                    else {
+                        showToast('Organization not found. Redirecting to setup...', 'error');
+                        setTimeout(() => window.location.href = '../organizer/setup-org.html', 1500);
+                    }
+                    return;
+                }
+                
+                const orgDoc = orgsSnapshot.docs[0];
+                currentOrgId = orgDoc.id;
+                orgNameMeta.textContent = orgDoc.data().name;
+
+                // Load Members in real-time
+                setupRealtimeListeners();
+                
+            } catch (error) {
+                if (isDemo) loadDemoMembers();
+                else {
+                    console.error("Initialization error:", error);
+                    showToast('Failed to load organization data.', 'error');
+                }
+            }
+        } else if (isDemo) {
+            currentUser = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in' };
+            loadDemoMembers();
+        } else {
+            window.location.href = '../index.html';
         }
     });
 

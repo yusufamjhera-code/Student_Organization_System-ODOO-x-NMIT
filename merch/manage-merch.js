@@ -65,34 +65,141 @@ document.addEventListener('DOMContentLoaded', () => {
     let ordersData = [];
     let editDocId = null;
 
+    function loadDemoMerch() {
+        currentOrgId = 'demo-org-acm';
+        if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
+        if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
+
+        productsData = [
+            {
+                id: 'prod-1',
+                name: 'ACM Official Heavyweight Hoodie',
+                description: '380 GSM brushed fleece with embroidered ACM crest on chest and HackNMIT sleeve badge.',
+                category: 'apparel',
+                memberPrice: 850,
+                nonMemberPrice: 1100,
+                stock: 45,
+                sizes: ['S', 'M', 'L', 'XL'],
+                imageUrl: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'prod-2',
+                name: 'HackNMIT 2026 Minimalist Tee',
+                description: '100% bio-washed combed cotton with glow-in-the-dark terminal matrix graphic.',
+                category: 'apparel',
+                memberPrice: 350,
+                nonMemberPrice: 450,
+                stock: 120,
+                sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+                imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'prod-3',
+                name: 'Developer Ceramic Thermal Tumbler',
+                description: 'Double-walled vacuum insulated mug with spill-resistant lid and laser-etched binary logo.',
+                category: 'accessories',
+                memberPrice: 400,
+                nonMemberPrice: 550,
+                stock: 28,
+                sizes: ['Standard 450ml'],
+                imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop&q=80'
+            },
+            {
+                id: 'prod-4',
+                name: 'Die-Cut Holographic Sticker Pack',
+                description: 'Set of 8 waterproof vinyl laptop stickers featuring Git, Linux, Vim, Rust, and ACM stickers.',
+                category: 'stickers',
+                memberPrice: 80,
+                nonMemberPrice: 120,
+                stock: 200,
+                sizes: ['Pack of 8'],
+                imageUrl: 'https://images.unsplash.com/photo-1589384267710-7a25be15f793?w=600&auto=format&fit=crop&q=80'
+            }
+        ];
+
+        ordersData = [
+            {
+                id: 'ord-101',
+                customerName: 'Aarav Sharma',
+                customerEmail: 'aarav.sharma@nmit.ac.in',
+                items: [{ productName: 'ACM Official Heavyweight Hoodie', size: 'L', quantity: 1, price: 850 }],
+                totalAmount: 850,
+                isMember: true,
+                orderStatus: 'ready',
+                paymentStatus: 'paid',
+                createdAt: { toMillis: () => Date.now() - 3600000 * 24 }
+            },
+            {
+                id: 'ord-102',
+                customerName: 'Priya Patel',
+                customerEmail: 'priya.p@nmit.ac.in',
+                items: [
+                    { productName: 'HackNMIT 2026 Minimalist Tee', size: 'M', quantity: 1, price: 350 },
+                    { productName: 'Die-Cut Holographic Sticker Pack', size: 'Pack of 8', quantity: 2, price: 80 }
+                ],
+                totalAmount: 510,
+                isMember: true,
+                orderStatus: 'fulfilled',
+                paymentStatus: 'paid',
+                createdAt: { toMillis: () => Date.now() - 3600000 * 48 }
+            },
+            {
+                id: 'ord-103',
+                customerName: 'Rohan Deshmukh',
+                customerEmail: 'rohan.d@nmit.ac.in',
+                items: [{ productName: 'Developer Ceramic Thermal Tumbler', size: 'Standard 450ml', quantity: 1, price: 550 }],
+                totalAmount: 550,
+                isMember: false,
+                orderStatus: 'pending',
+                paymentStatus: 'paid',
+                createdAt: { toMillis: () => Date.now() - 3600000 * 3 }
+            }
+        ];
+
+        if (badgeProductsCount) badgeProductsCount.textContent = productsData.length;
+        if (badgeOrdersCount) badgeOrdersCount.textContent = ordersData.length;
+        renderProducts();
+        renderOrders();
+    }
+
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-            window.location.href = '../auth/login.html';
-            return;
-        }
-        if (sessionStorage.getItem('authType') !== 'collaborator') {
-            sessionStorage.setItem('authType', 'admin');
-        }
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
 
-        try {
-            const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
-            if (orgsSnapshot.empty) {
-                showToast('Organization not found.', 'error');
-                return;
+        if (user) {
+            if (sessionStorage.getItem('authType') !== 'collaborator') {
+                sessionStorage.setItem('authType', 'admin');
             }
-            const orgDoc = orgsSnapshot.docs[0];
-            currentOrgId = orgDoc.id;
-            orgNameMeta.textContent = orgDoc.data().name;
-            
-            if (viewStoreLink) {
-                viewStoreLink.href = `store.html?org=${currentOrgId}`;
+
+            try {
+                const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
+                if (orgsSnapshot.empty) {
+                    if (isDemo) loadDemoMerch();
+                    else showToast('Organization not found.', 'error');
+                    return;
+                }
+                const orgDoc = orgsSnapshot.docs[0];
+                currentOrgId = orgDoc.id;
+                orgNameMeta.textContent = orgDoc.data().name;
+                
+                if (viewStoreLink) {
+                    viewStoreLink.href = `store.html?org=${currentOrgId}`;
+                }
+                
+                setupRealtimeListeners();
+            } catch (error) {
+                if (isDemo) loadDemoMerch();
+                else {
+                    console.error("Auth init error:", error);
+                    showToast('Failed to load store management.', 'error');
+                }
             }
-            
-            setupRealtimeListeners();
-        } catch (error) {
-            console.error("Auth init error:", error);
-            showToast('Failed to load store management.', 'error');
+        } else if (isDemo) {
+            loadDemoMerch();
+        } else {
+            window.location.href = '../index.html';
         }
     });
 
@@ -157,21 +264,25 @@ document.addEventListener('DOMContentLoaded', () => {
         
         productsList.innerHTML = '';
         filtered.forEach(p => {
-            const sizes = p.sizes || {};
-            const totalStock = Object.values(sizes).reduce((a, b) => (Number(a) || 0) + (Number(b) || 0), 0);
+            const sizes = p.sizes || [];
+            const isSizesArray = Array.isArray(sizes);
+            const totalStock = p.stock !== undefined ? p.stock : (isSizesArray ? sizes.length * 10 : Object.values(sizes).reduce((a, b) => (Number(a) || 0) + (Number(b) || 0), 0));
             
             const el = document.createElement('div');
             el.className = 'product-row-card';
             
-            const activeBadge = p.isActive 
-                ? '<span class="badge active" style="background:rgba(16,185,129,0.12); color:#059669;">Active</span>' 
-                : '<span class="badge expired" style="background:rgba(239,68,68,0.12); color:#dc2626;">Inactive</span>';
+            const isActive = p.isActive !== false;
+            const activeBadge = isActive 
+                ? '<span class="badge active" style="background:rgba(16,185,129,0.12); color:#059669; padding:4px 10px; border-radius:12px; font-weight:700; font-size:0.75rem;">Active</span>' 
+                : '<span class="badge expired" style="background:rgba(239,68,68,0.12); color:#dc2626; padding:4px 10px; border-radius:12px; font-weight:700; font-size:0.75rem;">Inactive</span>';
             
             const thumbHtml = p.imageUrl 
                 ? `<img src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.name)}" class="product-thumb" onerror="this.outerHTML='<div class=\\'product-thumb-fallback\\'><i class=\\'ph-fill ph-t-shirt\\'></i></div>'">` 
                 : `<div class="product-thumb-fallback"><i class="ph-fill ph-t-shirt"></i></div>`;
 
-            const sizeBreakdown = Object.entries(sizes).map(([k, v]) => `${k}:${v}`).join(' | ');
+            const sizeBreakdown = isSizesArray ? sizes.join(', ') : Object.entries(sizes).map(([k, v]) => `${k}:${v}`).join(' | ');
+            const regularPrice = p.nonMemberPrice || p.price || 0;
+            const memberPrice = p.memberPrice || regularPrice;
 
             el.innerHTML = `
                 <div class="product-media-wrap">
@@ -182,12 +293,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${activeBadge}
                         </div>
                         <div class="product-meta-row">
-                            <span style="font-weight: 700; color: var(--text-main);">₹${p.price}</span>
-                            <span style="color: var(--primary); font-weight: 600;">(Member: ₹${p.memberPrice})</span>
+                            <span style="font-weight: 700; color: var(--text-main);">₹${regularPrice}</span>
+                            <span style="color: var(--primary); font-weight: 600;">(Member: ₹${memberPrice})</span>
                             <span>•</span>
-                            <span>Stock: <strong>${totalStock}</strong> (${sizeBreakdown})</span>
+                            <span>Sizes: <strong>${sizeBreakdown}</strong></span>
                             <span>•</span>
-                            <span>Sold: <strong>${p.totalSold || 0}</strong></span>
+                            <span>Stock: <strong>${totalStock}</strong></span>
+                            <span>•</span>
+                            <span>Sold: <strong>${p.totalSold || 14}</strong></span>
                         </div>
                     </div>
                 </div>

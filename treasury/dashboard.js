@@ -23,30 +23,51 @@ document.addEventListener('DOMContentLoaded', () => {
     let trendChart = null;
     let categoryChart = null;
 
+    function loadDemoTreasury() {
+        currentOrgId = 'demo-org-acm';
+        if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
+        txnsData = [
+            { id: 'txn-1', description: 'HackNMIT 2026 Ticket Sales', type: 'income', amount: 84000, category: 'tickets', date: '2026-03-28' },
+            { id: 'txn-2', description: 'Annual Club Membership Dues', type: 'income', amount: 32000, category: 'dues', date: '2026-03-15' },
+            { id: 'txn-3', description: 'Official Hoodies Pre-orders', type: 'income', amount: 24500, category: 'merchandise', date: '2026-03-10' },
+            { id: 'txn-4', description: 'Auditorium Booking & AV Setup', type: 'expense', amount: 18000, category: 'events', date: '2026-03-25' },
+            { id: 'txn-5', description: 'Catering & Participant Refreshments', type: 'expense', amount: 12500, category: 'hospitality', date: '2026-03-29' }
+        ];
+        updateDashboard();
+    }
+
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-            window.location.href = '../auth/login.html';
-            return;
-        }
-        currentUser = user;
-        if (sessionStorage.getItem('authType') !== 'collaborator') {
-            sessionStorage.setItem('authType', 'admin');
-        }
-        
-        try {
-            const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
-            if (orgsSnapshot.empty) {
-                showToast('Organization not found.', 'error');
-                return;
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
+
+        if (user) {
+            currentUser = user;
+            if (sessionStorage.getItem('authType') !== 'collaborator') {
+                sessionStorage.setItem('authType', 'admin');
             }
-            const orgDoc = orgsSnapshot.docs[0];
-            currentOrgId = orgDoc.id;
-            orgNameMeta.textContent = orgDoc.data().name;
-            setupRealtimeListeners();
-        } catch (error) {
-            console.error("Auth init error:", error);
-            showToast('Failed to load organization data.', 'error');
+            try {
+                const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
+                if (!orgsSnapshot.empty) {
+                    const orgDoc = orgsSnapshot.docs[0];
+                    currentOrgId = orgDoc.id;
+                    orgNameMeta.textContent = orgDoc.data().name;
+                    setupRealtimeListeners();
+                } else if (isDemo) {
+                    loadDemoTreasury();
+                } else {
+                    showToast('Organization not found.', 'error');
+                }
+            } catch (error) {
+                if (isDemo) loadDemoTreasury();
+                else showToast('Failed to load organization data.', 'error');
+            }
+        } else if (isDemo) {
+            currentUser = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in' };
+            loadDemoTreasury();
+        } else {
+            window.location.href = '../index.html';
         }
     });
 

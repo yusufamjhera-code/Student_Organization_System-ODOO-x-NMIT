@@ -1,86 +1,70 @@
-<!-- File: auth/login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Organizer Portal | Pass Track</title>
-    <!-- Linked to login.css for a consistent design language across auth pages -->
+    <title>Sign In | PassTrack Ecosystem</title>
+    <link rel="stylesheet" href="../lib/theme.css">
+    <link rel="stylesheet" href="../lib/components.css">
     <link rel="stylesheet" href="login.css">
-    <!-- Phosphor Icons for a premium interface -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 
     <div class="login-wrapper">
         <div class="form-container">
-            <!-- Branding Header matching the Distributor theme -->
+            <!-- Branding Header -->
             <div class="login-header">
                 <div class="icon-circle">
-                    <i class="ph-fill ph-user-gear"></i>
+                    <i class="ph-fill ph-shield-check"></i>
                 </div>
-                <h2>Organizer Portal</h2>
-                <p class="subtitle">Sign in to manage events, track participants, and issue digital tokens.</p>
+                <h2>Welcome to <em>PassTrack</em></h2>
+                <p class="subtitle">Unified portal sign-in. You will be automatically routed to your assigned organization or workspace.</p>
             </div>
 
-            <!-- Auth Type Tabs -->
-            <div class="auth-tabs">
-                <button type="button" class="auth-tab active" data-tab="admin">
-                    <i class="ph ph-crown"></i> Admin
+            <!-- 1. Instant Google Sign-In -->
+            <div class="auth-actions">
+                <button id="google-signin-btn" class="google-btn" type="button">
+                    <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.904,36.218,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                    </svg>
+                    <span>Continue with Google</span>
                 </button>
-                <button type="button" class="auth-tab" data-tab="delegated">
-                    <i class="ph ph-users"></i> Team Member
+            </div>
+
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span>or with credentials</span>
+            </div>
+
+            <!-- 2. Email & Password / Staff Access Key Form -->
+            <form id="delegated-login-form" class="delegated-form">
+                <div class="input-group">
+                    <label for="delegated-email">Email Address</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-envelope"></i>
+                        <input type="email" id="delegated-email" placeholder="name@college.edu" required autocomplete="email">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="access-code">Password / Staff Access Code</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-lock-key"></i>
+                        <input type="password" id="access-code" placeholder="Password or 8-char code" required autocomplete="current-password">
+                    </div>
+                    <span class="input-hint">Staff &amp; volunteers can use their 8-character access key</span>
+                </div>
+                <button type="submit" id="delegated-signin-btn" class="primary-btn">
+                    <i class="ph-bold ph-sign-in"></i>
+                    <span>Sign In</span>
                 </button>
-            </div>
-
-            <!-- Admin Login (Google) -->
-            <div id="admin-login" class="auth-panel active">
-                <div class="auth-actions">
-                    <button id="google-signin-btn" class="google-btn">
-                        <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-                            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
-                            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
-                            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
-                            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.904,36.218,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
-                        </svg>
-                        <span>Sign in with Google</span>
-                    </button>
-                </div>
-                <div class="switch-auth">
-                    <p>Only the designated admin can sign in with Google.</p>
-                </div>
-            </div>
-
-            <!-- Delegated User Login (Email + Code) -->
-            <div id="delegated-login" class="auth-panel">
-                <form id="delegated-login-form" class="delegated-form">
-                    <div class="input-group">
-                        <label for="delegated-email">Email Address</label>
-                        <div class="input-wrapper">
-                            <i class="ph ph-envelope"></i>
-                            <input type="email" id="delegated-email" placeholder="your@email.com" required>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label for="access-code">Access Code</label>
-                        <div class="input-wrapper">
-                            <i class="ph ph-key"></i>
-                            <input type="text" id="access-code" placeholder="Enter your access code" required maxlength="8" style="text-transform: uppercase;">
-                        </div>
-                        <span class="input-hint">8-character code provided by admin</span>
-                    </div>
-                    <button type="submit" id="delegated-signin-btn" class="primary-btn">
-                        <i class="ph-bold ph-sign-in"></i>
-                        <span>Sign In</span>
-                    </button>
-                </form>
-                <div class="switch-auth">
-                    <p>Don't have an access code? Contact your admin to get invited.</p>
-                </div>
-            </div>
+            </form>
 
             <!-- Feedback Message Area -->
-            <div id="message" class="message-area"></div>
+            <div id="message" class="message-area" role="alert"></div>
 
             <!-- Footer Navigation -->
             <div class="login-footer">
@@ -97,7 +81,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="../lib/firebase-config.js"></script>
+    <script src="../lib/contracts/passtrack-core.js"></script>
+    <script src="../lib/toast.js"></script>
     <script src="login.js"></script>
-
 </body>
 </html>

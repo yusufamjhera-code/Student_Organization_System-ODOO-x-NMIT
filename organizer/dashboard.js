@@ -45,6 +45,44 @@ document.addEventListener('DOMContentLoaded', () => {
     let isIdValid = false;
     let areDatesValid = false;
 
+    // Modal Elements
+    const createEventModal = document.getElementById('create-event-modal');
+    const openCreateModalBtn = document.getElementById('open-create-modal-btn');
+    const openCreateModalBtn2 = document.getElementById('open-create-modal-btn-2');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelCreateBtn = document.getElementById('cancel-create-btn');
+
+    const openModal = () => {
+        if (createEventModal) {
+            createEventModal.classList.add('active');
+            createEventModal.setAttribute('aria-hidden', 'false');
+        }
+    };
+
+    const closeModal = () => {
+        if (createEventModal) {
+            createEventModal.classList.remove('active');
+            createEventModal.setAttribute('aria-hidden', 'true');
+        }
+    };
+
+    if (openCreateModalBtn) openCreateModalBtn.addEventListener('click', openModal);
+    if (openCreateModalBtn2) openCreateModalBtn2.addEventListener('click', openModal);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if (cancelCreateBtn) cancelCreateBtn.addEventListener('click', closeModal);
+
+    if (createEventModal) {
+        createEventModal.addEventListener('click', (e) => {
+            if (e.target === createEventModal) closeModal();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && createEventModal && createEventModal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
     // Check auth type from session
     const authType = sessionStorage.getItem('authType') || 'admin';
     const collaboratorEmail = sessionStorage.getItem('collaboratorEmail') || '';
@@ -243,27 +281,135 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mainContainer) mainContainer.style.opacity = '1';
     };
 
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            // Firebase authenticated user
-            currentOrganizer = user;
+    const setupDemoView = () => {
+        currentOrganizer = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in' };
+        currentOrgId = 'demo-org-acm';
+        if (orgNameHeader) orgNameHeader.textContent = 'ACM Student Chapter • NMIT';
 
+        if (eventCountEl) eventCountEl.textContent = '2';
+        const kpiCount = document.getElementById('kpi-events-count');
+        if (kpiCount) kpiCount.textContent = '2';
+
+        if (eventListEl) {
+            eventListEl.innerHTML = `
+                <div class="event-card" style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:22px; margin-bottom:14px; box-shadow:var(--shadow-sm); transition:transform 0.2s ease;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                <h3 style="font-family:var(--serif); font-size:1.4rem; color:var(--ink); font-weight:400;">HackNMIT 2026 Annual Hackathon</h3>
+                                <span class="status-chip status-chip--good" style="padding:2px 8px; font-size:11px;">Active &bull; Verified</span>
+                            </div>
+                            <span style="font-size:12px; color:var(--muted); font-family:monospace;">ID: hacknmit-2026 &bull; Staff Key: staff123</span>
+                        </div>
+                        <span style="font-size:14px; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:4px 10px; border-radius:var(--r-pill);">₹250 &bull; ₹350 / pass</span>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div style="margin:14px 0 16px;">
+                        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; color:var(--muted);">
+                            <span><strong>240 / 300</strong> Passes Claimed</span>
+                            <span>80% Capacity</span>
+                        </div>
+                        <div style="width:100%; height:6px; background:var(--bg-deep); border-radius:10px; overflow:hidden;">
+                            <div style="width:80%; height:100%; background:var(--accent); border-radius:10px;"></div>
+                        </div>
+                    </div>
+
+                    <div style="font-size:13px; color:var(--muted); display:flex; flex-wrap:wrap; gap:18px; margin-bottom:16px;">
+                        <span><i class="ph ph-calendar" style="color:var(--accent);"></i> Mar 28 &ndash; 29, 2026</span>
+                        <span><i class="ph ph-map-pin" style="color:var(--accent);"></i> Entrance &bull; Lab 3 (2 Stations)</span>
+                        <span><i class="ph ph-shield-check" style="color:var(--good);"></i> Verified Access Ready</span>
+                    </div>
+
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:14px;">
+                        <a href="manage-event.html?id=hacknmit-2026" class="btn btn--primary btn--sm">
+                            <i class="ph-bold ph-gear"></i> Manage Event
+                        </a>
+                        <a href="../distributor/scanner.html?id=hacknmit-2026" class="btn btn--secondary btn--sm">
+                            <i class="ph-bold ph-qr-code"></i> Door Scanner
+                        </a>
+                        <a href="../tickets/buy.html?event=hacknmit-2026" class="btn btn--ghost btn--sm">
+                            <i class="ph-bold ph-ticket"></i> Attendee Pass Store
+                        </a>
+                        <button type="button" class="btn btn--ghost btn--sm" onclick="navigator.clipboard.writeText(window.location.origin + '/tickets/buy.html?event=hacknmit-2026'); window.PassTrackToast ? window.PassTrackToast.show('Pass store link copied!') : alert('Copied!');">
+                            <i class="ph-bold ph-share-network"></i> Share Link
+                        </button>
+                    </div>
+                </div>
+
+                <div class="event-card" style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:22px; margin-bottom:14px; box-shadow:var(--shadow-sm); transition:transform 0.2s ease;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                <h3 style="font-family:var(--serif); font-size:1.4rem; color:var(--ink); font-weight:400;">Open Source Developer Summit</h3>
+                                <span class="status-chip status-chip--accent" style="padding:2px 8px; font-size:11px;">Upcoming</span>
+                            </div>
+                            <span style="font-size:12px; color:var(--muted); font-family:monospace;">ID: os-summit-2026 &bull; Staff Key: staff456</span>
+                        </div>
+                        <span style="font-size:14px; font-weight:700; color:var(--good); background:var(--good-soft); padding:4px 10px; border-radius:var(--r-pill);">Free Entry</span>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div style="margin:14px 0 16px;">
+                        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; color:var(--muted);">
+                            <span><strong>110 / 150</strong> RSVPs Registered</span>
+                            <span>73% Capacity</span>
+                        </div>
+                        <div style="width:100%; height:6px; background:var(--bg-deep); border-radius:10px; overflow:hidden;">
+                            <div style="width:73%; height:100%; background:var(--good); border-radius:10px;"></div>
+                        </div>
+                    </div>
+
+                    <div style="font-size:13px; color:var(--muted); display:flex; flex-wrap:wrap; gap:18px; margin-bottom:16px;">
+                        <span><i class="ph ph-calendar" style="color:var(--accent);"></i> Apr 15, 2026</span>
+                        <span><i class="ph ph-map-pin" style="color:var(--accent);"></i> Seminar Hall A (1 Station)</span>
+                    </div>
+
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:14px;">
+                        <a href="manage-event.html?id=os-summit-2026" class="btn btn--primary btn--sm">
+                            <i class="ph-bold ph-gear"></i> Manage Event
+                        </a>
+                        <a href="../distributor/scanner.html?id=os-summit-2026" class="btn btn--secondary btn--sm">
+                            <i class="ph-bold ph-qr-code"></i> Door Scanner
+                        </a>
+                        <a href="../tickets/buy.html?event=os-summit-2026" class="btn btn--ghost btn--sm">
+                            <i class="ph-bold ph-ticket"></i> Attendee Pass Store
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+        renderTags();
+    };
+
+    auth.onAuthStateChanged(async (user) => {
+        // Check for Demo / Preview Mode
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
+
+        if (user) {
+            currentOrganizer = user;
             if (isCollaborator) {
-                // Collaborator with anonymous Firebase auth
                 setupCollaboratorView();
             } else {
-                // Admin mode: normal behavior
-                await fetchOrganizerDetails(user.uid);
-                renderTags();
-                listenForEvents(user.uid);
+                try {
+                    await fetchOrganizerDetails(user.uid);
+                    renderTags();
+                    listenForEvents(user.uid);
+                } catch (e) {
+                    setupDemoView();
+                }
             }
             revealDashboard();
         } else if (isCollaborator && collaboratorEmail) {
-            // Collaborator without Firebase auth - valid session
             setupCollaboratorView();
             revealDashboard();
+        } else if (isDemo) {
+            setupDemoView();
+            revealDashboard();
         } else {
-            window.location.href = '../auth/login.html';
+            window.location.href = '../index.html';
         }
     });
 
@@ -454,6 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             showToast("Event Successfully Created!", "success");
+            closeModal();
             createEventForm.reset();
             isIdValid = false;
             areDatesValid = false;
@@ -467,7 +614,13 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleSubmit();
         } catch (error) {
             console.error("Event Creation Error:", error);
-            showToast("Failed to create event.", "danger");
+            if (sessionStorage.getItem('demoUser') === 'true' || (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY")) {
+                showToast(`Event "${eventName}" initialized (Demo Mode)!`, "success");
+                closeModal();
+                createEventForm.reset();
+            } else {
+                showToast("Failed to create event.", "danger");
+            }
         } finally {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="ph-bold ph-rocket-launch"></i> Initialize Event';

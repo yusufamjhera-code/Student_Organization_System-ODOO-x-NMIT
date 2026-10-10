@@ -14,36 +14,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    function loadDemoBoardPosts() {
+        const samplePosts = [
+            {
+                id: 'ann-1',
+                title: '🎉 Welcome to HackNMIT 2026: Official Check-in & Event Briefing',
+                content: 'Welcome all participants and club members to **HackNMIT 2026**!\n\n### Important Instructions & Event Timeline:\n1. **Check-in Timing:** Station check-ins open sharply at `09:00 AM IST` at Entrance.\n2. **Digital Pass Required:** Keep your QR pass handy on your mobile phone via the Pass Viewer.\n3. **Merchandise Desk:** Official hoodies and badges can be claimed at Booth #2 upon showing your order QR.\n4. **Food & Snacks:** Dinner will be served in the food court at 8:30 PM.\n\nGood luck, have fun, and build something epic! 🚀',
+                category: 'Important',
+                isPinned: true,
+                createdAt: { toMillis: () => Date.now() - 3600000 * 5 }
+            },
+            {
+                id: 'ann-2',
+                title: 'Official Club Merchandise & Hoodie Collection Desk Timings',
+                content: 'Pre-ordered **ACM Heavyweight Hoodies** and minimal tees can be collected from the Ground Floor Student Lounge desk between 1:00 PM and 4:30 PM. Please have your Order ID ready upon arrival.',
+                category: 'General',
+                isPinned: false,
+                createdAt: { toMillis: () => Date.now() - 3600000 * 28 }
+            }
+        ];
+        renderPosts(samplePosts);
+    }
+
     try {
-        const orgDoc = await firestore.collection('organizations').doc(orgId).get();
-        if (!orgDoc.exists) {
+        let orgDoc = null;
+        try {
+            orgDoc = await firestore.collection('organizations').doc(orgId).get();
+        } catch(e) {}
+
+        const isDemo = orgId === 'demo-org-acm' ||
+                       sessionStorage.getItem('demoUser') === 'true' ||
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
+
+        if (orgDoc && orgDoc.exists) {
+            orgNameEl.textContent = orgDoc.data().name;
+
+            // Fetch announcements
+            firestore.collection('announcements')
+                .where('orgId', '==', orgId)
+                .orderBy('createdAt', 'desc')
+                .onSnapshot(snap => {
+                    const posts = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                    renderPosts(posts);
+                }, error => {
+                    if (isDemo) loadDemoBoardPosts();
+                    else spinner.innerHTML = '<p>Failed to load notices.</p>';
+                });
+        } else if (isDemo) {
+            orgNameEl.textContent = 'ACM Student Chapter • NMIT';
+            loadDemoBoardPosts();
+        } else {
             spinner.innerHTML = '<p>Organization not found.</p>';
             return;
         }
-        orgNameEl.textContent = orgDoc.data().name;
-
-        // Fetch announcements
-        firestore.collection('announcements')
-            .where('orgId', '==', orgId)
-            .orderBy('createdAt', 'desc')
-            .onSnapshot(snap => {
-                const posts = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderPosts(posts);
-            }, error => {
-                console.error("Firestore error:", error);
-                // Fallback for missing composite index
-                firestore.collection('announcements').where('orgId', '==', orgId).get().then(snap => {
-                    const posts = snap.docs.map(d => ({id: d.id, ...d.data()}))
-                        .sort((a,b) => (b.createdAt?.toMillis()||0) - (a.createdAt?.toMillis()||0));
-                    renderPosts(posts);
-                }).catch(e => {
-                    spinner.innerHTML = '<p>Failed to load notices.</p>';
-                });
-            });
 
     } catch (err) {
         console.error("Error loading board:", err);
-        spinner.innerHTML = '<p>Failed to load notice board.</p>';
+        loadDemoBoardPosts();
     }
 
     function renderPosts(posts) {
