@@ -246,6 +246,115 @@ function doPost(e) {
       `;
     }
 
+    // ================= MEMBERSHIP WELCOME TEMPLATE =================
+    else if (data.type === "membership_welcome") {
+      subject = `Welcome to ${data.org_name}! Your Membership is Active`;
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box; padding:24px;">
+        <h1 style="color:#059669; margin-top:0;">Welcome to ${data.org_name}!</h1>
+        <p style="color:#334155; line-height:1.6;">Hi <strong>${data.to_name}</strong>,</p>
+        <p style="color:#475569; line-height:1.6;">Your membership is now active. You have successfully paid your dues and can now access member perks, store discounts, and exclusive event pricing!</p>
+        <div style="background:#f0fdf4; padding:16px; border-radius:12px; border:1px dashed #86efac; margin:20px 0;">
+          <p style="margin:0; font-size:14px; color:#059669;"><strong>Membership valid until:</strong> ${data.end_date}</p>
+        </div>
+      </div>`;
+    }
+
+    // ================= MEMBERSHIP RENEWAL TEMPLATE =================
+    else if (data.type === "membership_renewal") {
+      subject = `[${data.org_name}] Membership Renewal Reminder`;
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box; padding:24px;">
+        <h1 style="color:#eab308; margin-top:0;">Membership Expiring Soon</h1>
+        <p style="color:#334155; line-height:1.6;">Hi <strong>${data.to_name}</strong>,</p>
+        <p style="color:#475569; line-height:1.6;">This is a reminder that your membership with <strong>${data.org_name}</strong> is expiring soon.</p>
+        <div style="background:#fefce8; padding:16px; border-radius:12px; border:1px dashed #fde047; margin:20px 0;">
+          <p style="margin:0; font-size:14px; color:#a16207;"><strong>Expiration Date:</strong> ${data.end_date}</p>
+        </div>
+        <p style="color:#475569; line-height:1.6;">Please contact the organization to renew your membership and continue enjoying your benefits.</p>
+      </div>`;
+    }
+
+    // ================= TICKET CONFIRMATION TEMPLATE =================
+    else if (data.type === "ticket_confirmation") {
+      subject = `Your Ticket for ${data.event_name}`;
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box; padding:24px;">
+        <h1 style="color:#2563eb; margin-top:0;">Ticket Confirmed! 🎟️</h1>
+        <p style="color:#334155; line-height:1.6;">Hi <strong>${data.to_name}</strong>,</p>
+        <p style="color:#475569; line-height:1.6;">Your ticket(s) for <strong>${data.event_name}</strong> have been confirmed.</p>
+        
+        <div style="background:#f1f5f9; padding:20px; border-radius:12px; text-align:center; margin:24px 0;">
+          <p style="margin:0 0 8px; font-size:13px; color:#64748b; font-weight:600; text-transform:uppercase;">Your Ticket Code</p>
+          <h2 style="margin:0; color:#1e293b; font-family:'Courier New',monospace; letter-spacing:4px; font-size:28px;">${data.ticket_code}</h2>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:14px; color:#475569;">
+          <tr>
+            <td style="padding:8px 0; border-bottom:1px solid #e2e8f0;"><strong>Ticket Type:</strong></td>
+            <td style="padding:8px 0; border-bottom:1px solid #e2e8f0; text-align:right;">${data.ticket_type}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0; border-bottom:1px solid #e2e8f0;"><strong>Quantity:</strong></td>
+            <td style="padding:8px 0; border-bottom:1px solid #e2e8f0; text-align:right;">${data.quantity}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;"><strong>Total Paid:</strong></td>
+            <td style="padding:8px 0; text-align:right; font-weight:bold; color:#1e293b;">₹${data.total_paid}</td>
+          </tr>
+        </table>
+        
+        <p style="margin:0; font-size:13px; color:#64748b; text-align:center;">Please show this ticket code at the entrance.</p>
+      </div>`;
+    }
+
+    // ================= MERCH ORDER TEMPLATE =================
+    else if (data.type === "merch_order") {
+      subject = `Order Confirmed | ${data.product_name}`;
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box; padding:24px;">
+        <h1 style="color:#d946ef; margin-top:0;">Order Received! 👕</h1>
+        <p style="color:#334155; line-height:1.6;">Hi <strong>${data.to_name}</strong>,</p>
+        <p style="color:#475569; line-height:1.6;">Your order for <strong>${data.product_name}</strong> has been received successfully.</p>
+        
+        <div style="background:#fdf4ff; padding:20px; border-radius:12px; border:1px dashed #f0abfc; margin:24px 0;">
+          <table style="width:100%; border-collapse:collapse; font-size:14px; color:#475569;">
+            <tr>
+              <td style="padding:6px 0;"><strong>Size:</strong></td>
+              <td style="padding:6px 0; text-align:right; font-weight:bold;">${data.size}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;"><strong>Quantity:</strong></td>
+              <td style="padding:6px 0; text-align:right; font-weight:bold;">${data.quantity}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0; padding-top:12px; border-top:1px solid #f5d0fe;"><strong>Total Paid:</strong></td>
+              <td style="padding:6px 0; padding-top:12px; border-top:1px solid #f5d0fe; text-align:right; font-weight:bold; color:#86198f; font-size:16px;">₹${data.total_paid}</td>
+            </tr>
+          </table>
+        </div>
+        <p style="margin:0; font-size:14px; color:#64748b; text-align:center;">We will notify you when your item is ready for collection.</p>
+      </div>`;
+    }
+
+    // ================= ANNOUNCEMENT TEMPLATE =================
+    else if (data.type === "announcement") {
+      subject = `[${data.org_name}] Announcement: ${data.title}`;
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box; padding:24px;">
+        <div style="border-bottom:2px solid #e2e8f0; padding-bottom:16px; margin-bottom:20px;">
+          <h1 style="color:#0f172a; margin:0 0 8px; font-size:22px;">${data.title}</h1>
+          <p style="margin:0; color:#64748b; font-size:13px;">Posted by: <strong>${data.author_name}</strong> | ${data.org_name}</p>
+        </div>
+        
+        <div style="color:#334155; line-height:1.7; font-size:15px; white-space:pre-wrap;">${data.body}</div>
+        
+        <div style="margin-top:30px; padding-top:16px; border-top:1px solid #e2e8f0; text-align:center;">
+          <p style="margin:0; font-size:11px; color:#94a3b8;">You are receiving this email because you are a registered member of ${data.org_name}.</p>
+        </div>
+      </div>`;
+    }
+
     // ================= PARTICIPANT TEMPLATE =================
     else {
       subject = `Your Access Voucher | ${data.event_name}`;
