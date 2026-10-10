@@ -1,6 +1,5 @@
 // File: index.js
-
-const db = typeof firebase !== 'undefined' ? firebase.firestore() : null;
+// NOTE: `db` is already defined globally by lib/firebase-config.js
 
 let currentTargetUrl = '';
 let currentType = ''; // 'org' or 'event'
@@ -8,7 +7,7 @@ let currentType = ''; // 'org' or 'event'
 function openSelector(type, targetUrl) {
     if (event) event.preventDefault();
     
-    if (!db) {
+    if (typeof db === 'undefined' || !db) {
         alert("Firebase is not properly initialized. Please check your config.");
         return;
     }
