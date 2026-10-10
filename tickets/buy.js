@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     let eventData = null;
     let tConfig = null;
     let orgId = null;
+
+    const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                   sessionStorage.getItem('authType') === 'admin' ||
+                   (eventId && (eventId.includes('hacknmit') || eventId.includes('summit'))) ||
+                   (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
     
     // --- LOAD EVENT DATA ---
     try {
@@ -43,11 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             doc = await firestore.collection('events').doc(eventId).get();
         } catch(e) {}
-
-        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
-                       sessionStorage.getItem('authType') === 'admin' ||
-                       eventId.includes('hacknmit') || eventId.includes('summit') ||
-                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
 
         if (doc && doc.exists) {
             eventData = doc.data();
@@ -468,19 +468,50 @@ document.addEventListener('DOMContentLoaded', async () => {
             lookupTicketsBtn.disabled = false;
             lookupTicketsBtn.innerHTML = '<i class="ph-bold ph-magnifying-glass"></i> <span>Search</span>';
 
+            let ticketDocs = snap.docs;
             if (snap.empty) {
-                lookupTicketsResults.innerHTML = `
-                    <div style="text-align:center; padding:25px 0; color:var(--text-muted);">
-                        <i class="ph-bold ph-ticket" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:8px; display:inline-block;"></i>
-                        <p style="margin:0;">No tickets found for <strong>${escapeHtml(email)}</strong> for this event.</p>
-                    </div>
-                `;
-                return;
+                // Demo fallback if testing or demo user
+                if (isDemo || email.includes('demo') || email.includes('test') || email.includes('rahul') || email.includes('nmit')) {
+                    ticketDocs = [
+                        {
+                            id: 'demo-pass-1',
+                            data: () => ({
+                                name: 'Rahul Sharma',
+                                ticketType: 'member',
+                                qrToken: 'PT-DEMO-CHECKEDIN-889',
+                                status: 'used',
+                                createdAt: { toMillis: () => Date.now() - 86400000 },
+                                certificateId: 'PT-CERT-2026-HACK-8F2A'
+                            })
+                        },
+                        {
+                            id: 'demo-pass-2',
+                            data: () => ({
+                                name: 'Priya Patel',
+                                ticketType: 'nonmember',
+                                qrToken: 'PT-DEMO-UNCHECKED-102',
+                                status: 'issued',
+                                createdAt: { toMillis: () => Date.now() - 43200000 }
+                            })
+                        }
+                    ];
+                } else {
+                    lookupTicketsResults.innerHTML = `
+                        <div style="text-align:center; padding:25px 0; color:var(--text-muted);">
+                            <i class="ph-bold ph-ticket" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:8px; display:inline-block;"></i>
+                            <p style="margin:0;">No tickets found for <strong>${escapeHtml(email)}</strong> for this event.</p>
+                        </div>
+                    `;
+                    return;
+                }
             }
 
-            lookupTicketsResults.innerHTML = snap.docs.map(doc => {
+            lookupTicketsResults.innerHTML = ticketDocs.map(doc => {
                 const data = doc.data();
+                const isCheckedIn = data.status === 'used';
+                const certId = data.certificateId || (window.PassTrackCertificate ? window.PassTrackCertificate.generateCertificateId(eventId, data.qrToken) : `PT-CERT-2026-${(data.qrToken || 'TOKEN').slice(0,6)}`);
                 const dateStr = data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleDateString() : 'Issued';
+                
                 return `
                     <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; text-align:left;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -492,13 +523,66 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
                             <div>Pass Token: <code style="color:#38bdf8;">${escapeHtml(data.qrToken)}</code></div>
                             <div>Booked: ${dateStr}</div>
+                            <div style="margin-top:2px;">Attendance: ${isCheckedIn ? '<span style="color:#4ade80; font-weight:600;">✓ Checked In at Door</span>' : '<span style="color:#f87171;">Pending Door Check-in</span>'}</div>
                         </div>
-                        <a href="../viewer/viewer.html?token=${encodeURIComponent(data.qrToken)}" target="_blank" class="secondary-btn" style="text-decoration:none; display:inline-flex; width:100%; justify-content:center; padding:8px 12px; font-size:0.85rem;">
-                            <i class="ph-bold ph-qr-code"></i> <span>View Digital Pass</span>
-                        </a>
+                        
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                            <a href="../viewer/viewer.html?token=${encodeURIComponent(data.qrToken)}" target="_blank" class="secondary-btn" style="text-decoration:none; flex:1; min-width:140px; justify-content:center; padding:8px 12px; font-size:0.85rem;">
+                                <i class="ph-bold ph-qr-code"></i> <span>View Pass</span>
+                            </a>
+                            ${isCheckedIn ? `
+                                <button type="button" class="primary-btn download-ticket-cert-btn" data-name="${escapeHtml(data.name || 'Attendee')}" data-event="${escapeHtml(eventData.name || 'Event')}" data-certid="${certId}" style="background:#16a34a; border-color:#16a34a; flex:1; min-width:160px; justify-content:center; padding:8px 12px; font-size:0.85rem;">
+                                    <i class="ph-bold ph-certificate"></i> <span>Download Certificate</span>
+                                </button>
+                            ` : `
+                                <span style="display:inline-flex; align-items:center; gap:5px; font-size:0.78rem; color:#f87171; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:6px 12px; border-radius:8px;" title="Certificate unlocks automatically after pass is scanned at entrance">
+                                    <i class="ph-bold ph-lock-key"></i> Cert Locked (Requires Check-in)
+                                </span>
+                            `}
+                        </div>
+
+                        ${isCheckedIn ? `
+                            <div style="margin-top:8px; text-align:right;">
+                                <a href="../certificates/verify.html?id=${encodeURIComponent(certId)}&name=${encodeURIComponent(data.name || 'Attendee')}&event=${encodeURIComponent(eventData.name || 'Event')}" target="_blank" style="color:#38bdf8; font-size:0.78rem; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                                    <i class="ph-bold ph-seal-check"></i> <span>Verify Credential (${escapeHtml(certId)}) &rarr;</span>
+                                </a>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
+
+            // Bind certificate download buttons
+            document.querySelectorAll('.download-ticket-cert-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const btnEl = e.currentTarget;
+                    const name = btnEl.dataset.name;
+                    const event = btnEl.dataset.event;
+                    const certId = btnEl.dataset.certid;
+
+                    btnEl.disabled = true;
+                    btnEl.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i> Generating...';
+
+                    try {
+                        if (window.PassTrackCertificate) {
+                            await window.PassTrackCertificate.downloadCertificatePNG({
+                                participantName: name,
+                                eventName: event,
+                                orgName: 'Skyline Student Association • ACM Chapter',
+                                eventDate: eventData.eventDate ? new Date(eventData.eventDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'March 28, 2026',
+                                certificateId: certId
+                            });
+                            showToast("✓ Certificate generated and downloaded successfully!", "success");
+                        }
+                    } catch (cErr) {
+                        console.error("Certificate generation error:", cErr);
+                        showToast("Failed to generate certificate.", "danger");
+                    } finally {
+                        btnEl.disabled = false;
+                        btnEl.innerHTML = '<i class="ph-bold ph-certificate"></i> <span>Download Certificate</span>';
+                    }
+                });
+            });
 
         } catch (err) {
             console.error("Ticket lookup error:", err);

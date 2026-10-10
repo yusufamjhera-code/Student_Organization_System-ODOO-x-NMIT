@@ -997,6 +997,62 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             auditLogContainer.appendChild(entry);
         });
+
+        // Certificate Section in Participant Modal
+        const isCheckedIn = p.status === 'used' || Object.values(p.permissions || {}).some(v => v.status === 'used');
+        const certId = p.certificateId || (window.PassTrackCertificate ? window.PassTrackCertificate.generateCertificateId(eventDocId, p.qrToken) : `PT-CERT-2026-${(p.qrToken || 'TOKEN').slice(0, 6)}`);
+
+        const certBadge = document.getElementById('modal-cert-status-badge');
+        const certDownloadBtn = document.getElementById('modal-download-cert-btn');
+        const certVerifyLink = document.getElementById('modal-verify-cert-link');
+
+        if (certBadge) {
+            certBadge.textContent = isCheckedIn ? '✓ Eligible (Checked In)' : 'Locked (Unchecked)';
+            certBadge.className = isCheckedIn ? 'badge' : 'badge danger';
+            certBadge.style.background = isCheckedIn ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+            certBadge.style.color = isCheckedIn ? '#22c55e' : '#ef4444';
+        }
+
+        if (certVerifyLink) {
+            certVerifyLink.href = `../certificates/verify.html?id=${encodeURIComponent(certId)}&name=${encodeURIComponent(p.name)}&event=${encodeURIComponent(currentEventName || 'Campus Event')}`;
+        }
+
+        if (certDownloadBtn) {
+            certDownloadBtn.disabled = !isCheckedIn;
+            certDownloadBtn.style.opacity = isCheckedIn ? '1' : '0.5';
+            certDownloadBtn.title = isCheckedIn ? 'Download official certificate' : 'Attendee must be checked in at an entrance first';
+            certDownloadBtn.onclick = async () => {
+                if (!isCheckedIn) {
+                    showToast('Participant must be checked in at the door first to issue certificate.', 'warning');
+                    return;
+                }
+                const sig1 = document.getElementById('cert-signatory1-name')?.value || 'Dr. K. Srinivas';
+                const sig2 = document.getElementById('cert-signatory2-name')?.value || 'Ananya Iyer';
+                if (window.PassTrackCertificate) {
+                    certDownloadBtn.disabled = true;
+                    certDownloadBtn.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i> Generating...';
+                    try {
+                        await window.PassTrackCertificate.downloadCertificatePNG({
+                            participantName: p.name,
+                            eventName: currentEventName || 'Campus Event',
+                            orgName: 'Skyline Student Association • ACM Chapter',
+                            eventDate: eventDateRangeEl.textContent || 'March 28, 2026',
+                            certificateId: certId,
+                            signatory1Name: sig1,
+                            signatory2Name: sig2
+                        });
+                        showToast('✓ Certificate downloaded successfully!', 'success');
+                    } catch (e) {
+                        console.error(e);
+                        showToast('Failed to generate certificate', 'danger');
+                    } finally {
+                        certDownloadBtn.disabled = false;
+                        certDownloadBtn.innerHTML = '<i class="ph-bold ph-certificate"></i> Download Certificate';
+                    }
+                }
+            };
+        }
+
         userModal.style.display = 'flex';
     };
 
@@ -1797,4 +1853,36 @@ document.addEventListener('DOMContentLoaded', () => {
             card.classList.toggle('collapsed');
         });
     });
+
+    // --- CERTIFICATE TEMPLATE PREVIEW ---
+    const previewCertBtn = document.getElementById('preview-cert-btn');
+    if (previewCertBtn) {
+        previewCertBtn.addEventListener('click', async () => {
+            const sig1 = document.getElementById('cert-signatory1-name')?.value || 'Dr. K. Srinivas';
+            const sig2 = document.getElementById('cert-signatory2-name')?.value || 'Ananya Iyer';
+
+            if (window.PassTrackCertificate) {
+                previewCertBtn.disabled = true;
+                previewCertBtn.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i> Generating...';
+                try {
+                    await window.PassTrackCertificate.downloadCertificatePNG({
+                        participantName: 'Rahul Sharma (Sample Preview)',
+                        eventName: currentEventName || 'HackNMIT 2026 Annual Hackathon',
+                        orgName: 'Skyline Student Association • ACM Chapter',
+                        eventDate: eventDateRangeEl ? (eventDateRangeEl.textContent || 'March 28, 2026') : 'March 28, 2026',
+                        certificateId: 'PT-CERT-2026-HACK-8F2A',
+                        signatory1Name: sig1,
+                        signatory2Name: sig2
+                    });
+                    showToast('✓ Certificate template preview generated!', 'success');
+                } catch (pErr) {
+                    console.error('Preview error:', pErr);
+                    showToast('Failed to preview certificate', 'danger');
+                } finally {
+                    previewCertBtn.disabled = false;
+                    previewCertBtn.innerHTML = '<i class="ph-bold ph-eye"></i> <span>Preview Certificate</span>';
+                }
+            }
+        });
+    }
 });

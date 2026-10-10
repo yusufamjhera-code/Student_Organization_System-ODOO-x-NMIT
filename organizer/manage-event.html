@@ -28,6 +28,9 @@
             </button>
         </div>
         <div class="header-buttons">
+            <a href="../certificates/verify.html" target="_blank" class="secondary-btn" style="text-decoration:none;" title="Open Public Verification Portal">
+                <i class="ph-bold ph-seal-check"></i> <span>Verify Credential</span>
+            </a>
             <button id="logout-btn" class="logout-btn icon-only-mobile">
                 <i class="ph-bold ph-sign-out"></i> <span>Logout</span>
             </button>
@@ -292,6 +295,40 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Event Certificates Card (Collapsible) -->
+            <div class="card collapsible-card" id="certificates-card">
+                <div class="card-header collapsible-header" id="certificates-toggle">
+                    <i class="ph-bold ph-certificate"></i>
+                    <h2>Participation Certificates</h2>
+                    <div class="header-actions">
+                        <i class="ph-bold ph-caret-down collapse-icon"></i>
+                    </div>
+                </div>
+                <div id="certificates-body" class="collapsible-body" style="display: none; padding: 18px;">
+                    <p class="collab-description" style="margin-bottom: 14px;">
+                        Attendance-gated certificates unlock automatically when attendees check in. Preview or test the official credential below.
+                    </p>
+                    <div class="time-inputs-row">
+                        <div class="input-group">
+                            <label for="cert-signatory1-name">Faculty Advisor</label>
+                            <input type="text" id="cert-signatory1-name" value="Dr. K. Srinivas" placeholder="Faculty Advisor">
+                        </div>
+                        <div class="input-group">
+                            <label for="cert-signatory2-name">Club President</label>
+                            <input type="text" id="cert-signatory2-name" value="Ananya Iyer" placeholder="Club President">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
+                        <button type="button" id="preview-cert-btn" class="primary-btn" style="flex: 1; justify-content: center;">
+                            <i class="ph-bold ph-eye"></i> <span>Preview Certificate</span>
+                        </button>
+                        <a href="../certificates/verify.html" target="_blank" class="secondary-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="ph-bold ph-arrow-square-out"></i> <span>Verify Portal</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- RIGHT COLUMN: Participants/Tokens List -->
@@ -436,6 +473,21 @@
                     <div class="link-box">
                         <input type="text" id="qr-link-input" readonly value="Loading link...">
                         <button id="copy-link-btn">Copy</button>
+                    </div>
+                </div>
+
+                <div class="certificate-section" style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <p class="section-label" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>Participation Certificate</span>
+                        <span id="modal-cert-status-badge" class="badge">Checking...</span>
+                    </p>
+                    <div id="modal-cert-action-box" style="margin-top: 10px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <button type="button" id="modal-download-cert-btn" class="primary-btn" style="flex:1; justify-content:center; padding:10px 14px; font-size:0.88rem;">
+                            <i class="ph-bold ph-certificate"></i> Download Certificate
+                        </button>
+                        <a id="modal-verify-cert-link" href="#" target="_blank" class="secondary-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-size:0.88rem;">
+                            <i class="ph-bold ph-seal-check"></i> Verify Credential
+                        </a>
                     </div>
                 </div>
             </div>
@@ -598,7 +650,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="../lib/firebase-config.js"></script>
+    <script src="../lib/certificate-generator.js"></script>
     <script src="manage-event.js"></script>
 </body>
 </html>

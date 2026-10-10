@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Verify Certificate | PassTrack Credential Verification</title>
+    <link rel="stylesheet" href="../lib/theme.css">
+    <link rel="stylesheet" href="../lib/components.css">
+    <link rel="stylesheet" href="verify.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body class="verify-page">
+
+    <div class="verify-wrapper">
+        <!-- Brand Header -->
+        <header class="verify-header">
+            <a href="../index.html" class="brand-mark" style="text-decoration:none;">
+                <span class="brand-icon">
+                    <i class="ph-bold ph-shield-check"></i>
+                </span>
+                <span class="brand-name">
+                    Pass<em>Track</em>
+                </span>
+            </a>
+            <div class="campus-pill">
+                <span class="campus-pill-dot"></span>
+                <span>Credential Ledger</span>
+            </div>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-card">
+            <h2>Verify Event Credential</h2>
+            <p class="search-subtitle">Enter the tamper-proof Certificate ID or scan the QR code to verify participation authenticity.</p>
+            
+            <form id="verify-form" class="verify-input-group">
+                <div class="input-wrapper">
+                    <i class="ph-bold ph-magnifying-glass"></i>
+                    <input type="text" id="cert-id-input" placeholder="e.g. PT-CERT-2026-HACK-8F2A" required autocomplete="off">
+                </div>
+                <button type="submit" id="verify-submit-btn" class="btn btn--accent btn--md">
+                    <i class="ph-bold ph-check-circle"></i>
+                    <span>Verify</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Result Container -->
+        <main id="result-container" class="result-area">
+            <!-- Loading State -->
+            <div id="verify-loading" class="verify-loading-box" style="display: none;">
+                <span class="pt-spinner"></span>
+                <span>Consulting cryptographic event ledger...</span>
+            </div>
+
+            <!-- Verified Card (Success) -->
+            <div id="verify-success-card" class="credential-card success" style="display: none;">
+                <div class="credential-badge-ribbon">
+                    <i class="ph-fill ph-seal-check"></i>
+                    <span>AUTHENTICATED CREDENTIAL</span>
+                </div>
+
+                <div class="credential-body">
+                    <div class="credential-meta-header">
+                        <span class="kicker">OFFICIAL PROOF OF PARTICIPATION</span>
+                        <h1 id="cred-recipient-name">Rahul Sharma</h1>
+                        <p class="cred-citation">has successfully attended and actively participated in</p>
+                        <h3 id="cred-event-name">HackNMIT 2026 Annual Hackathon</h3>
+                        <p id="cred-org-name" class="cred-org">Skyline Student Association • ACM Student Chapter</p>
+                    </div>
+
+                    <div class="credential-details-grid">
+                        <div class="detail-item">
+                            <span class="label">Certificate ID</span>
+                            <strong id="cred-id" class="value mono">PT-CERT-2026-HACK-8F2A</strong>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Attendance Status</span>
+                            <span id="cred-status" class="status-chip status-chip--success">
+                                <i class="ph-bold ph-check"></i> Verified In-Person Door Check-in
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Issue Date</span>
+                            <span id="cred-date" class="value">March 28, 2026</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Verification Authority</span>
+                            <span class="value">PassTrack Cryptographic Registry</span>
+                        </div>
+                    </div>
+
+                    <!-- Certificate Preview Thumbnail / Canvas Mount -->
+                    <div class="credential-preview-wrap">
+                        <div id="cert-preview-canvas-holder"></div>
+                    </div>
+
+                    <div class="credential-actions">
+                        <button type="button" id="download-cert-btn" class="btn btn--primary btn--md">
+                            <i class="ph-bold ph-download-simple"></i>
+                            <span>Download Official Certificate (High-Res PNG)</span>
+                        </button>
+                        <a href="../index.html" class="btn btn--quiet btn--md">
+                            <i class="ph-bold ph-arrow-left"></i>
+                            <span>Back to PassTrack</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Card (Not Found / Tampered) -->
+            <div id="verify-error-card" class="credential-card error" style="display: none;">
+                <div class="credential-badge-ribbon error-ribbon">
+                    <i class="ph-fill ph-warning-octagon"></i>
+                    <span>CREDENTIAL NOT VERIFIED</span>
+                </div>
+                <div class="credential-body error-body">
+                    <h3>Unverified or Invalid Certificate ID</h3>
+                    <p id="error-message">The specified certificate identifier was not found in the verified event ledger. Please verify the ID characters or check that your event check-in was registered.</p>
+                    <button type="button" onclick="document.getElementById('cert-id-input').focus()" class="btn btn--quiet btn--sm" style="margin-top: 16px;">
+                        Try Another Certificate ID
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase & Core Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="../lib/certificate-generator.js"></script>
+    <script src="verify.js"></script>
+</body>
+</html>
