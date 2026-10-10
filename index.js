@@ -298,6 +298,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --- QUICK PREVIEW / TESTING ACCESS ---
+    const previewOrgBtn = document.getElementById('preview-organizer-btn');
+    const previewMemberBtn = document.getElementById('preview-member-btn');
+
+    if (previewOrgBtn) {
+        previewOrgBtn.addEventListener('click', () => {
+            sessionStorage.setItem('authType', 'admin');
+            sessionStorage.setItem('demoUser', 'true');
+            if (window.PassTrackToast) window.PassTrackToast.success('Opening Organizer Dashboard in Preview Mode...');
+            setTimeout(() => {
+                window.location.href = 'organizer/dashboard.html';
+            }, 500);
+        });
+    }
+
+    if (previewMemberBtn) {
+        previewMemberBtn.addEventListener('click', () => {
+            sessionStorage.setItem('authType', 'member');
+            sessionStorage.setItem('demoUser', 'true');
+            if (window.PassTrackToast) window.PassTrackToast.success('Opening Member Directory in Preview Mode...');
+            setTimeout(() => {
+                window.location.href = 'members/directory.html';
+            }, 500);
+        });
+    }
 });
 
 // =========================================================================

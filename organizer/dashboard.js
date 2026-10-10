@@ -243,27 +243,95 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mainContainer) mainContainer.style.opacity = '1';
     };
 
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            // Firebase authenticated user
-            currentOrganizer = user;
+    const setupDemoView = () => {
+        currentOrganizer = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in' };
+        currentOrgId = 'demo-org-acm';
+        if (orgNameHeader) orgNameHeader.textContent = 'ACM Student Chapter • NMIT';
 
+        if (eventCountEl) eventCountEl.textContent = '2';
+        if (eventListEl) {
+            eventListEl.innerHTML = `
+                <div class="event-card" style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:20px; margin-bottom:14px; box-shadow:var(--shadow);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                        <div>
+                            <h3 style="font-family:var(--serif); font-size:1.35rem; color:var(--ink); margin-bottom:4px;">HackNMIT 2026 Annual Hackathon</h3>
+                            <span class="status-chip status-chip--good">Active &bull; Verified</span>
+                        </div>
+                        <span style="font-size:13px; font-weight:700; color:var(--accent);">₹350 / pass</span>
+                    </div>
+                    <div style="font-size:13px; color:var(--muted); display:flex; flex-wrap:wrap; gap:16px; margin:12px 0;">
+                        <span><i class="ph ph-calendar"></i> Mar 28 &ndash; 29, 2026</span>
+                        <span><i class="ph ph-ticket"></i> 240 / 300 Sold</span>
+                        <span><i class="ph ph-door"></i> Entrance &bull; Lab 3</span>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                        <a href="manage-event.html?id=hacknmit-2026" class="btn btn--primary btn--sm">
+                            <i class="ph-bold ph-gear"></i> Manage Event
+                        </a>
+                        <a href="../distributor/scanner.html?id=hacknmit-2026" class="btn btn--accent btn--sm">
+                            <i class="ph-bold ph-qr-code"></i> Door Scanner
+                        </a>
+                        <a href="../tickets/buy.html?event=hacknmit-2026" class="btn btn--ghost btn--sm">
+                            <i class="ph-bold ph-ticket"></i> Attendee Pass Store
+                        </a>
+                    </div>
+                </div>
+
+                <div class="event-card" style="background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:20px; margin-bottom:14px; box-shadow:var(--shadow);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                        <div>
+                            <h3 style="font-family:var(--serif); font-size:1.35rem; color:var(--ink); margin-bottom:4px;">Open Source Developer Summit</h3>
+                            <span class="status-chip status-chip--accent">Upcoming</span>
+                        </div>
+                        <span style="font-size:13px; font-weight:700; color:var(--accent);">Free Entry</span>
+                    </div>
+                    <div style="font-size:13px; color:var(--muted); display:flex; flex-wrap:wrap; gap:16px; margin:12px 0;">
+                        <span><i class="ph ph-calendar"></i> Apr 15, 2026</span>
+                        <span><i class="ph ph-ticket"></i> 110 / 150 Registered</span>
+                        <span><i class="ph ph-door"></i> Seminar Hall A</span>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                        <a href="manage-event.html?id=os-summit-2026" class="btn btn--primary btn--sm">
+                            <i class="ph-bold ph-gear"></i> Manage Event
+                        </a>
+                        <a href="../distributor/scanner.html?id=os-summit-2026" class="btn btn--accent btn--sm">
+                            <i class="ph-bold ph-qr-code"></i> Door Scanner
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+        renderTags();
+    };
+
+    auth.onAuthStateChanged(async (user) => {
+        // Check for Demo / Preview Mode
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
+
+        if (user) {
+            currentOrganizer = user;
             if (isCollaborator) {
-                // Collaborator with anonymous Firebase auth
                 setupCollaboratorView();
             } else {
-                // Admin mode: normal behavior
-                await fetchOrganizerDetails(user.uid);
-                renderTags();
-                listenForEvents(user.uid);
+                try {
+                    await fetchOrganizerDetails(user.uid);
+                    renderTags();
+                    listenForEvents(user.uid);
+                } catch (e) {
+                    setupDemoView();
+                }
             }
             revealDashboard();
         } else if (isCollaborator && collaboratorEmail) {
-            // Collaborator without Firebase auth - valid session
             setupCollaboratorView();
             revealDashboard();
+        } else if (isDemo) {
+            setupDemoView();
+            revealDashboard();
         } else {
-            window.location.href = '../auth/login.html';
+            window.location.href = '../index.html';
         }
     });
 
