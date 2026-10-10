@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | PassTrack Ecosystem</title>
+    <link rel="stylesheet" href="../lib/theme.css">
+    <link rel="stylesheet" href="../lib/components.css">
+    <link rel="stylesheet" href="login.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .register-wrapper {
+            width: 100%;
+            max-width: 480px;
+            animation: slideUpFade 0.6s var(--bezier);
+        }
+        .role-conditional-field {
+            transition: all var(--transition-fast);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="register-wrapper">
+        <div class="form-container">
+            <!-- Branding Header -->
+            <div class="login-header">
+                <div class="icon-circle">
+                    <i class="ph-fill ph-user-plus"></i>
+                </div>
+                <h2>Join <em>PassTrack</em></h2>
+                <p class="subtitle">Create your campus account. Select your role to unlock your authorized workspace on sign in.</p>
+            </div>
+
+            <!-- Registration Form -->
+            <form id="registration-form" class="delegated-form">
+
+                <!-- 1. Role Selection -->
+                <div class="input-group">
+                    <label>Select Your Campus Role</label>
+                    <div class="role-picker-container" id="role-picker-box">
+                        <!-- Role Option 1: Organizer -->
+                        <label class="role-card-label" for="role-organizer">
+                            <input type="radio" id="role-organizer" name="userRole" value="organizer" checked>
+                            <div class="role-icon-box">
+                                <i class="ph-bold ph-squares-four"></i>
+                            </div>
+                            <div class="role-text-content">
+                                <span class="role-text-title">Club Organizer / Lead</span>
+                                <span class="role-text-desc">Manage events, ticketing, merchandise, treasury &amp; tasks</span>
+                            </div>
+                            <div class="role-check-indicator">
+                                <i class="ph-bold ph-check"></i>
+                            </div>
+                        </label>
+
+                        <!-- Role Option 2: Club Member -->
+                        <label class="role-card-label" for="role-member">
+                            <input type="radio" id="role-member" name="userRole" value="member">
+                            <div class="role-icon-box">
+                                <i class="ph-bold ph-users"></i>
+                            </div>
+                            <div class="role-text-content">
+                                <span class="role-text-title">Club Member / Student</span>
+                                <span class="role-text-desc">Join organizations, browse directory, access member ticket rates</span>
+                            </div>
+                            <div class="role-check-indicator">
+                                <i class="ph-bold ph-check"></i>
+                            </div>
+                        </label>
+
+                        <!-- Role Option 3: Event Staff / Scanner -->
+                        <label class="role-card-label" for="role-staff">
+                            <input type="radio" id="role-staff" name="userRole" value="staff">
+                            <div class="role-icon-box">
+                                <i class="ph-bold ph-scan"></i>
+                            </div>
+                            <div class="role-text-content">
+                                <span class="role-text-title">Door Volunteer / Event Staff</span>
+                                <span class="role-text-desc">Gate check-ins, QR ticket scanner &amp; merchandise distributor</span>
+                            </div>
+                            <div class="role-check-indicator">
+                                <i class="ph-bold ph-check"></i>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. Dynamic Field: Club Name for Organizers -->
+                <div class="input-group role-conditional-field" id="organizer-extra-field">
+                    <label for="reg-club-name">Club / Organization Name</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-buildings"></i>
+                        <input type="text" id="reg-club-name" placeholder="e.g. Robotics Club, Cultural Committee">
+                    </div>
+                    <span class="input-hint">Your club will be established immediately upon signup</span>
+                </div>
+
+                <!-- 3. Dynamic Field: Student ID for Members -->
+                <div class="input-group role-conditional-field" id="member-extra-field" style="display: none;">
+                    <label for="reg-student-id">Student ID / USN (Optional)</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-identification-card"></i>
+                        <input type="text" id="reg-student-id" placeholder="e.g. 1NT22CS102">
+                    </div>
+                    <span class="input-hint">Used for campus verification &amp; directory listing</span>
+                </div>
+
+                <!-- 4. Core Credentials -->
+                <div class="input-group">
+                    <label for="reg-name">Full Name</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-user"></i>
+                        <input type="text" id="reg-name" placeholder="e.g. Alex Morgan" required autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="reg-email">College / Personal Email</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-envelope"></i>
+                        <input type="email" id="reg-email" placeholder="name@college.edu" required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="reg-password">Password</label>
+                    <div class="input-wrapper">
+                        <i class="ph ph-lock-key"></i>
+                        <input type="password" id="reg-password" placeholder="At least 6 characters" required autocomplete="new-password" minlength="6">
+                    </div>
+                    <span class="input-hint">Must be at least 6 characters long</span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="register-submit-btn" class="primary-btn">
+                    <i class="ph-bold ph-user-plus"></i>
+                    <span>Create Account &amp; Enter Workspace</span>
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span>or register with Google</span>
+            </div>
+
+            <!-- Instant Google Sign-Up -->
+            <div class="auth-actions">
+                <button id="google-signup-btn" class="google-btn" type="button">
+                    <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.904,36.218,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                    </svg>
+                    <span>Register with Google</span>
+                </button>
+            </div>
+
+            <!-- Feedback Message Area -->
+            <div id="message" class="message-area" role="alert"></div>
+
+            <!-- Footer Links -->
+            <div class="login-footer">
+                <p style="margin: 0 0 12px; font-size: 0.9rem; color: var(--muted); text-align: center;">
+                    Already have an account? <a href="login.html" style="font-weight: 700; color: var(--accent); text-decoration: none;">Sign In &rarr;</a>
+                </p>
+                <a href="../index.html" class="back-link">
+                    <i class="ph ph-caret-left"></i>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs & App Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="../lib/contracts/passtrack-core.js"></script>
+    <script src="../lib/toast.js"></script>
+    <script src="register.js"></script>
+</body>
+</html>

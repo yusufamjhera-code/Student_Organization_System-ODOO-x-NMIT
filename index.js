@@ -68,48 +68,81 @@ document.addEventListener('DOMContentLoaded', () => {
             let roleLabel = 'Organizer';
             let target = 'organizer/dashboard.html';
 
-            // 1. Check if user owns an organization
-            const orgSnap = await firestore.collection('organizations')
-                .where('ownerId', '==', user.uid)
-                .limit(1)
-                .get();
-
-            if (!orgSnap.empty) {
-                roleLabel = 'Club Lead / Organizer';
-                target = 'organizer/dashboard.html';
-                sessionStorage.setItem('authType', 'admin');
-                sessionStorage.setItem('orgId', orgSnap.docs[0].id);
-            } else if (email) {
-                // 2. Check if user is a member of an organization
-                const memberSnap = await firestore.collection('members')
-                    .where('email', '==', email)
-                    .limit(1)
-                    .get();
-
-                if (!memberSnap.empty) {
+            // 0. Check if user has an explicit role registered in userProfiles
+            const profileDoc = await firestore.collection('userProfiles').doc(user.uid).get();
+            if (profileDoc.exists) {
+                const profile = profileDoc.data();
+                if (profile.role === 'staff' || profile.role === 'volunteer') {
+                    roleLabel = 'Door Staff / Scanner';
+                    target = 'distributor/distributor.html';
+                    sessionStorage.setItem('authType', 'staff');
+                    sessionStorage.setItem('collaboratorEmail', email);
+                } else if (profile.role === 'member') {
                     roleLabel = 'Club Member';
                     target = 'members/directory.html';
                     sessionStorage.setItem('authType', 'member');
                     sessionStorage.setItem('memberEmail', email);
-                    const mData = memberSnap.docs[0].data();
-                    if (mData.orgId) sessionStorage.setItem('orgId', mData.orgId);
-                } else {
-                    // 3. Check if user is a staff collaborator on events
-                    const eventSnap = await firestore.collection('events')
-                        .where('collaboratorEmails', 'array-contains', email)
+                    if (profile.orgId) sessionStorage.setItem('orgId', profile.orgId);
+                } else if (profile.role === 'organizer') {
+                    const orgSnap = await firestore.collection('organizations')
+                        .where('ownerId', '==', user.uid)
                         .limit(1)
                         .get();
-
-                    if (!eventSnap.empty) {
-                        roleLabel = 'Event Staff / Scanner';
+                    if (!orgSnap.empty) {
+                        roleLabel = 'Club Lead / Organizer';
                         target = 'organizer/dashboard.html';
-                        sessionStorage.setItem('authType', 'collaborator');
-                        sessionStorage.setItem('collaboratorEmail', email);
+                        sessionStorage.setItem('authType', 'admin');
+                        sessionStorage.setItem('orgId', orgSnap.docs[0].id);
                     } else {
-                        // 4. Default for newly signed in organizer without org yet
                         roleLabel = 'Organizer (New Setup)';
                         target = 'organizer/setup-org.html';
                         sessionStorage.setItem('authType', 'admin');
+                    }
+                }
+            } else {
+                // 1. Fallback: Check if user owns an organization
+                const orgSnap = await firestore.collection('organizations')
+                    .where('ownerId', '==', user.uid)
+                    .limit(1)
+                    .get();
+
+                if (!orgSnap.empty) {
+                    roleLabel = 'Club Lead / Organizer';
+                    target = 'organizer/dashboard.html';
+                    sessionStorage.setItem('authType', 'admin');
+                    sessionStorage.setItem('orgId', orgSnap.docs[0].id);
+                } else if (email) {
+                    // 2. Check if user is a member of an organization
+                    const memberSnap = await firestore.collection('members')
+                        .where('email', '==', email)
+                        .limit(1)
+                        .get();
+
+                    if (!memberSnap.empty) {
+                        roleLabel = 'Club Member';
+                        target = 'members/directory.html';
+                        sessionStorage.setItem('authType', 'member');
+                        sessionStorage.setItem('memberEmail', email);
+                        const mData = memberSnap.docs[0].data();
+                        if (mData.orgId) sessionStorage.setItem('orgId', mData.orgId);
+                    } else {
+                        // 3. Check if user is a staff collaborator on events
+                        const eventSnap = await firestore.collection('events')
+                            .where('collaboratorEmails', 'array-contains', email)
+                            .limit(1)
+                            .get();
+
+                        if (!eventSnap.empty) {
+                            roleLabel = 'Event Staff / Scanner';
+                            target = 'distributor/distributor.html';
+                            sessionStorage.setItem('authType', 'collaborator');
+                            sessionStorage.setItem('collaboratorEmail', email);
+                        } else {
+                            // 4. Default for newly signed in organizer without org yet
+                            roleLabel = 'Organizer (New Setup)';
+                            target = 'organizer/setup-org.html';
+                            sessionStorage.setItem('authType', 'admin');
+                        }
                     }
                 }
             }
@@ -329,31 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- QUICK PREVIEW / TESTING ACCESS ---
-    const previewOrgBtn = document.getElementById('preview-organizer-btn');
-    const previewMemberBtn = document.getElementById('preview-member-btn');
 
-    if (previewOrgBtn) {
-        previewOrgBtn.addEventListener('click', () => {
-            sessionStorage.setItem('authType', 'admin');
-            sessionStorage.setItem('demoUser', 'true');
-            if (window.PassTrackToast) window.PassTrackToast.success('Opening Organizer Dashboard in Preview Mode...');
-            setTimeout(() => {
-                window.location.href = 'organizer/dashboard.html';
-            }, 500);
-        });
-    }
-
-    if (previewMemberBtn) {
-        previewMemberBtn.addEventListener('click', () => {
-            sessionStorage.setItem('authType', 'member');
-            sessionStorage.setItem('demoUser', 'true');
-            if (window.PassTrackToast) window.PassTrackToast.success('Opening Member Directory in Preview Mode...');
-            setTimeout(() => {
-                window.location.href = 'members/directory.html';
-            }, 500);
-        });
-    }
 
     // --- MOBILE QUICK JUMP BUTTON HANDLER ---
     if (mobileAuthJumpBtn) {

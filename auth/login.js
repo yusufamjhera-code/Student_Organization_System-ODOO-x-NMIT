@@ -44,10 +44,58 @@ document.addEventListener('DOMContentLoaded', () => {
         showMessage('✓ Authenticated! Detecting your role...', 'success');
 
         try {
-            // 1. Check if user is an Organizer
+            // Check for redirect param
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectParam = urlParams.get('redirect');
+
+            // 0. Check if user has an explicit role in userProfiles
+            const profileDoc = await firestore.collection('userProfiles').doc(user.uid).get();
+            if (profileDoc.exists) {
+                const profile = profileDoc.data();
+                if (redirectParam && !redirectParam.includes('login.html')) {
+                    setTimeout(() => { window.location.href = redirectParam; }, 600);
+                    return;
+                }
+
+                if (profile.role === 'staff' || profile.role === 'volunteer') {
+                    sessionStorage.setItem('authType', 'staff');
+                    sessionStorage.setItem('collaboratorEmail', (user.email || '').toLowerCase());
+                    setTimeout(() => {
+                        window.location.href = '../distributor/distributor.html';
+                    }, 600);
+                    return;
+                } else if (profile.role === 'member') {
+                    sessionStorage.setItem('authType', 'member');
+                    sessionStorage.setItem('memberEmail', (user.email || '').toLowerCase());
+                    if (profile.orgId) sessionStorage.setItem('orgId', profile.orgId);
+                    setTimeout(() => {
+                        window.location.href = '../members/directory.html';
+                    }, 600);
+                    return;
+                } else if (profile.role === 'organizer') {
+                    const orgSnap = await firestore.collection('organizations')
+                        .where('ownerId', '==', user.uid)
+                        .limit(1)
+                        .get();
+
+                    sessionStorage.setItem('authType', 'admin');
+                    if (!orgSnap.empty) {
+                        sessionStorage.setItem('orgId', orgSnap.docs[0].id);
+                        setTimeout(() => {
+                            window.location.href = '../organizer/dashboard.html';
+                        }, 600);
+                    } else {
+                        setTimeout(() => {
+                            window.location.href = '../organizer/setup-org.html';
+                        }, 600);
+                    }
+                    return;
+                }
+            }
+
+            // 1. Fallback: Check if user is an Organizer
             const organizerDoc = await firestore.collection('organizers').doc(user.uid).get();
             if (!organizerDoc.exists) {
-                // Ensure record exists
                 await firestore.collection('organizers').doc(user.uid).set({
                     organizerId: user.uid,
                     email: user.email,
@@ -65,12 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('authType', 'admin');
                 sessionStorage.setItem('orgId', orgSnap.docs[0].id);
                 setTimeout(() => {
-                    window.location.href = '../organizer/dashboard.html';
+                    window.location.href = redirectParam || '../organizer/dashboard.html';
                 }, 600);
                 return;
             }
 
-            // 2. Check if user email is registered as an active Member
+            // 2. Fallback: Check if user email is registered as an active Member
             if (user.email) {
                 const memberSnap = await firestore.collection('members')
                     .where('email', '==', user.email.toLowerCase())
@@ -83,12 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const mData = memberSnap.docs[0].data();
                     if (mData.orgId) sessionStorage.setItem('orgId', mData.orgId);
                     setTimeout(() => {
-                        window.location.href = '../members/directory.html';
+                        window.location.href = redirectParam || '../members/directory.html';
                     }, 600);
                     return;
                 }
 
-                // 3. Check if user is an event collaborator
+                // 3. Fallback: Check if user is an event collaborator
                 const eventSnap = await firestore.collection('events')
                     .where('collaboratorEmails', 'array-contains', user.email.toLowerCase())
                     .limit(1)
@@ -98,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     sessionStorage.setItem('authType', 'collaborator');
                     sessionStorage.setItem('collaboratorEmail', user.email.toLowerCase());
                     setTimeout(() => {
-                        window.location.href = '../organizer/dashboard.html';
+                        window.location.href = redirectParam || '../distributor/distributor.html';
                     }, 600);
                     return;
                 }
@@ -107,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Default for newly registered organizers with no created org yet
             sessionStorage.setItem('authType', 'admin');
             setTimeout(() => {
-                window.location.href = '../organizer/setup-org.html';
+                window.location.href = redirectParam || '../organizer/setup-org.html';
             }, 600);
 
         } catch (err) {

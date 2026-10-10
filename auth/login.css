@@ -315,3 +315,104 @@ body {
 .back-link:hover {
     color: var(--ink);
 }
+
+/* ==================== ROLE SELECTION CARDS ==================== */
+.role-picker-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.role-card-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    user-select: none;
+}
+
+.role-card-label input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.role-card-label:hover {
+    border-color: var(--ink-2);
+    background: var(--surface-2);
+}
+
+.role-card-label.selected,
+.role-card-label:has(input[type="radio"]:checked) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.role-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.role-card-label:has(input[type="radio"]:checked) .role-icon-box {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+}
+
+.role-text-content {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    flex: 1;
+}
+
+.role-text-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.role-text-desc {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.35;
+    margin-top: 1px;
+}
+
+.role-check-indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    font-size: 11px;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.role-card-label:has(input[type="radio"]:checked) .role-check-indicator {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #ffffff;
+}

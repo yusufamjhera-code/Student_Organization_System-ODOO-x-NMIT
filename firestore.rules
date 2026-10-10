@@ -233,5 +233,21 @@ service cloud.firestore {
       // Financial ledger is read/edit restricted to authenticated club managers
       allow read, update, delete: if isAuthenticated();
     }
+    
+    // =========================================================================
+    // 13. USER PROFILES & ROLE PREFERENCES
+    // =========================================================================
+    match /userProfiles/{uid} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(uid);
+    }
+
+    // =========================================================================
+    // 14. ACTIVE CONCURRENT SESSIONS
+    // =========================================================================
+    match /active_sessions/{uid} {
+      allow read, write: if isOwner(uid);
+    }
   }
 }
+
