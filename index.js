@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const enterWorkspaceBtn = document.getElementById('enter-workspace-btn');
     const signoutSessionBtn = document.getElementById('signout-session-btn');
     const authSubtitle = document.getElementById('auth-subtitle');
+    const mobileAuthJumpBtn = document.getElementById('mobile-auth-jump-btn');
 
     let destinationUrl = 'organizer/dashboard.html';
 
@@ -113,12 +114,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // Check if there is an intended redirect destination
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectParam = urlParams.get('redirect');
+            if (redirectParam && !redirectParam.includes('index.html')) {
+                target = redirectParam;
+            }
+
             destinationUrl = target;
+
+            // Register session in SessionManager if available
+            if (window.PassTrackSessionManager && user && !user.isAnonymous) {
+                try {
+                    await window.PassTrackSessionManager.createSession(user.uid, {
+                        role: roleLabel,
+                        email: user.email
+                    });
+                } catch (sErr) {
+                    console.warn('[SessionManager] session creation warning:', sErr);
+                }
+            }
 
             // Update UI elements
             if (userRoleBadge) {
                 userRoleBadge.textContent = roleLabel;
                 userRoleBadge.className = 'status-chip status-chip--accent';
+            }
+
+            if (mobileAuthJumpBtn) {
+                mobileAuthJumpBtn.innerHTML = '<i class="ph-bold ph-squares-four"></i> <span>Workspace</span>';
             }
 
             if (enterWorkspaceBtn) {
@@ -155,12 +179,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (userNameEl) userNameEl.textContent = user.displayName || user.email.split('@')[0];
                 if (userEmailEl) userEmailEl.textContent = user.email;
                 if (authSubtitle) authSubtitle.textContent = "You are currently signed in. Jump right into your active workspace:";
+                if (mobileAuthJumpBtn) {
+                    mobileAuthJumpBtn.innerHTML = '<i class="ph-bold ph-squares-four"></i> <span>Workspace</span>';
+                }
 
                 await resolveRoleAndNavigate(user, false);
             } else {
                 if (unauthContainer) unauthContainer.style.display = 'block';
                 if (authSessionContainer) authSessionContainer.style.display = 'none';
                 if (authSubtitle) authSubtitle.textContent = "Universal sign-in. Your verified role is determined automatically.";
+                if (mobileAuthJumpBtn) {
+                    mobileAuthJumpBtn.innerHTML = '<i class="ph-bold ph-sign-in"></i> <span>Login / Sign Up</span>';
+                }
             }
         });
     }
@@ -322,6 +352,30 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 window.location.href = 'members/directory.html';
             }, 500);
+        });
+    }
+
+    // --- MOBILE QUICK JUMP BUTTON HANDLER ---
+    if (mobileAuthJumpBtn) {
+        mobileAuthJumpBtn.addEventListener('click', (e) => {
+            if (auth && auth.currentUser && !auth.currentUser.isAnonymous) {
+                e.preventDefault();
+                window.location.href = destinationUrl;
+                return;
+            }
+            e.preventDefault();
+            const authCard = document.getElementById('auth-card-box');
+            if (authCard) {
+                authCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                    const emailInput = document.getElementById('delegated-email');
+                    if (emailInput) {
+                        emailInput.focus();
+                        emailInput.classList.add('pulse-focus');
+                        setTimeout(() => emailInput.classList.remove('pulse-focus'), 1000);
+                    }
+                }, 350);
+            }
         });
     }
 });

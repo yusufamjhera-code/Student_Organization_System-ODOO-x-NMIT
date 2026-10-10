@@ -221,6 +221,17 @@ body.sonnet-home {
     color: var(--muted);
 }
 
+.guest-btn-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Mobile Quick Auth Button: strictly hidden on desktop */
+.mobile-quick-auth-btn {
+    display: none !important;
+}
+
 /* ==========================================================================
    RIGHT PANEL: UNIVERSAL AUTH CARD (Sonnet Clip Style)
    ========================================================================= */
@@ -397,9 +408,10 @@ body.sonnet-home {
     transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.input-container input:focus {
+.input-container input:focus,
+.input-container input.pulse-focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
+    box-shadow: 0 0 0 4px var(--accent-soft);
 }
 
 .input-hint-text {
@@ -574,16 +586,23 @@ body.sonnet-home {
 }
 
 @media (max-width: 992px) {
+    html {
+        scroll-behavior: smooth;
+    }
+
     body.sonnet-home {
         height: auto;
         min-height: 100vh;
+        min-height: 100dvh;
         overflow-x: hidden;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .sonnet-layout {
         height: auto;
         min-height: 100vh;
+        min-height: 100dvh;
         grid-template-columns: 1fr;
         overflow: visible;
     }
@@ -593,17 +612,175 @@ body.sonnet-home {
         overflow: visible;
         border-right: none;
         border-bottom: 1px solid var(--line);
-        padding: 36px 24px;
-        gap: 28px;
+        padding: clamp(24px, 4vw, 36px) clamp(18px, 4vw, 32px);
+        gap: clamp(20px, 3.5vw, 28px);
+    }
+
+    .editorial-brand-row {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    /* Mobile Quick Access Sign-In Button */
+    .mobile-quick-auth-btn {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: var(--r-pill);
+        background: var(--accent);
+        color: var(--accent-ink);
+        border: 1px solid var(--accent-border);
+        box-shadow: 0 4px 12px -2px rgba(226, 91, 46, 0.4);
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: transform var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+        flex-shrink: 0;
+    }
+
+    .mobile-quick-auth-btn:hover {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px -2px rgba(226, 91, 46, 0.5);
+    }
+
+    .mobile-quick-auth-btn:active {
+        transform: scale(0.97);
+    }
+
+    .editorial-hero h1 {
+        font-size: clamp(2rem, 5.5vw, 2.6rem);
+        line-height: 1.1;
+    }
+
+    .editorial-hero p.lead {
+        font-size: clamp(0.96rem, 2.2vw, 1.05rem);
+        line-height: 1.55;
+    }
+
+    .features-stack {
+        gap: 14px;
+    }
+
+    .feature-item {
+        gap: 14px;
+    }
+
+    .editorial-footer {
+        padding-top: 16px;
+        gap: 12px;
     }
 
     .auth-panel {
         height: auto;
         overflow: visible;
-        padding: 40px 20px;
+        padding: clamp(32px, 5vw, 48px) clamp(16px, 4vw, 28px);
+        background-color: var(--bg);
     }
 
     .auth-card-box {
-        max-width: 100%;
+        max-width: 440px;
+        margin: 0 auto;
+        width: 100%;
+        box-shadow: var(--shadow-lg);
+    }
+}
+
+@media (max-width: 580px) {
+    .editorial-panel {
+        padding: 20px 16px;
+        gap: 18px;
+    }
+
+    .brand-name {
+        font-size: 1.55rem;
+    }
+
+    .brand-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        border-radius: 10px;
+    }
+
+    .mobile-quick-auth-btn {
+        padding: 7px 13px;
+        font-size: 12px;
+        gap: 5px;
+    }
+
+    .editorial-hero h1 {
+        font-size: clamp(1.68rem, 6.8vw, 2.05rem);
+        line-height: 1.14;
+        margin-bottom: 8px;
+    }
+
+    .editorial-hero p.lead {
+        font-size: 0.92rem;
+        line-height: 1.5;
+    }
+
+    .features-stack {
+        gap: 12px;
+    }
+
+    .feature-item {
+        gap: 12px;
+    }
+
+    .feature-icon-box {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        border-radius: 8px;
+    }
+
+    .feature-content h4 {
+        font-size: 14px;
+    }
+
+    .feature-content p {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .guest-action-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .guest-btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .guest-btn-group .btn {
+        width: 100%;
+        justify-content: center;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        padding: 9px 14px;
+        font-size: 13px;
+    }
+
+    .auth-panel {
+        padding: 24px 14px 44px;
+    }
+
+    .auth-card-box {
+        padding: 22px 18px;
+    }
+
+    .auth-card-header h2 {
+        font-size: 1.6rem;
     }
 }
