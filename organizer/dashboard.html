@@ -47,41 +47,53 @@
         <!-- SECTION 1: Executive KPI Metrics Bar -->
         <section class="kpi-section">
             <div class="kpi-grid">
-                <div class="kpi-card">
+                <a href="#events-portfolio-section" class="kpi-card" title="View all events in your portfolio">
                     <div class="kpi-top">
-                        <span class="kpi-label">Active Events</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="kpi-label">Active Events</span>
+                            <i class="ph-bold ph-arrow-down-right kpi-arrow"></i>
+                        </div>
                         <div class="kpi-icon accent"><i class="ph-bold ph-calendar-check"></i></div>
                     </div>
                     <div class="kpi-val" id="kpi-events-count">2</div>
                     <div class="kpi-sub"><span class="kpi-tag good">Live &bull; Verified</span> 1 draft scheduled</div>
-                </div>
+                </a>
 
-                <div class="kpi-card">
+                <a href="../tickets/view.html?event=hacknmit-2026" class="kpi-card" title="View attendee passes and check-in rosters">
                     <div class="kpi-top">
-                        <span class="kpi-label">Total Passes Issued</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="kpi-label">Total Passes Issued</span>
+                            <i class="ph-bold ph-arrow-up-right kpi-arrow"></i>
+                        </div>
                         <div class="kpi-icon blue"><i class="ph-bold ph-ticket"></i></div>
                     </div>
                     <div class="kpi-val">350</div>
                     <div class="kpi-sub"><span class="kpi-tag blue">82% Capacity</span> 300 hackathon &bull; 50 summit</div>
-                </div>
+                </a>
 
-                <div class="kpi-card">
+                <a href="../treasury/dashboard.html" class="kpi-card" title="Open chapter treasury ledger and accounting">
                     <div class="kpi-top">
-                        <span class="kpi-label">Treasury Balance</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="kpi-label">Treasury Balance</span>
+                            <i class="ph-bold ph-arrow-up-right kpi-arrow"></i>
+                        </div>
                         <div class="kpi-icon good"><i class="ph-bold ph-coins"></i></div>
                     </div>
                     <div class="kpi-val">₹1,27,000</div>
                     <div class="kpi-sub"><span class="kpi-tag good">+ ₹84k Inflow</span> Net available funds</div>
-                </div>
+                </a>
 
-                <div class="kpi-card">
+                <a href="../members/directory.html" class="kpi-card" title="Open member directory roster">
                     <div class="kpi-top">
-                        <span class="kpi-label">Organization Roster</span>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="kpi-label">Organization Roster</span>
+                            <i class="ph-bold ph-arrow-up-right kpi-arrow"></i>
+                        </div>
                         <div class="kpi-icon purple"><i class="ph-bold ph-users-three"></i></div>
                     </div>
                     <div class="kpi-val">42</div>
                     <div class="kpi-sub"><span class="kpi-tag purple">Active Roster</span> 6 core leads &bull; 36 members</div>
-                </div>
+                </a>
             </div>
         </section>
 
@@ -178,7 +190,7 @@
         </section>
 
         <!-- SECTION 3: Events Portfolio & Live Status -->
-        <section class="events-portfolio-section">
+        <section class="events-portfolio-section" id="events-portfolio-section">
             <div class="portfolio-card">
                 <div class="portfolio-header">
                     <div>
@@ -187,12 +199,6 @@
                             <span class="badge" id="event-count">0</span>
                         </div>
                         <p class="section-desc">Manage ticketing access control, door scanner passes, station hours, and attendee rosters.</p>
-                    </div>
-                    <div class="portfolio-actions">
-                        <button type="button" class="btn btn--primary" id="open-create-modal-btn-2">
-                            <i class="ph-bold ph-plus-circle"></i>
-                            <span>Create Event</span>
-                        </button>
                     </div>
                 </div>
 

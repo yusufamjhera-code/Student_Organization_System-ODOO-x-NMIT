@@ -1688,12 +1688,32 @@ input[type="date"].valid {
     border-radius: var(--r);
     padding: 1.25rem 1.4rem;
     box-shadow: var(--shadow-sm);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    position: relative;
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    border-color: var(--accent);
     box-shadow: var(--shadow);
+}
+
+.kpi-arrow {
+    font-size: 0.82rem;
+    color: var(--muted);
+    opacity: 0.45;
+    transition: all 0.2s ease;
+}
+
+.kpi-card:hover .kpi-arrow {
+    opacity: 1;
+    color: var(--accent);
+    transform: translate(2px, -2px);
 }
 
 .kpi-top {
