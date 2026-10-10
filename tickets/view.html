@@ -53,6 +53,7 @@
     <script src="../lib/firebase-config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            const auth = firebase.auth();
             const firestore = db;
             const urlParams = new URLSearchParams(window.location.search);
             const eventId = urlParams.get('event');
@@ -61,11 +62,23 @@
             
             if (!eventId) return;
 
-            try {
-                const eventDoc = await firestore.collection('events').doc(eventId).get();
-                if (!eventDoc.exists) return;
-                
-                const eventData = eventDoc.data();
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    window.location.href = '../auth/login.html';
+                    return;
+                }
+
+                try {
+                    const eventDoc = await firestore.collection('events').doc(eventId).get();
+                    if (!eventDoc.exists) return;
+                    
+                    const eventData = eventDoc.data();
+                    
+                    // Verify user is the event organizer
+                    if (eventData.organizerId !== user.uid) {
+                        window.location.href = '../organizer/dashboard.html';
+                        return;
+                    }
                 document.getElementById('event-name-meta').textContent = eventData.name;
                 const tConfig = eventData.ticketConfig || {};
 
@@ -115,9 +128,10 @@
                         document.getElementById('stat-revenue').textContent = `₹${revenue}`;
                     });
 
-            } catch(err) {
-                console.error(err);
-            }
+                } catch(err) {
+                    console.error(err);
+                }
+            });
         });
     </script>
 </body>

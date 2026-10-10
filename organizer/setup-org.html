@@ -1,0 +1,230 @@
+<!-- File: organizer/setup-org.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Organization | Pass Track</title>
+    <link rel="stylesheet" href="../auth/login.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .login-wrapper { max-width: 520px; }
+
+        .setup-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .setup-form .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            text-align: left;
+        }
+
+        .setup-form label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .setup-form label i {
+            font-size: 1rem;
+            color: var(--primary);
+        }
+
+        .setup-form input,
+        .setup-form textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            background: var(--bg);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .setup-form input:focus,
+        .setup-form textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+
+        .setup-form textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .setup-form .input-hint {
+            font-size: 0.78rem;
+            color: var(--text-sub);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .input-row { grid-template-columns: 1fr; }
+        }
+
+        .setup-form .primary-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--primary-grad);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-glow);
+            margin-top: 0.5rem;
+        }
+
+        .setup-form .primary-btn:hover:not(:disabled) {
+            background: var(--primary-grad-hover);
+            transform: translateY(-1px);
+        }
+
+        .setup-form .primary-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .welcome-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: var(--border);
+            margin: 0.25rem 0;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-sub);
+            margin-bottom: -0.5rem;
+        }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="form-container">
+            <!-- Branding Header -->
+            <div class="login-header">
+                <div class="icon-circle">
+                    <i class="ph-fill ph-buildings"></i>
+                </div>
+                <div class="welcome-badge">
+                    <i class="ph-bold ph-sparkle"></i> First-time Setup
+                </div>
+                <h2>Setup Your Organization</h2>
+                <p class="subtitle">Tell us about your student organization. You can change these later.</p>
+            </div>
+
+            <form id="setup-org-form" class="setup-form">
+                <!-- Organization Name -->
+                <div class="input-group">
+                    <label for="org-name">
+                        <i class="ph ph-flag-banner"></i> Organization Name
+                    </label>
+                    <input type="text" id="org-name" placeholder="e.g., NMIT Coding Club" required minlength="2" maxlength="100">
+                    <span class="input-hint">This is what members and public visitors will see.</span>
+                </div>
+
+                <!-- Description -->
+                <div class="input-group">
+                    <label for="org-desc">
+                        <i class="ph ph-text-align-left"></i> Description
+                    </label>
+                    <textarea id="org-desc" placeholder="A brief description of what your organization does..." maxlength="500"></textarea>
+                </div>
+
+                <div class="divider"></div>
+                <div class="section-label">Membership Settings</div>
+
+                <!-- Membership Fee & Duration -->
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="org-fee">
+                            <i class="ph ph-currency-inr"></i> Membership Fee
+                        </label>
+                        <input type="number" id="org-fee" placeholder="0" min="0" step="1" value="0">
+                        <span class="input-hint">Set to 0 for free membership.</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="org-duration">
+                            <i class="ph ph-calendar-dots"></i> Duration (days)
+                        </label>
+                        <input type="number" id="org-duration" placeholder="365" min="1" max="3650" value="365">
+                        <span class="input-hint">How long a membership lasts.</span>
+                    </div>
+                </div>
+
+                <!-- Member Discount -->
+                <div class="input-group">
+                    <label for="org-discount">
+                        <i class="ph ph-percent"></i> Member Discount (%)
+                    </label>
+                    <input type="number" id="org-discount" placeholder="10" min="0" max="100" value="10">
+                    <span class="input-hint">Discount on tickets and merchandise for active members.</span>
+                </div>
+
+                <button type="submit" id="setup-submit-btn" class="primary-btn">
+                    <i class="ph-bold ph-rocket-launch"></i>
+                    <span>Launch Organization</span>
+                </button>
+            </form>
+
+            <!-- Footer Navigation -->
+            <div class="login-footer" style="margin-top: 1.5rem;">
+                <a href="../index.html" class="back-link">
+                    <i class="ph ph-caret-left"></i>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="setup-org.js"></script>
+</body>
+</html>

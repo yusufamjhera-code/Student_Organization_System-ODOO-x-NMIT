@@ -65,26 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const result = await auth.signInWithPopup(provider);
                 const user = result.user;
-                const isNewUser = result.additionalUserInfo?.isNewUser;
 
                 showMessage('✓ Verified! Setting up your account...', 'success');
 
-                // Create profile for new organizers
-                if (isNewUser) {
+                // Create organizer profile if it doesn't exist (minimal — no org name)
+                const organizerDoc = await firestore.collection('organizers').doc(user.uid).get();
+                if (!organizerDoc.exists) {
                     await firestore.collection('organizers').doc(user.uid).set({
                         organizerId: user.uid,
                         email: user.email,
-                        organizationName: user.displayName || "New Organization",
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-
-                    // Auto-create organization document for new admin
-                    await firestore.collection('organizations').add({
-                        ownerId: user.uid,
-                        name: user.displayName || "My Organization",
-                        membershipFee: 0,
-                        membershipDuration: 365,
-                        memberDiscountPercent: 10,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
@@ -93,9 +82,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('authType', 'admin');
                 sessionStorage.removeItem('collaboratorEmail');
 
-                // Redirect to dashboard
+                // Check if organization exists for this user
+                const orgSnap = await firestore.collection('organizations')
+                    .where('ownerId', '==', user.uid)
+                    .limit(1)
+                    .get();
+
+                // Redirect: new users go to org setup, existing users go to dashboard
+                const redirectUrl = orgSnap.empty
+                    ? '../organizer/setup-org.html'
+                    : '../organizer/dashboard.html';
+
                 setTimeout(() => {
-                    window.location.href = '../organizer/dashboard.html';
+                    window.location.href = redirectUrl;
                 }, 800);
 
             } catch (error) {

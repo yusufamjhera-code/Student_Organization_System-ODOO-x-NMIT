@@ -4,8 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const firestore = db; // Initialized in lib/firebase-config.js
 
     // --- 1. AUTHENTICATION & INITIALIZATION ---
-    const eventId = sessionStorage.getItem('distributorEventId');
-    if (!eventId) {
+    const eventDocId = sessionStorage.getItem('distributorEventDocId');
+    const eventId = sessionStorage.getItem('distributorEventId'); // kept for display only
+    if (!eventDocId) {
         window.location.href = 'distributor.html';
         return;
     }
@@ -37,19 +38,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadStations = async () => {
         try {
-            const snap = await firestore.collection('events').where('eventId', '==', eventId).get();
-            if (!snap.empty) {
-                const eventDoc = snap.docs[0];
+            // Use eventDocId (immutable) instead of eventId (mutable slug)
+            const eventDoc = await firestore.collection('events').doc(eventDocId).get();
+            if (eventDoc.exists) {
                 const data = eventDoc.data();
                 const stations = data.stations || [];
 
+                // Filter stations by today's date
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+                const filteredStations = stations.filter(s => {
+                    const from = s.dateFrom || s.date || 'all';
+                    const to = s.dateTo || s.date || 'all';
+                    if (from === 'all' || to === 'all') return true;
+                    return todayStr >= from && todayStr <= to;
+                });
+
                 stationOptions.innerHTML = '';
-                if (stations.length === 0) {
-                    stationOptions.innerHTML = '<p style="color:#ef4444; font-weight:600; padding:20px;">No scan points configured.</p>';
+                if (filteredStations.length === 0) {
+                    stationOptions.innerHTML = '<p style="color:#ef4444; font-weight:600; padding:20px;">No scan points active for today.</p>';
                     return;
                 }
 
-                stations.forEach(s => {
+                filteredStations.forEach(s => {
                     const btn = document.createElement('button');
                     btn.className = 'station-btn';
                     btn.style.cssText = "width:100%; padding:16px; margin-bottom:12px; border-radius:14px; border:1.5px solid #e2e8f0; background:#fff; cursor:pointer; text-align:left; transition: all 0.2s;";
@@ -60,6 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.onclick = () => selectStation(s);
                     stationOptions.appendChild(btn);
                 });
+            } else {
+                showResult(false, 'Event Not Found', 'This event no longer exists.');
             }
         } catch (e) {
             console.error("Load error:", e);
@@ -92,9 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const usersRef = firestore.collection('users');
+            // Use eventDocId (immutable) so tokens don't break when public ID changes
             const query = usersRef
                 .where('qrToken', '==', decodedText)
-                .where('eventId', '==', eventId);
+                .where('eventDocId', '==', eventDocId);
 
             const querySnapshot = await query.get();
 

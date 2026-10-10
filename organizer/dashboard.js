@@ -283,8 +283,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const fetchOrganizerDetails = async (uid) => {
-        const doc = await firestore.collection('organizers').doc(uid).get();
-        if (doc.exists) orgNameHeader.textContent = doc.data().organizationName;
+        // Read org name from the organizations collection (user-provided name)
+        const orgSnap = await firestore.collection('organizations')
+            .where('ownerId', '==', uid)
+            .limit(1)
+            .get();
+        if (!orgSnap.empty) {
+            orgNameHeader.textContent = orgSnap.docs[0].data().name;
+        } else {
+            // No org found — redirect to setup page
+            window.location.href = 'setup-org.html';
+        }
     };
 
     // --- EVENT LISTING (Admin) ---

@@ -217,21 +217,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     
                     if (isPaid && member) {
-                        // Auto-create transaction
-                        await firestore.collection('transactions').add({
-                            orgId: currentOrgId,
-                            type: 'income',
-                            amount: member.duesAmount || 0,
-                            category: 'dues',
-                            date: new Date().toISOString().split('T')[0],
-                            description: `Membership dues: ${member.name}`,
-                            recordedBy: currentUser.uid,
-                            recordedByName: currentUser.displayName || currentUser.email,
-                            relatedDocId: id,
-                            relatedDocType: 'member_dues',
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
+                        // Check for existing transaction to prevent duplicates
+                        const existingTxn = await firestore.collection('transactions')
+                            .where('relatedDocId', '==', id)
+                            .where('relatedDocType', '==', 'member_dues')
+                            .get();
+
+                        if (existingTxn.empty) {
+                            // Auto-create transaction only if one doesn't exist
+                            await firestore.collection('transactions').add({
+                                orgId: currentOrgId,
+                                type: 'income',
+                                amount: member.duesAmount || 0,
+                                category: 'dues',
+                                date: new Date().toISOString().split('T')[0],
+                                description: `Membership dues: ${member.name}`,
+                                recordedBy: currentUser.uid,
+                                recordedByName: currentUser.displayName || currentUser.email,
+                                relatedDocId: id,
+                                relatedDocType: 'member_dues',
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    } else if (!isPaid) {
+                        // On toggle OFF, remove the corresponding transaction
+                        const txnSnap = await firestore.collection('transactions')
+                            .where('relatedDocId', '==', id)
+                            .where('relatedDocType', '==', 'member_dues')
+                            .get();
+                        const batch = firestore.batch();
+                        txnSnap.forEach(doc => batch.delete(doc.ref));
+                        if (!txnSnap.empty) await batch.commit();
                     }
                     
                     showToast(`Dues marked as ${isPaid ? 'paid' : 'unpaid'}.`, 'success');
@@ -277,21 +294,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (isPaid && member) {
-                    // Auto-create transaction
-                    await firestore.collection('transactions').add({
-                        orgId: currentOrgId,
-                        type: 'income',
-                        amount: member.duesAmount || 0,
-                        category: 'dues',
-                        date: new Date().toISOString().split('T')[0],
-                        description: `Membership dues: ${member.name}`,
-                        recordedBy: currentUser.uid,
-                        recordedByName: currentUser.displayName || currentUser.email,
-                        relatedDocId: id,
-                        relatedDocType: 'member_dues',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    // Check for existing transaction to prevent duplicates
+                    const existingTxn = await firestore.collection('transactions')
+                        .where('relatedDocId', '==', id)
+                        .where('relatedDocType', '==', 'member_dues')
+                        .get();
+
+                    if (existingTxn.empty) {
+                        // Auto-create transaction only if one doesn't exist
+                        await firestore.collection('transactions').add({
+                            orgId: currentOrgId,
+                            type: 'income',
+                            amount: member.duesAmount || 0,
+                            category: 'dues',
+                            date: new Date().toISOString().split('T')[0],
+                            description: `Membership dues: ${member.name}`,
+                            recordedBy: currentUser.uid,
+                            recordedByName: currentUser.displayName || currentUser.email,
+                            relatedDocId: id,
+                            relatedDocType: 'member_dues',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                } else if (!isPaid) {
+                    // On toggle OFF, remove the corresponding transaction
+                    const txnSnap = await firestore.collection('transactions')
+                        .where('relatedDocId', '==', id)
+                        .where('relatedDocType', '==', 'member_dues')
+                        .get();
+                    const batch = firestore.batch();
+                    txnSnap.forEach(doc => batch.delete(doc.ref));
+                    if (!txnSnap.empty) await batch.commit();
                 }
                 
                 showToast(`Dues marked as ${isPaid ? 'paid' : 'unpaid'}.`, 'success');
