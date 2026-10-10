@@ -377,10 +377,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    bulkRemindBtn.addEventListener('click', () => {
-        const checked = document.querySelectorAll('.member-cb:checked');
-        showToast(`Sent reminders to ${checked.length} members!`, 'success');
-        checked.forEach(cb => cb.checked = false);
+    bulkRemindBtn.addEventListener('click', async () => {
+        const checked = Array.from(document.querySelectorAll('.member-cb:checked')).map(cb => cb.value);
+        if (checked.length === 0) return;
+
+        if (!window.GOOGLE_SCRIPT_URL) {
+            showToast(`Would remind ${checked.length} members (email service not configured).`, 'info');
+            checked.forEach(id => { const el = document.querySelector(`.member-cb[value="${id}"]`); if (el) el.checked = false; });
+            updateBulkBar();
+            return;
+        }
+
+        let sent = 0;
+        for (const id of checked) {
+            const member = membersData.find(m => m.id === id);
+            if (!member) continue;
+            try {
+                await fetch(window.GOOGLE_SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        security_token: "PT_SECURE_2026",
+                        type: 'reminder',
+                        to_email: member.email,
+                        to_name: member.name,
+                        org_name: orgNameMeta.textContent,
+                        dues_amount: member.duesAmount || 0,
+                        end_date: member.membershipEndDate
+                    })
+                });
+                sent++;
+            } catch (err) {
+                console.error(`Remind failed for ${member.email}:`, err);
+            }
+            await new Promise(r => setTimeout(r, 300));
+        }
+        showToast(`Sent reminders to ${sent} members!`, 'success');
+        document.querySelectorAll('.member-cb:checked').forEach(cb => cb.checked = false);
         updateBulkBar();
     });
     
@@ -402,13 +435,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    remindExpiringBtn.addEventListener('click', () => {
+    remindExpiringBtn.addEventListener('click', async () => {
         const expiring = membersData.filter(m => m.membershipStatus === 'active' && isExpiringSoon(m.membershipEndDate));
         if (expiring.length === 0) {
             showToast('No members expiring soon.', 'info');
             return;
         }
-        showToast(`Sent renewal reminders to ${expiring.length} members!`, 'success');
+
+        if (!window.GOOGLE_SCRIPT_URL) {
+            showToast(`Would remind ${expiring.length} expiring members (email service not configured).`, 'info');
+            return;
+        }
+
+        let sent = 0;
+        for (const member of expiring) {
+            try {
+                await fetch(window.GOOGLE_SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        security_token: "PT_SECURE_2026",
+                        type: 'renewal_reminder',
+                        to_email: member.email,
+                        to_name: member.name,
+                        org_name: orgNameMeta.textContent,
+                        end_date: member.membershipEndDate
+                    })
+                });
+                // Update flag
+                await firestore.collection('members').doc(member.id).update({ renewalReminderSent: true });
+                sent++;
+            } catch (err) {
+                console.error(`Renewal remind failed for ${member.email}:`, err);
+            }
+            await new Promise(r => setTimeout(r, 300));
+        }
+        showToast(`Sent renewal reminders to ${sent} members!`, 'success');
     });
 
     // --- EVENTS ---

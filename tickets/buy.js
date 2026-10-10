@@ -136,6 +136,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const email = emailInput.value.trim().toLowerCase();
         const selectedType = document.querySelector('input[name="ticket-type"]:checked').value;
 
+        // Validation (Task 3.5)
+        if (name.length < 2) {
+            showToast("Name must be at least 2 characters.", "danger"); return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showToast("Please enter a valid email address.", "danger"); return;
+        }
+
         // Re-verify if they selected member manually without triggering the input check (just to be safe)
         if (selectedType === 'member') {
             if (!orgId) return showToast("Cannot verify membership. Error with org.", "danger");
@@ -153,6 +162,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Processing Payment...</span>';
 
         try {
+            // Task 2.3: Duplicate ticket check
+            const existingTicket = await firestore.collection('users')
+                .where('eventDocId', '==', eventId)
+                .where('contact', '==', email)
+                .get();
+            const alreadyHasTicket = existingTicket.docs.some(d => d.data().ticketType);
+            if (alreadyHasTicket) {
+                showToast("You've already purchased a ticket for this event.", "danger");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ph-bold ph-credit-card"></i> <span>Proceed to Payment</span>';
+                return;
+            }
             // Check seats again using transaction
             const eventRef = firestore.collection('events').doc(eventId);
             
@@ -186,6 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Create user
                 const userRef = firestore.collection('users').doc();
                 transaction.set(userRef, {
+                    organizerId: evData.organizerId,
                     eventDocId: eventId,
                     eventId: evData.eventId,
                     name: name,
@@ -220,7 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Trigger Email via GAS (Optional: call GOOGLE_SCRIPT_URL here)
             if (window.GOOGLE_SCRIPT_URL) {
                 const payload = {
-                    security_token: "PT_SECURE_2025",
+                    security_token: "PT_SECURE_2026",
                     type: 'participant',
                     event_name: eventData.name,
                     to_name: name,
@@ -240,6 +262,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <a href="../viewer/viewer.html?token=${qrToken}" target="_blank" style="color:var(--primary); text-decoration:none; font-weight:bold;">
                     View Digital Pass
                 </a>
+                <br><br>
+                <a href="../index.html" style="display:inline-block; padding:10px 24px; background:var(--primary, #6a11cb); color:#fff; border-radius:10px; text-decoration:none; font-weight:600;">← Back to Home</a>
             `;
             
         } catch (err) {

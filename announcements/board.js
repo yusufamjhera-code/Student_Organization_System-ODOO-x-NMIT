@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
             }) : '';
             
-            const htmlContent = marked.parse(post.content);
+            const htmlContent = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(post.content)) : marked.parse(post.content);
 
             el.innerHTML = `
                 <h2 class="post-title">${post.title}</h2>

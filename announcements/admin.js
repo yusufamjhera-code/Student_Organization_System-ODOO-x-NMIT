@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.style.gap = '10px';
             
             const dateStr = post.createdAt ? new Date(post.createdAt.toMillis()).toLocaleString() : 'Just now';
-            const htmlContent = marked.parse(post.content);
+            const htmlContent = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(post.content)) : marked.parse(post.content);
 
             el.innerHTML = `
                 <div style="display:flex; justify-content:space-between; width:100%;">
@@ -124,8 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.onsubmit = async (e) => {
         e.preventDefault();
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
 
         const data = {
             orgId: currentOrgId,
@@ -133,6 +131,19 @@ document.addEventListener('DOMContentLoaded', () => {
             content: contentInput.value.trim(),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        // Validation (Task 3.5)
+        if (data.title.length < 2) {
+            showToast('Title must be at least 2 characters.', 'error');
+            return;
+        }
+        if (data.content.length < 2) {
+            showToast('Content cannot be empty.', 'error');
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
 
         try {
             if (editDocId) {
@@ -170,8 +181,49 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     async function notifyMembers(title) {
-        // Optional: Get active members and call GAS
-        showToast('Notification emails dispatched (simulation)', 'info');
+        try {
+            const membersSnap = await firestore.collection('members')
+                .where('orgId', '==', currentOrgId)
+                .where('membershipStatus', '==', 'active')
+                .get();
+
+            if (membersSnap.empty) {
+                showToast('No active members to notify.', 'info');
+                return;
+            }
+
+            if (!window.GOOGLE_SCRIPT_URL) {
+                showToast(`Would notify ${membersSnap.size} members (email service not configured).`, 'info');
+                return;
+            }
+
+            let sent = 0;
+            for (const doc of membersSnap.docs) {
+                const member = doc.data();
+                try {
+                    await fetch(window.GOOGLE_SCRIPT_URL, {
+                        method: 'POST', mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            security_token: "PT_SECURE_2026",
+                            type: 'announcement',
+                            to_email: member.email,
+                            to_name: member.name,
+                            announcement_title: title,
+                            org_name: orgNameMeta.textContent
+                        })
+                    });
+                    sent++;
+                } catch (emailErr) {
+                    console.error(`Failed to notify ${member.email}:`, emailErr);
+                }
+                await new Promise(r => setTimeout(r, 300)); // Rate limit
+            }
+            showToast(`Notifications sent to ${sent} members!`, 'success');
+        } catch (err) {
+            console.error("Notify error:", err);
+            showToast('Failed to send notifications.', 'error');
+        }
     }
 
     // --- UTILS ---

@@ -482,7 +482,7 @@ def generate_report():
     )
 
     add_styled_paragraph(
-        doc, "Designed & Developed by Ananya Chandra",
+        doc, "Designed & Developed by Team ByteSmiths for Odoo",
         font_size=10, bold=True,
         color=(0x64, 0x74, 0x8B),
         alignment=WD_ALIGN_PARAGRAPH.CENTER,
@@ -490,7 +490,7 @@ def generate_report():
     )
 
     add_styled_paragraph(
-        doc, "© 2025-2026 PassTrack Security Ecosystem. All rights reserved.",
+        doc, "© 2026 PassTrack Security Ecosystem. All rights reserved.",
         font_size=9, bold=False,
         color=(0x94, 0xA3, 0xB8),
         alignment=WD_ALIGN_PARAGRAPH.CENTER,

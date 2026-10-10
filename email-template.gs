@@ -5,7 +5,7 @@
  */
 
 // ---------------- SECURITY CONFIG ----------------
-const SECURITY_TOKEN = "PT_SECURE_2025";
+const SECURITY_TOKEN = "PT_SECURE_2026";
 const BRAND_NAME = "Pass Track Security";
 
 /**

@@ -2,75 +2,173 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // ===== EXISTING COLLECTIONS =====
+    // ==========================================
+    // HELPER FUNCTIONS
+    // ==========================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
     
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isNonAnonymous() {
+      return isAuthenticated() && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // ==========================================
+    // 1. ORGANIZERS PROFILE
+    // ==========================================
     match /organizers/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if isOwner(uid);
     }
     
+    // ==========================================
+    // 2. EVENTS
+    // ==========================================
     match /events/{eventId} {
-      allow read: if true; 
-      allow create: if request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
-      // ✅ FIX: Allow public 'update' so ticket buyers can increment seatsSold
-      allow update: if true;
-      allow delete: if request.auth != null;
-    }
-    
-    // ✅ FIX: Allow public 'update' so unauthenticated Staff can scan/mark tokens as used
-    // ✅ FIX: Allow public 'create' so users can buy tickets
-    match /users/{userId} {
-      allow read, update, create: if true; 
-      allow delete: if request.auth != null;
-    }
-    
-    // ===== NEW COLLECTIONS =====
-    
-    // ✅ FIX: Allow public 'read' so the "Join as Member" page can fetch the organization name and fees
-    match /organizations/{orgId} {
+      // Public read: Needed by ticket storefront, public viewer, and scanner lookup
       allow read: if true;
-      allow create, update, delete: if request.auth != null;
+      
+      // Organizers create events
+      allow create: if isNonAnonymous();
+      
+      // Update: Organizers have full write access;
+      // Public ticket buyers may ONLY increment seatsSold without modifying event details
+      allow update: if isAuthenticated() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seatsSold', 'updatedAt']) &&
+        request.resource.data.seatsSold is number &&
+        request.resource.data.seatsSold >= resource.data.seatsSold
+      );
+      
+      allow delete: if isAuthenticated();
     }
     
-    match /members/{memberId} {
-      allow read, create: if true; 
-      allow update, delete: if request.auth != null;
-    }
-    
-    // ✅ FIX: Allow public 'update' so Staff can scan tickets at the door
-    match /tickets/{ticketId} {
-      allow read, create, update: if true; 
-      allow delete: if request.auth != null;
-    }
-    
-    match /ticketConfigs/{configId} {
-      allow read: if true; 
-      allow create, update, delete: if request.auth != null;
-    }
-    
-    match /announcements/{announcementId} {
-      allow read: if true; 
-      allow create, update, delete: if request.auth != null;
-    }
-    
-    // ✅ FIX: Allow public 'update' so the store checkout can decrement stock
-    match /merchProducts/{productId} {
-      allow read, update: if true; 
-      allow create, delete: if request.auth != null;
-    }
-    
-    match /merchOrders/{orderId} {
-      allow read, create: if true; 
-      allow update, delete: if request.auth != null;
-    }
-    
-    match /tasks/{taskId} {
-      allow read, create, update, delete: if request.auth != null;
-    }
-    
-    // ✅ FIX: Allow public 'create' so the ticket purchase transaction can record income
-    match /transactions/{txnId} {
-      allow read, update, delete: if request.auth != null;
+    // ==========================================
+    // 3. USERS / TICKET PASSES
+    // ==========================================
+    match /users/{userId} {
+      // Public read: Needed by mobile scanner and viewer pass page
+      allow read: if true;
+      
+      // Public create: Ticket buyers generate passes upon purchase
       allow create: if true;
+      
+      // Update: Organizers have full edit rights;
+      // Door scanner staff (unauthenticated mobile stations) can ONLY update check-in status & station permissions
+      allow update: if isAuthenticated() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status', 'permissions', 'scannedAt', 'scannedBy', 'updatedAt', 'checkInTime'
+        ])
+      );
+      
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // 4. ORGANIZATIONS
+    // ==========================================
+    match /organizations/{orgId} {
+      // Public read: Registration pages & store view org name, dues, and currency
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // 5. MEMBERS
+    // ==========================================
+    match /members/{memberId} {
+      // Public read: Required for ticket purchase and merch checkout member discount verification
+      allow read: if true;
+      
+      // Public create: Prospective members register via public registration form
+      allow create: if true;
+      
+      // Organizers manage membership approval, status changes, and removals
+      allow update, delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // 6. TICKETS (TOKEN TRACKING)
+    // ==========================================
+    match /tickets/{ticketId} {
+      allow read, create: if true;
+      allow update: if isAuthenticated() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'usedAt', 'updatedAt'])
+      );
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // 7. TICKET CONFIGURATIONS
+    // ==========================================
+    match /ticketConfigs/{configId} {
+      // Public read: Storefront reads tiers, pricing, and member discounts
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // 8. ANNOUNCEMENTS
+    // ==========================================
+    match /announcements/{announcementId} {
+      // Public read: Club members view announcements on the board
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // 9. MERCHANDISE PRODUCTS
+    // ==========================================
+    match /merchProducts/{productId} {
+      // Public read: Store catalog
+      allow read: if true;
+      
+      // Update: Organizers have full access;
+      // Storefront checkout can ONLY decrement inventory stock
+      allow update: if isAuthenticated() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'updatedAt']) &&
+        request.resource.data.stock is number &&
+        request.resource.data.stock <= resource.data.stock
+      );
+      
+      allow create, delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // 10. MERCHANDISE ORDERS
+    // ==========================================
+    match /merchOrders/{orderId} {
+      // Public create: Shoppers place orders in storefront
+      allow create: if true;
+      // Organizers view, manage, and fulfill orders
+      allow read, update, delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // 11. INTERNAL TASKS / KANBAN
+    // ==========================================
+    match /tasks/{taskId} {
+      // Internal operations: Only authenticated organizers and team members
+      allow read, create, update, delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // 12. TREASURY TRANSACTIONS
+    // ==========================================
+    match /transactions/{txnId} {
+      // Public create: Ticket checkout and merch sales can record automated revenue
+      // Guarded so public cannot inject arbitrary expense or negative amounts
+      allow create: if isAuthenticated() || (
+        request.resource.data.type == 'income' &&
+        request.resource.data.amount is number &&
+        request.resource.data.amount >= 0
+      );
+      
+      // Only authenticated organizers can view financial ledgers or make adjustments
+      allow read, update, delete: if isAuthenticated();
     }
   }
 }
+

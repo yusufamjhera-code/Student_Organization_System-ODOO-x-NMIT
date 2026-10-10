@@ -182,8 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.onsubmit = async (e) => {
         e.preventDefault();
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
 
         const data = {
             orgId: currentOrgId,
@@ -202,6 +200,23 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        // Validation (Task 3.5)
+        if (data.name.length < 2) {
+            showToast('Product name must be at least 2 characters.', 'error'); return;
+        }
+        if (isNaN(data.price) || data.price <= 0) {
+            showToast('Price must be a positive number.', 'error'); return;
+        }
+        if (isNaN(data.memberPrice) || data.memberPrice < 0) {
+            showToast('Member price cannot be negative.', 'error'); return;
+        }
+        if (data.memberPrice > data.price) {
+            showToast('Member price should not exceed regular price.', 'error'); return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
 
         try {
             if (editDocId) {

@@ -183,8 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.onsubmit = async (e) => {
         e.preventDefault();
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
 
         const data = {
             orgId: currentOrgId,
@@ -195,6 +193,15 @@ document.addEventListener('DOMContentLoaded', () => {
             status: statusSelect.value,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        // Validation (Task 3.5)
+        if (data.title.length < 2) {
+            showToast('Task title must be at least 2 characters.', 'error');
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
 
         try {
             if (editDocId) {

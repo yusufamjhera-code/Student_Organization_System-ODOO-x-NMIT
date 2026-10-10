@@ -67,6 +67,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) return showError('Please enter a valid email address.');
 
+        // Phone validation (Task 3.5)
+        if (phone) {
+            const phoneRegex = /^[+]?[\d\s\-()]{7,15}$/;
+            if (!phoneRegex.test(phone)) return showError('Please enter a valid phone number (7-15 digits).');
+        }
+
         // Loading state
         setLoading(true);
         errorEl.style.display = 'none';
@@ -114,7 +120,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             // TODO: call google apps script if needed
             
             registerForm.style.display = 'none';
-            successEl.innerHTML = `<i class="ph-bold ph-check-circle"></i> Registration successful! Please pay your dues to activate your membership.`;
+            successEl.innerHTML = `
+                <i class="ph-bold ph-check-circle"></i> Registration successful! Please pay your dues to activate your membership.
+                <br><br>
+                <a href="../index.html" style="display:inline-block; padding:10px 24px; background:var(--primary, #6a11cb); color:#fff; border-radius:10px; text-decoration:none; font-weight:600;">← Back to Home</a>
+            `;
             successEl.style.display = 'block';
 
         } catch (err) {

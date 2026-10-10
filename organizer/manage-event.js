@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CONFIGURATION ---
     const GOOGLE_SCRIPT_URL = window.GOOGLE_SCRIPT_URL;
-    const SECURITY_TOKEN = "PT_SECURE_2025";
+    const SECURITY_TOKEN = "PT_SECURE_2026";
 
     // --- DOM ELEMENTS ---
     const eventNameHeader = document.getElementById('event-name-header');
@@ -1606,8 +1606,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ticketingForm.onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('save-ticketing-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Saving...</span>';
 
             const config = {
                 memberPrice: parseFloat(document.getElementById('ticket-member-price').value),
@@ -1617,6 +1615,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 salesEnd: document.getElementById('ticket-sales-end').value,
                 salesOpen: document.getElementById('ticket-sales-open').checked
             };
+
+            // --- Validation (Task 2.5) ---
+            if (isNaN(config.memberPrice) || config.memberPrice < 0 || isNaN(config.nonmemberPrice) || config.nonmemberPrice < 0) {
+                showToast("Prices cannot be negative.", "danger"); return;
+            }
+            if (isNaN(config.totalSeats) || config.totalSeats < 1) {
+                showToast("Total seats must be at least 1.", "danger"); return;
+            }
+            if (config.memberPrice > config.nonmemberPrice) {
+                showToast("Member price should not exceed non-member price.", "danger"); return;
+            }
+            if (config.salesStart && config.salesEnd && config.salesStart > config.salesEnd) {
+                showToast("Sales start date must be before end date.", "danger"); return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Saving...</span>';
 
             try {
                 await firestore.collection('events').doc(eventDocId).set({

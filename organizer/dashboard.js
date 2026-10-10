@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let stations = [{ name: "Entrance", dateFrom: "all", dateTo: "all", start: "00:00", end: "23:59" }];
     let currentOrganizer = null;
+    let currentOrgId = null;
     let isIdValid = false;
     let areDatesValid = false;
 
@@ -252,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setupCollaboratorView();
             } else {
                 // Admin mode: normal behavior
-                fetchOrganizerDetails(user.uid);
+                await fetchOrganizerDetails(user.uid);
                 renderTags();
                 listenForEvents(user.uid);
             }
@@ -290,6 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .get();
         if (!orgSnap.empty) {
             orgNameHeader.textContent = orgSnap.docs[0].data().name;
+            currentOrgId = orgSnap.docs[0].id;
         } else {
             // No org found — redirect to setup page
             window.location.href = 'setup-org.html';
@@ -432,6 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await firestore.collection('events').add({
                 organizerId: currentOrganizer.uid,
+                orgId: currentOrgId,
                 name: eventName,
                 eventId: publicId,
                 eventDate: sDate,

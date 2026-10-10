@@ -223,8 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.onsubmit = async (e) => {
         e.preventDefault();
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
 
         const data = {
             orgId: currentOrgId,
@@ -237,6 +235,19 @@ document.addEventListener('DOMContentLoaded', () => {
             recordedByName: currentUser.displayName || currentUser.email,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+
+        // Validation (Task 3.5)
+        if (isNaN(data.amount) || data.amount <= 0) {
+            showToast('Amount must be a positive number.', 'error');
+            return;
+        }
+        if (!data.date) {
+            showToast('Please select a date.', 'error');
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
 
         try {
             if (editDocId) {
