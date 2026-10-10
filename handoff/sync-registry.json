@@ -22,9 +22,15 @@
     "events_emitted": ["passtrack:payment:success", "passtrack:payment:failed"]
   },
   "agent_4_backend": {
-    "status": "PENDING",
+    "status": "COMPLETED",
     "firestore_rules_hardened": true,
-    "validator_ready": false,
-    "gas_email_ready": false
+    "validator_ready": true,
+    "gas_email_ready": true,
+    "collections_secured": [
+      "organizers", "organizations", "events", "tickets", "registrations",
+      "members", "merchProducts", "merchOrders", "tasks", "transactions",
+      "userProfiles", "active_sessions", "reimbursements", "certificates",
+      "membership_passes", "handovers"
+    ]
   }
 }

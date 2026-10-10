@@ -248,6 +248,59 @@ service cloud.firestore {
     match /active_sessions/{uid} {
       allow read, write: if isOwner(uid);
     }
+
+    // =========================================================================
+    // 15. VOLUNTEER REIMBURSEMENT CLAIMS
+    // =========================================================================
+    match /reimbursements/{claimId} {
+      // Public read: Volunteers track their claims, Treasurers audit in queue
+      allow read: if true;
+      
+      // Public create: Volunteers submit legitimate claims with strict schema
+      allow create: if (
+        isValidString(request.resource.data.claimantName, 2, 100) &&
+        isValidEmail(request.resource.data.claimantEmail) &&
+        request.resource.data.amount is number &&
+        request.resource.data.amount > 0 &&
+        request.resource.data.amount <= 100000 &&
+        request.resource.data.status in ['pending', 'approved', 'rejected'] &&
+        isValidString(request.resource.data.payoutUpi, 3, 60)
+      );
+      
+      // Updates: Only authenticated Treasurers/Organizers can approve, reject, or audit
+      allow update, delete: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // 16. PARTICIPATION CERTIFICATES
+    // =========================================================================
+    match /certificates/{certId} {
+      // Public read: Credential verification portal (/certificates/verify.html)
+      allow read: if true;
+      
+      // Organizers generate or update certificate credentials
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // 17. DIGITAL MEMBERSHIP WALLET PASSES
+    // =========================================================================
+    match /membership_passes/{passId} {
+      // Public read: Member wallet pass lookup and rapid door NFC/QR verification
+      allow read: if true;
+      
+      // Organizers create or update membership passes
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    // =========================================================================
+    // 18. EXECUTIVE HANDOVER DOSSIERS
+    // =========================================================================
+    match /handovers/{handoverId} {
+      // Internal leadership transition: Authenticated organizers only
+      allow read, create, update, delete: if isAuthenticated();
+    }
   }
 }
+
 

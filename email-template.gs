@@ -447,9 +447,107 @@ function doPost(e) {
         </div>
       </div>
       `;
+    // ================= REIMBURSEMENT STATUS TEMPLATE =================
+    else if (data.type === "reimbursement") {
+      const isApproved = data.status === "approved";
+      subject = `[Treasury] Reimbursement Claim ${isApproved ? "Approved ✓" : "Update"} | ₹${data.amount}`;
+
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box;">
+        <div style="background:${isApproved ? '#059669' : '#dc2626'}; padding:28px 20px 24px; text-align:center; border-radius:18px 18px 0 0;">
+          <h1 style="margin:0; color:#ffffff; font-size:20px; font-weight:700;">
+            ${isApproved ? 'Claim Approved & Reimbursed' : 'Claim Status Update'}
+          </h1>
+          <p style="margin:6px 0 0; color:rgba(255,255,255,0.9); font-size:14px;">
+            ${data.event_name || 'PassTrack Student Organization'}
+          </p>
+        </div>
+        <div style="padding:24px 20px; color:#1e293b; line-height:1.65;">
+          <p style="font-size:15px; margin:0 0 16px;">Hi <strong>${data.to_name || 'Volunteer'}</strong>,</p>
+          <p style="font-size:14px; color:#475569; margin:0 0 20px;">
+            Your reimbursement claim of <strong>₹${data.amount}</strong> for <em>${data.category} (${data.merchant || 'General Expense'})</em> has been reviewed by the Treasury.
+          </p>
+          <div style="background:#f8fafc; padding:16px; border-radius:12px; border:1px solid #e2e8f0; font-size:14px; margin-bottom:20px;">
+            <p style="margin:0 0 6px;"><strong>Status:</strong> <span style="color:${isApproved ? '#059669' : '#dc2626'}; font-weight:700;">${data.status.toUpperCase()}</span></p>
+            <p style="margin:0 0 6px;"><strong>Disbursement UPI:</strong> <code>${data.payout_upi || 'On Record'}</code></p>
+            ${data.notes ? `<p style="margin:0;"><strong>Reviewer Note:</strong> ${data.notes}</p>` : ''}
+          </div>
+          <p style="font-size:12px; color:#94a3b8; text-align:center;">This transaction is recorded in the verified treasury ledger.</p>
+        </div>
+        <div style="background:#f8fafc; padding:14px 20px; text-align:center; border-top:1px solid #e2e8f0; border-radius:0 0 18px 18px;">
+          <p style="margin:0; font-size:10px; color:#94a3b8; letter-spacing:0.5px;">TREASURY &bull; ${BRAND_NAME.toUpperCase()}</p>
+        </div>
+      </div>
+      `;
     }
 
-    // ---------------- SEND EMAIL ----------------
+    // ================= CERTIFICATE ISSUANCE TEMPLATE =================
+    else if (data.type === "certificate") {
+      subject = `[Credential] Verified Certificate of Participation | ${data.event_name}`;
+
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box;">
+        <div style="background:linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding:28px 20px 24px; text-align:center; border-radius:18px 18px 0 0;">
+          <h1 style="margin:0; color:#fbbf24; font-size:22px; font-weight:700;">
+            🎓 Certificate Awarded
+          </h1>
+          <p style="margin:6px 0 0; color:#cbd5e1; font-size:14px;">
+            ${data.event_name}
+          </p>
+        </div>
+        <div style="padding:24px 20px; color:#1e293b; line-height:1.65;">
+          <p style="font-size:15px; margin:0 0 16px;">Dear <strong>${data.to_name}</strong>,</p>
+          <p style="font-size:14px; color:#475569; margin:0 0 20px;">
+            Congratulations! Your verified certificate of participation has been issued. You can verify and download your high-resolution credential below:
+          </p>
+          <div style="text-align:center; margin:24px 0;">
+            <a href="${data.verify_url}" style="background:#4f46e5; color:#ffffff; padding:14px 28px; border-radius:12px; font-weight:700; text-decoration:none; display:inline-block;">
+              View & Download Certificate
+            </a>
+          </div>
+          <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px dashed #cbd5e1; font-size:13px; text-align:center;">
+            <strong>Credential ID:</strong> <code>${data.cert_id}</code>
+          </div>
+        </div>
+        <div style="background:#f8fafc; padding:14px 20px; text-align:center; border-top:1px solid #e2e8f0; border-radius:0 0 18px 18px;">
+          <p style="margin:0; font-size:10px; color:#94a3b8; letter-spacing:0.5px;">VERIFIED CREDENTIALS &bull; ${BRAND_NAME.toUpperCase()}</p>
+        </div>
+      </div>
+      `;
+    }
+
+    // ================= MEMBERSHIP WALLET PASS TEMPLATE =================
+    else if (data.type === "wallet_pass") {
+      subject = `[PassTrack] Digital Membership Card | ${data.org_name || 'Student Club'}`;
+
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box;">
+        <div style="background:linear-gradient(135deg, #090d16 0%, #1e1b4b 100%); padding:28px 20px 24px; text-align:center; border-radius:18px 18px 0 0;">
+          <h1 style="margin:0; color:#ffffff; font-size:20px; font-weight:700;">
+            💳 Digital Membership Pass
+          </h1>
+          <p style="margin:6px 0 0; color:#a5b4fc; font-size:14px;">
+            ${data.org_name || 'PassTrack Organization'}
+          </p>
+        </div>
+        <div style="padding:24px 20px; color:#1e293b; line-height:1.65;">
+          <p style="font-size:15px; margin:0 0 16px;">Hello <strong>${data.to_name}</strong>,</p>
+          <p style="font-size:14px; color:#475569; margin:0 0 20px;">
+            Your active digital membership pass is ready. Use this digital wallet pass for rapid priority event check-in, exclusive merch discounts, and member voting.
+          </p>
+          <div style="text-align:center; margin:24px 0;">
+            <a href="${data.pass_url}" style="background:#6366f1; color:#ffffff; padding:14px 28px; border-radius:12px; font-weight:700; text-decoration:none; display:inline-block;">
+              Open Digital Wallet Pass
+            </a>
+          </div>
+        </div>
+        <div style="background:#f8fafc; padding:14px 20px; text-align:center; border-top:1px solid #e2e8f0; border-radius:0 0 18px 18px;">
+          <p style="margin:0; font-size:10px; color:#94a3b8; letter-spacing:0.5px;">SECURE DIGITAL PASS &bull; ${BRAND_NAME.toUpperCase()}</p>
+        </div>
+      </div>
+      `;
+    }
+
     MailApp.sendEmail({
       to: data.to_email,
       subject,
