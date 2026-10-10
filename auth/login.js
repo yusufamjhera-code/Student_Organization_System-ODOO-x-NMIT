@@ -133,8 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
             showMessage('Verifying credentials...', 'info');
 
             try {
-                // Search all events for matching collaborator
-                const eventsSnapshot = await firestore.collection('events').get();
+                // Search events where user is a collaborator
+                const eventsSnapshot = await firestore.collection('events')
+                    .where('collaboratorEmails', 'array-contains', email)
+                    .get();
+                
                 let foundEvent = null;
                 let collaboratorData = null;
 

@@ -1312,7 +1312,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             eventCollaborators.push(newCollab);
             await firestore.collection('events').doc(eventDocId).update({
-                collaborators: eventCollaborators
+                collaborators: eventCollaborators,
+                collaboratorEmails: eventCollaborators.map(c => c.email.toLowerCase())
             });
 
             renderCollaboratorsList();
@@ -1340,7 +1341,8 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             await firestore.collection('events').doc(eventDocId).update({
-                collaborators: eventCollaborators
+                collaborators: eventCollaborators,
+                collaboratorEmails: eventCollaborators.map(c => c.email.toLowerCase())
             });
 
             renderCollaboratorsList();
@@ -1570,7 +1572,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 try {
                     await firestore.collection('events').doc(eventDocId).update({
-                        collaborators: eventCollaborators
+                        collaborators: eventCollaborators,
+                        collaboratorEmails: eventCollaborators.map(c => c.email.toLowerCase())
                     });
                     showToast(`Removed ${selectedCollaborators.size} collaborator(s)`, 'success');
                     selectedCollaborators.clear();

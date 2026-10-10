@@ -306,15 +306,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT LISTING (Collaborator) ---
     const listenForCollaboratorEvents = (email) => {
-        // Fetch all events and filter client-side for collaborator access
         firestore.collection('events')
+            .where('collaboratorEmails', 'array-contains', email.toLowerCase())
             .orderBy('createdAt', 'desc')
             .onSnapshot((snapshot) => {
-                const accessibleEvents = snapshot.docs.filter(doc => {
-                    const data = doc.data();
-                    const collaborators = data.collaborators || [];
-                    return collaborators.some(c => c.email.toLowerCase() === email.toLowerCase());
-                });
+                const accessibleEvents = snapshot.docs;
 
                 eventCountEl.textContent = accessibleEvents.length;
                 if (accessibleEvents.length === 0) {

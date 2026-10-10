@@ -32,28 +32,28 @@
             </a>
             
             <!-- JOIN AS MEMBER -->
-            <a href="members/register.html?org=8NzdDtAAodwuMe1lEfOK" class="card">
+            <a href="#" onclick="openSelector('org', 'members/register.html')" class="card">
                 <div class="card-icon">🙋</div>
                 <h2>Join as Member</h2>
                 <p>Register as a new member, pay dues, and get exclusive access and discounts.</p>
             </a>
 
             <!-- BUY TICKETS -->
-            <a href="tickets/buy.html" class="card">
+            <a href="#" onclick="openSelector('event', 'tickets/buy.html')" class="card">
                 <div class="card-icon">🎟️</div>
                 <h2>Buy Tickets</h2>
                 <p>Purchase tickets for upcoming events. Members get special pricing!</p>
             </a>
 
             <!-- ANNOUNCEMENTS -->
-            <a href="announcements/board.html?org=8NzdDtAAodwuMe1lEfOK" class="card">
+            <a href="#" onclick="openSelector('org', 'announcements/board.html')" class="card">
                 <div class="card-icon">📢</div>
                 <h2>Announcements</h2>
                 <p>Stay updated with the latest news, meetings, and important notices.</p>
             </a>
 
             <!-- MERCH STORE -->
-            <a href="merch/store.html?org=8NzdDtAAodwuMe1lEfOK" class="card">
+            <a href="#" onclick="openSelector('org', 'merch/store.html')" class="card">
                 <div class="card-icon">👕</div>
                 <h2>Merch Store</h2>
                 <p>Order official hoodies, t-shirts, and other merchandise directly online.</p>
@@ -70,5 +70,25 @@
         </p>
         </div>
     </div>
+
+    <!-- Dynamic Selector Modal -->
+    <div id="selector-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100;">
+        <div class="modal-content" style="background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <h3 id="selector-title" style="margin-top: 0;">Select Option</h3>
+            <p id="selector-subtitle" style="color: #666; font-size: 0.9rem; margin-bottom: 1.5rem;">Loading options...</p>
+            
+            <div id="selector-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto;">
+                <!-- Dynamically populated -->
+            </div>
+
+            <button onclick="closeSelector()" style="margin-top: 1.5rem; width: 100%; padding: 0.75rem; background: #e2e8f0; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="lib/firebase-config.js"></script>
+    <script src="index.js"></script>
 </body>
 </html>
