@@ -1,0 +1,216 @@
+<!-- File: organizer/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Organizer Dashboard | Pass Track</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <header>
+        <div class="header-left">
+            <div class="logo-icon">
+                <i class="ph-bold ph-ticket"></i>
+            </div>
+            <div class="header-text">
+                <h1 id="org-name-header">Your Dashboard</h1>
+                <span class="header-subtitle">Event Management</span>
+            </div>
+        </div>
+        <button id="logout-btn" class="logout-btn">
+            <i class="ph-bold ph-sign-out"></i> <span>Logout</span>
+        </button>
+    </header>
+
+    <main class="container" id="main-container" style="opacity: 0; transition: opacity 0.2s;">
+        <!-- LEFT COLUMN: Event Creation -->
+        <div class="actions-column">
+            <div class="card creation-card">
+                <div class="card-title">
+                    <div class="title-icon">
+                        <i class="ph-bold ph-plus-circle"></i>
+                    </div>
+                    <div>
+                        <h2>Create New Event</h2>
+                        <p class="card-subtitle">Set up access control for your event</p>
+                    </div>
+                </div>
+                
+                <form id="create-event-form">
+                    <!-- Event Name -->
+                    <div class="input-group">
+                        <label for="event-name">
+                            <i class="ph ph-text-aa"></i> Event Name
+                        </label>
+                        <input type="text" id="event-name" placeholder="e.g., Annual Tech Fest 2026" required>
+                    </div>
+
+                    <!-- Event ID & Staff Password -->
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="event-id">
+                                <i class="ph ph-fingerprint"></i> Public Event ID
+                            </label>
+                            <div class="id-input-wrapper">
+                                <input type="text" id="event-id" placeholder="e.g., techfest26" required autocomplete="off">
+                                <div id="id-status-icon" class="status-icon"></div>
+                            </div>
+                            <small id="id-feedback" class="feedback-text">Unique identifier for staff login.</small>
+                        </div>
+                        <div class="input-group">
+                            <label for="distributor-code">
+                                <i class="ph ph-lock-key"></i> Staff Password
+                            </label>
+                            <input type="text" id="distributor-code" placeholder="e.g., staff123" minlength="4" required>
+                            <small id="password-feedback" class="feedback-text">Minimum 4 characters required.</small>
+                        </div>
+                    </div>
+
+                    <!-- Event Dates -->
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="event-date">
+                                <i class="ph ph-calendar"></i> Start Date
+                            </label>
+                            <input type="date" id="event-date" required>
+                            <small id="start-date-feedback" class="feedback-text date-feedback"></small>
+                        </div>
+                        <div class="input-group">
+                            <label for="event-end-date">
+                                <i class="ph ph-calendar-check"></i> End Date
+                            </label>
+                            <input type="date" id="event-end-date" required>
+                            <small id="end-date-feedback" class="feedback-text date-feedback"></small>
+                        </div>
+                    </div>
+
+                    <!-- Station Configuration -->
+                    <div class="input-group stations-section">
+                        <label>
+                            <i class="ph ph-map-pin"></i> Access Points
+                        </label>
+                        <p class="input-hint">Define scan points and their active hours.</p>
+                        
+                        <div class="station-setup-card">
+                            <div class="station-name-input">
+                                <input type="text" id="station-input" placeholder="Access point name (e.g., Food Court)">
+                            </div>
+                            
+                            <div class="time-and-toggle-row">
+                                <div class="all-days-toggle">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="station-all-days" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="toggle-label">All Days</span>
+                                </div>
+                                <div class="time-row">
+                                    <div class="time-field">
+                                        <label>Start Time</label>
+                                        <input type="time" id="station-start" value="00:00">
+                                    </div>
+                                    <div class="time-field">
+                                        <label>End Time</label>
+                                        <input type="time" id="station-end" value="23:59">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="date-range-block" id="station-date-group" style="display: none;">
+                                <div class="date-row">
+                                    <div class="date-field">
+                                        <label>From</label>
+                                        <input type="date" id="station-date-from">
+                                    </div>
+                                    <div class="date-field">
+                                        <label>To</label>
+                                        <input type="date" id="station-date-to">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="button" id="add-station-btn" class="add-station-btn">
+                                <i class="ph-bold ph-plus"></i> Add Access Point
+                            </button>
+                        </div>
+
+                        <!-- Station Tags -->
+                        <div id="station-tags-container" class="tags-container"></div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="primary-btn" disabled>
+                        <i class="ph-bold ph-rocket-launch"></i> Initialize Event
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Event List -->
+        <div class="main-content-column">
+            <div class="card list-card">
+                <div class="card-header-flex">
+                    <div class="header-title">
+                        <div class="title-icon purple">
+                            <i class="ph-bold ph-calendar-check"></i>
+                        </div>
+                        <h2>Your Events</h2>
+                    </div>
+                    <span class="badge" id="event-count">0</span>
+                </div>
+
+                <!-- Event List -->
+                <div id="event-list" class="scrollable-list">
+                    <div class="loading-shimmer-wrapper">
+                        <div class="shimmer-item"></div>
+                        <div class="shimmer-item"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Popup Stack -->
+    <div class="popup-stack">
+        <!-- Default Entry Point Notice -->
+        <div class="help-card card popup-item info-theme" id="entry-point-popup">
+            <button class="close-popup" onclick="this.parentElement.style.display='none'">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="popup-icon">
+                <i class="ph-bold ph-door-open"></i>
+            </div>
+            <div class="popup-content">
+                <h3>Default Access Point</h3>
+                <p>'Entrance' is pre-configured. You can customize access per user later.</p>
+            </div>
+        </div>
+
+        <!-- Help Center -->
+        <div class="help-card card popup-item" id="help-center">
+            <button class="close-popup" id="close-help-btn" title="Dismiss">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="popup-icon purple">
+                <i class="ph-bold ph-question"></i>
+            </div>
+            <div class="popup-content">
+                <h3>Access Control</h3>
+                <p>Tokens scanned outside set hours will be flagged as 'Access Denied'.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

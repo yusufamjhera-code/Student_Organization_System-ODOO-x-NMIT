@@ -1,0 +1,133 @@
+<!-- File: viewer/viewer.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Digital Pass | Pass Track</title>
+    <!-- Linked to viewer.css for custom styling -->
+    <link rel="stylesheet" href="viewer.css">
+    <!-- Phosphor Icons for aesthetic consistency -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="loading-active">
+
+    <!-- Global Page Loader (Aesthetic Transition) -->
+    <div id="page-loader" class="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="viewer-wrapper">
+        <div class="card" id="token-card">
+            
+            <!-- Branding Badge -->
+            <div class="brand-badge">
+                <i class="ph-fill ph-shield-checkered"></i>
+                <span>SECURE PASS</span>
+            </div>
+
+            <div class="content-group">
+                <h1 id="participant-name">Loading...</h1>
+                <p class="instruction" id="scan-instruction">Present this code at designated scan points</p>
+                
+                <div id="qrcode-container">
+                    <div id="qrcode"></div>
+                    <!-- Overlay that hides QR until names are ready -->
+                    <div id="qr-placeholder" class="qr-shimmer"></div>
+                </div>
+
+                <div class="event-info-box">
+                    <i class="ph ph-calendar-blank"></i>
+                    <span id="event-name">Validating Event...</span>
+                </div>
+
+                <!-- Access Points Section (Collapsible) -->
+                <div class="access-section">
+                    <button type="button" class="access-toggle" id="access-toggle">
+                        <span><i class="ph-bold ph-map-pin"></i> View Access Points</span>
+                        <i class="ph ph-caret-down toggle-icon"></i>
+                    </button>
+                    <div class="access-list" id="access-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Details -->
+            <div class="card-footer">
+                <p>Digital Access Token ✅</p>
+                <small>Keep this window open for scanning</small>
+            </div>
+        </div>
+
+        <p class="copyright-tag">
+            &copy; 2025 Pass Track Security Ecosystem.<br>
+            Designed and Developed by 
+                <a href="https://ananya-chandra.netlify.app/" target="_blank">
+                    Ananya Chandra</a>. <br>All rights reserved.
+        </p>
+
+    <!-- Scripts -->
+    <!-- Library for QR Code Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Shared Config & Logic -->
+    <script src="../lib/firebase-config.js"></script>
+    <script src="viewer.js"></script>
+
+    <style>
+        /* INLINE REVEAL LOGIC: To ensure it loads before viewer.css parses fully */
+        body.loading-active #participant-name,
+        body.loading-active #event-name {
+            background: #f1f5f9;
+            color: transparent !important;
+            border-radius: 4px;
+            display: inline-block;
+            animation: shimmer 1.5s infinite linear;
+            min-width: 120px;
+        }
+
+        @keyframes shimmer {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        /* Hide the actual QR container until ready to prevent layout jump */
+        #qrcode-container { position: relative; }
+        
+        #qr-placeholder {
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .ready #qr-placeholder { display: none; }
+        
+        .viewer-wrapper {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .ready .viewer-wrapper {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .ready .loader-overlay {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</body>
+</html>

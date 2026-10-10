@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manage Event | Pass Track</title>
+    <link rel="stylesheet" href="manage-event.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <header>
+        <div class="header-left">
+            <a href="dashboard.html" id="back-to-dashboard" class="back-link" title="Back to Dashboard">
+                <i class="ph-bold ph-caret-left"></i>
+            </a>
+            <div class="event-title-meta">
+                <h1 id="event-name-header">Loading Event...</h1>
+                <small id="event-date-range" class="event-meta-text"></small>
+            </div>
+            <button id="edit-event-btn" class="icon-only-btn edit-event-btn" title="Edit Event Details">
+                <i class="ph-bold ph-pencil-simple"></i>
+            </button>
+        </div>
+        <div class="header-buttons">
+            <button id="logout-btn" class="logout-btn icon-only-mobile">
+                <i class="ph-bold ph-sign-out"></i> <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- LEFT COLUMN: Registration and Tools -->
+        <div class="actions-column">
+            
+            <!-- Registration Card (Collapsible) -->
+            <div class="card collapsible-card" id="registration-card">
+                <div class="card-header collapsible-header" id="registration-toggle">
+                    <i class="ph-bold ph-user-plus"></i>
+                    <h2>Register Participant</h2>
+                    <div class="header-actions">
+                        <i class="ph-bold ph-caret-down collapse-icon"></i>
+                    </div>
+                </div>
+                <div id="registration-body" class="collapsible-body">
+                <form id="add-participant-form">
+                    <div class="setup-block">
+                        <div class="input-group">
+                            <label for="participant-name">Full Name</label>
+                            <input type="text" id="participant-name" placeholder="e.g., John Doe" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="participant-contact">Unique Identifier (Email)</label>
+                            <input type="text" id="participant-contact" placeholder="Used to prevent duplicates" required>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group permissions-section">
+                        <label>Grant Access Permissions:</label>
+                        <div id="station-checkbox-group" class="permission-grid">
+                            <!-- Populated dynamically via JS in Canvas -->
+                        </div>
+                    </div>
+
+                    <button type="submit" class="primary-btn" id="generate-token-btn">
+                        <i class="ph-bold ph-qr-code"></i> <span>Generate Token</span>
+                    </button>
+                </form>
+                </div>
+            </div>
+
+            <!-- Bulk Import Card (Collapsible) -->
+            <div class="card collapsible-card" id="bulk-import-card">
+                <div class="card-header collapsible-header" id="bulk-import-toggle">
+                    <i class="ph-bold ph-file-xls"></i>
+                    <h2>Bulk Import</h2>
+                    <div class="header-actions">
+                        <div class="hint-wrapper">
+                            <button id="trigger-help" class="icon-only-btn" title="View Import Guide">
+                                <i class="ph-bold ph-info"></i>
+                            </button>
+                            <!-- Pulsing Hint Bubble pointing at the info button -->
+                            <div id="entry-point-popup" class="hint-bubble">
+                                <div class="hint-content">
+                                    <i class="ph-bold ph-lightbulb"></i>
+                                </div>
+                                <div class="hint-arrow"></div>
+                            </div>
+                        </div>
+                        <i class="ph-bold ph-caret-down collapse-icon"></i>
+                    </div>
+                </div>
+                <div id="bulk-import-body" class="collapsible-body">
+                
+                <div class="import-container" id="drop-zone">
+                    <label class="file-input-label" for="excel-file-input">
+                        <i class="ph-bold ph-cloud-arrow-up"></i>
+                        <span id="file-label-text">Drop file or tap to browse</span>
+                        <span class="file-subtext">Supports .xlsx, .xls, .csv</span>
+                    </label>
+                    <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv">
+                </div>
+
+                <div class="import-actions">
+                    <button id="import-btn" class="primary-btn">
+                        <i class="ph-bold ph-check-square"></i> <span>Import All Data</span>
+                    </button>
+                </div>
+                </div>
+            </div>
+
+            <!-- Staff Access Setup Card (Collapsible) -->
+            <div class="card access-card-theme collapsible-card" id="staff-access-card">
+                <div class="card-header collapsible-header" id="staff-access-toggle">
+                    <i class="ph-bold ph-lock-key"></i>
+                    <h2 style="color: #fff;">Staff Access Setup</h2>
+                    <div class="header-actions">
+                        <button id="edit-credentials-btn" class="icon-only-btn add-point-btn" title="Edit Credentials">
+                            <i class="ph-bold ph-pencil-simple"></i>
+                        </button>
+                        <i class="ph-bold ph-caret-down collapse-icon"></i>
+                    </div>
+                </div>
+                <div id="staff-access-body" class="collapsible-body">
+                <div class="access-box-pro">
+                    <div class="access-row">
+                        <label>Event ID</label>
+                        <strong id="display-event-id">---</strong>
+                    </div>
+                    <div class="access-row">
+                        <label>Staff Password</label>
+                        <strong id="display-distributor-code">---</strong>
+                    </div>
+                    
+                    <hr class="access-divider">
+                    
+                    <label class="access-input-label">Email Login Details to Volunteer:</label>
+                    <div class="staff-action-row">
+                        <input type="email" id="staff-email-input" placeholder="volunteer@mail.com">
+                        <button id="send-staff-email-btn" class="primary-btn square-btn">
+                            <i class="ph-bold ph-paper-plane-tilt"></i>
+                        </button>
+                    </div>
+
+                    <!-- Staff Dispatch History -->
+                    <div class="staff-history">
+                        <div class="staff-history-header">
+                            <label class="section-label">Recently Dispatched To:</label>
+                            <div class="staff-history-actions" id="staff-history-actions" style="display: none;">
+                                <label class="mini-checkbox">
+                                    <input type="checkbox" id="select-all-staff">
+                                    <span>Select All</span>
+                                </label>
+                                <button id="resend-staff-btn" class="mini-btn" title="Resend to Selected">
+                                    <i class="ph-bold ph-paper-plane-tilt"></i>
+                                    <span>Resend</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="staff-log-list" class="mini-log">
+                            <div class="empty-log">No history yet</div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <!-- Access Points Management Card (Collapsible) -->
+            <div class="card collapsible-card" id="access-points-card">
+                <div class="card-header collapsible-header" id="access-points-toggle">
+                    <i class="ph-bold ph-map-pin"></i>
+                    <h2>Access Points</h2>
+                    <div class="header-actions">
+                        <button id="add-access-point-btn" class="icon-only-btn add-point-btn" title="Add Access Point">
+                            <i class="ph-bold ph-plus"></i>
+                        </button>
+                        <i class="ph-bold ph-caret-down collapse-icon"></i>
+                    </div>
+                </div>
+                <div id="access-points-body" class="collapsible-body">
+                    <div id="access-points-list" class="access-points-list">
+                        <!-- Populated dynamically via JS -->
+                        <div class="empty-access-points">
+                            <i class="ph ph-map-trifold"></i>
+                            <p>No access points yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collaborators Management Card (Admin Only) -->
+            <div class="card collapsible-card admin-only-card" id="collaborators-card">
+                <div class="card-header collapsible-header" id="collaborators-toggle">
+                    <i class="ph-bold ph-users-three"></i>
+                    <h2>Event Collaborators</h2>
+                    <div class="header-actions">
+                        <span class="badge collab-count" id="collab-count">0</span>
+                        <i class="ph-bold ph-caret-down collapse-icon"></i>
+                    </div>
+                </div>
+                <div id="collaborators-body" class="collapsible-body">
+                    <p class="collab-description">Add team members who can manage this event. They'll receive an access code via email.</p>
+                    
+                    <div class="collab-add-form">
+                        <input type="email" id="collab-email-input" placeholder="team@email.com">
+                        <button type="button" id="add-collab-btn" class="primary-btn square-btn" title="Add Collaborator">
+                            <i class="ph-bold ph-user-plus"></i>
+                        </button>
+                    </div>
+
+                    <!-- Bulk Actions Bar (hidden when no selection) -->
+                    <div id="collab-bulk-bar" class="collab-bulk-bar" style="display: none;">
+                        <label class="bulk-select-all">
+                            <input type="checkbox" id="collab-select-all">
+                            <span id="collab-selected-count">0 selected</span>
+                        </label>
+                        <div class="bulk-actions">
+                            <button type="button" id="bulk-send-emails" class="bulk-btn send" title="Send Invites">
+                                <i class="ph-bold ph-paper-plane-tilt"></i>
+                                <span>Send</span>
+                            </button>
+                            <button type="button" id="bulk-delete" class="bulk-btn delete" title="Remove Selected">
+                                <i class="ph-bold ph-trash"></i>
+                                <span>Remove</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="collaborators-list" class="collaborators-list">
+                        <div class="empty-collaborators">
+                            <i class="ph ph-users"></i>
+                            <p>No collaborators yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Participants/Tokens List -->
+        <div class="main-content-column">
+            <div class="card list-card">
+                <!-- Sticky Header for List Controls (Pinned on Mobile) -->
+                <div class="list-sticky-header">
+                    <div class="list-header">
+                        <div class="header-main">
+                            <div class="title-with-badge">
+                                <i class="ph-bold ph-users-three"></i>
+                                <h2>Tokens</h2>
+                                <span class="badge" id="issued-count">0</span>
+                            </div>
+                            
+                            <div class="sort-wrapper">
+                                <select id="sort-dropdown" class="custom-select">
+                                    <option value="date">Newest First</option>
+                                    <option value="alpha">A - Z (Name)</option>
+                                    <option value="used">Fully Used</option>
+                                    <option value="partial">Partial Only</option>
+                                    <option value="issued">Issued Only</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="search-wrapper expand-on-tap">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <input type="text" id="participant-search" placeholder="Search name or contact...">
+                        </div>
+                    </div>
+
+                    <div class="stats-bar">
+                        <div class="stat">
+                            <label>Scanned</label>
+                            <span id="used-count">0</span>
+                        </div>
+                        <div class="stat">
+                            <label>Semi-Utilised</label>
+                            <span id="partial-count">0</span>
+                        </div>
+                        <div class="stat">
+                            <label>Remaining</label>
+                            <span id="remaining-count">0</span>
+                        </div>
+                    </div>
+
+                    <div class="selection-header">
+                        <label class="checkbox-container item-checkbox">
+                            <input type="checkbox" id="select-all-participants">
+                            <div class="checkbox-box"></div>
+                            <span>Email Tokens ✉️</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="participant-list" class="scrollable-list">
+                    <div class="empty-state">
+                        <i class="ph ph-users"></i>
+                        <p>No participants registered yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Bulk Action Island (Appears when items are selected) -->
+    <div id="bulk-actions-bar" class="bulk-floating-island hidden">
+        <div class="bulk-content">
+            <button id="bulk-email-btn" class="bulk-btn email">
+                <i class="ph-bold ph-paper-plane-tilt"></i> 
+                <span id="mail-btn-text">Send Mail</span>
+            </button>
+            <div class="bulk-divider"></div>
+            <button id="bulk-delete-btn" class="bulk-btn delete">
+                <i class="ph-bold ph-trash"></i> <span>Delete</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Edit Event Modal (Name & Dates) -->
+    <div id="edit-event-modal" class="modal-overlay">
+        <div class="modal-content access-point-modal-content">
+            <button class="close-modal" id="close-edit-event-modal" aria-label="Close Modal">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-calendar-blank"></i>
+                </div>
+                <h3>Edit Event Details</h3>
+            </div>
+
+            <form id="edit-event-form">
+                <div class="input-group">
+                    <label for="edit-event-name">Event Name *</label>
+                    <input type="text" id="edit-event-name" placeholder="e.g., Annual Tech Fest 2026" required>
+                </div>
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="edit-event-start-date">Start Date</label>
+                        <input type="date" id="edit-event-start-date" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="edit-event-end-date">End Date</label>
+                        <input type="date" id="edit-event-end-date" required>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" id="cancel-edit-event-btn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-event-btn">
+                        <i class="ph-bold ph-check"></i> <span>Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Participant Details Modal -->
+    <div id="participant-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="close-participant-modal" aria-label="Close Modal">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-user"></i>
+                </div>
+                <h3 id="modal-user-name">User Details</h3>
+                <span id="modal-user-contact" class="modal-subtitle"></span>
+            </div>
+
+            <div class="modal-body">
+                <p class="section-label">Scan History & Timelines</p>
+                <div id="audit-log-container" class="audit-log"></div>
+
+                <div class="qr-share-section">
+                    <p class="section-label">Unique QR Link</p>
+                    <div class="link-box">
+                        <input type="text" id="qr-link-input" readonly value="Loading link...">
+                        <button id="copy-link-btn">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal for Bulk Import -->
+    <div id="help-modal" class="modal-overlay">
+        <div class="help-card card modal-content">
+            <button class="close-modal" id="close-import-help">
+                <i class="ph ph-x"></i>
+            </button>
+            
+            <div class="help-header">
+                <i class="ph-bold ph-info"></i>
+                <h3>Bulk Import Guide</h3>
+            </div>
+            
+            <p class="help-desc">Excel file <strong>must</strong> have these exact headers:</p>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>johndoe@mail.com</td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td>9998887776</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <p class="help-note">
+                <strong>Note:</strong> Duplicates are merged based on the Contact ID. (Only emailing is supported for now.)
+            </p>
+            <p class="help-note help-note-accent">
+                <i class="ph-bold ph-key"></i>
+                <span><strong>Access Points:</strong> Imported participants will only receive access to the checkboxes you've selected in "Grant Access Permissions" above.</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Access Point Modal (Add/Edit) -->
+    <div id="access-point-modal" class="modal-overlay">
+        <div class="modal-content access-point-modal-content">
+            <button class="close-modal" id="close-access-point-modal" aria-label="Close Modal">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-map-pin"></i>
+                </div>
+                <h3 id="access-point-modal-title">Add Access Point</h3>
+            </div>
+
+            <form id="access-point-form">
+                <p class="modal-info-note">
+                    <i class="ph-bold ph-info"></i>
+                    New access points won't automatically apply to existing participants. They'll only be available for new tokens.
+                </p>
+                <div class="input-group">
+                    <label for="access-point-name">Station Name *</label>
+                    <input type="text" id="access-point-name" placeholder="e.g., Main Gate, Food Court" required>
+                </div>
+                
+                <div class="all-days-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="access-point-all-days" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">All Days</span>
+                </div>
+                
+                <div class="date-range-block" id="access-point-date-group" style="display: none;">
+                    <div class="date-row">
+                        <div class="date-field">
+                            <label>From</label>
+                            <input type="date" id="access-point-date-from">
+                        </div>
+                        <div class="date-field">
+                            <label>To</label>
+                            <input type="date" id="access-point-date-to">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="access-point-start">Start Time</label>
+                        <input type="time" id="access-point-start">
+                    </div>
+                    <div class="input-group">
+                        <label for="access-point-end">End Time</label>
+                        <input type="time" id="access-point-end">
+                    </div>
+                </div>
+                <input type="hidden" id="access-point-edit-index" value="-1">
+                <div class="modal-actions">
+                    <button type="button" id="cancel-access-point-btn" class="secondary-btn">Cancel</button>
+                    <button type="submit" class="primary-btn">
+                        <i class="ph-bold ph-check"></i> <span id="access-point-save-text">Save</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Credentials Modal -->
+    <div id="edit-credentials-modal" class="modal-overlay">
+        <div class="modal-content access-point-modal-content">
+            <button class="close-modal" id="close-credentials-modal" aria-label="Close Modal">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-lock-key"></i>
+                </div>
+                <h3>Edit Credentials</h3>
+            </div>
+
+            <form id="edit-credentials-form">
+                <p class="modal-info-note">
+                    <i class="ph-bold ph-info"></i>
+                    Updated credentials won't be automatically sent to volunteers. Use the Staff History section below to select and resend to specific staff members.
+                </p>
+                <div class="input-group">
+                    <label for="edit-event-id">Event ID *</label>
+                    <div class="id-input-wrapper">
+                        <input type="text" id="edit-event-id" placeholder="Unique identifier" required>
+                        <span id="edit-id-status-icon" class="status-icon"></span>
+                    </div>
+                    <span id="edit-id-feedback" class="feedback-text">Used for staff login</span>
+                </div>
+                <div class="input-group">
+                    <label for="edit-staff-password">Staff Password *</label>
+                    <input type="text" id="edit-staff-password" placeholder="Password for staff access" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-credentials-btn" class="secondary-btn">Cancel</button>
+                    <button type="submit" id="save-credentials-btn" class="primary-btn" disabled>
+                        <i class="ph-bold ph-check"></i> <span>Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase and Dependencies -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="manage-event.js"></script>
+</body>
+</html>
