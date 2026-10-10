@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Volunteer Reimbursements | Pass Track</title>
+    <link rel="stylesheet" href="../lib/theme.css">
+    <link rel="stylesheet" href="../lib/components.css">
+    <link rel="stylesheet" href="reimbursements.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <header class="reimburse-header">
+        <div class="header-left">
+            <a href="dashboard.html" class="back-link" id="back-nav-link" title="Back to Treasury">
+                <i class="ph-bold ph-caret-left"></i>
+            </a>
+            <div class="header-meta">
+                <div class="brand-badge">
+                    <i class="ph-bold ph-receipt"></i>
+                    <span>Treasury Operations</span>
+                </div>
+                <h1>Volunteer Expense Reimbursements</h1>
+                <p class="subtitle">Submit verified expense receipts for swift Treasury audit and direct UPI reimbursement.</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="dashboard.html" class="btn btn--secondary" id="treasury-hub-link">
+                <i class="ph-bold ph-scales"></i>
+                <span>Treasurer Dashboard</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- View Toggle Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" id="tab-new-claim" data-tab="new-claim">
+                <i class="ph-bold ph-plus-circle"></i>
+                <span>Submit New Claim</span>
+            </button>
+            <button class="tab-btn" id="tab-my-claims" data-tab="my-claims">
+                <i class="ph-bold ph-clock-counter-clockwise"></i>
+                <span>Track My Claims</span>
+                <span class="badge-count" id="user-claims-count">0</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: New Claim Form -->
+        <section class="tab-content active" id="content-new-claim">
+            <div class="claim-card-layout">
+                <div class="claim-form-container">
+                    <form id="reimbursement-form">
+                        <div class="form-section-title">
+                            <i class="ph-bold ph-user-circle"></i>
+                            <h3>1. Claimant & Payout Details</h3>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="input-group">
+                                <label for="claimant-name">Full Name *</label>
+                                <input type="text" id="claimant-name" required placeholder="e.g. Rahul Sharma" autocomplete="name">
+                            </div>
+                            <div class="input-group">
+                                <label for="claimant-email">Email Address *</label>
+                                <input type="email" id="claimant-email" required placeholder="rahul@nmit.ac.in" autocomplete="email">
+                            </div>
+                        </div>
+
+                        <div class="form-grid-2">
+                            <div class="input-group">
+                                <label for="claimant-upi">UPI ID for Payout *</label>
+                                <div class="input-with-affix">
+                                    <i class="ph-bold ph-device-mobile"></i>
+                                    <input type="text" id="claimant-upi" required placeholder="rahul@oksbi or 9876543210@paytm">
+                                </div>
+                                <span class="input-hint">Treasurers dispatch reimbursements directly to this UPI address</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="claim-event">Event / Activity Association *</label>
+                                <select id="claim-event" class="custom-select" required>
+                                    <option value="HackNMIT 2026">HackNMIT 2026 (Annual Hackathon)</option>
+                                    <option value="Club Orientation 2026">Club Orientation & Induction</option>
+                                    <option value="AI Workshop Series">AI / Web3 Workshop Series</option>
+                                    <option value="Executive Operations">General Operations & Logistics</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-section-title" style="margin-top: 1.5rem;">
+                            <i class="ph-bold ph-currency-inr"></i>
+                            <h3>2. Expense Breakdown</h3>
+                        </div>
+                        <div class="form-grid-3">
+                            <div class="input-group">
+                                <label for="claim-amount">Amount Spent (₹) *</label>
+                                <input type="number" id="claim-amount" step="0.01" min="1" max="100000" required placeholder="0.00">
+                            </div>
+                            <div class="input-group">
+                                <label for="claim-category">Category *</label>
+                                <select id="claim-category" class="custom-select" required>
+                                    <option value="catering">Catering & Refreshments</option>
+                                    <option value="hardware">Hardware, Cables & AV</option>
+                                    <option value="stationery">Stationery, Badges & Printing</option>
+                                    <option value="travel">Travel & Transport</option>
+                                    <option value="venue">Venue & Decorations</option>
+                                    <option value="other">Miscellaneous</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label for="claim-date">Date of Purchase *</label>
+                                <input type="date" id="claim-date" required>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="claim-merchant">Merchant / Vendor Name *</label>
+                            <input type="text" id="claim-merchant" required placeholder="e.g. Campus Cafeteria, Sri Krishna Stationery, Croma Store">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="claim-desc">Itemized Description / Purpose *</label>
+                            <textarea id="claim-desc" rows="3" required placeholder="List what was purchased and why it was needed (e.g. 150 participant badge lanyards and safety pins for entrance check-in)"></textarea>
+                        </div>
+
+                        <div class="form-section-title" style="margin-top: 1.5rem;">
+                            <i class="ph-bold ph-camera"></i>
+                            <h3>3. Photo Receipt / Invoice Attachment</h3>
+                        </div>
+
+                        <!-- Dropzone for Receipt Upload -->
+                        <div class="receipt-dropzone" id="receipt-dropzone">
+                            <input type="file" id="receipt-file-input" accept="image/*" capture="environment" style="display:none;">
+                            <div class="dropzone-empty" id="dropzone-prompt">
+                                <div class="dropzone-icon">
+                                    <i class="ph-bold ph-cloud-arrow-up"></i>
+                                </div>
+                                <h4>Snap or Upload Receipt Photo</h4>
+                                <p>Take a picture with your phone camera or drag and drop a PNG / JPG invoice</p>
+                                <div class="dropzone-actions">
+                                    <button type="button" class="btn btn--secondary" id="browse-file-btn">
+                                        <i class="ph-bold ph-image"></i>
+                                        <span>Select Receipt File</span>
+                                    </button>
+                                    <button type="button" class="btn btn--secondary" id="demo-receipt-btn" title="Populate with sample receipt for testing">
+                                        <i class="ph-bold ph-magic-wand"></i>
+                                        <span>Use Demo Receipt</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Preview container when image selected -->
+                            <div class="dropzone-preview" id="dropzone-preview" style="display:none;">
+                                <div class="preview-thumbnail-wrap">
+                                    <img id="receipt-preview-img" src="" alt="Receipt Preview">
+                                    <div class="preview-badge"><i class="ph-bold ph-check"></i> Attached</div>
+                                </div>
+                                <div class="preview-meta">
+                                    <h4 id="receipt-file-name">receipt.jpg</h4>
+                                    <p id="receipt-file-size">142 KB • Ready for audit</p>
+                                    <div class="preview-btn-row">
+                                        <button type="button" class="btn-text-action" id="view-enlarge-receipt-btn">
+                                            <i class="ph-bold ph-magnifying-glass-plus"></i> View Full Image
+                                        </button>
+                                        <button type="button" class="btn-text-action danger" id="remove-receipt-btn">
+                                            <i class="ph-bold ph-trash"></i> Replace Photo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-submit-row">
+                            <button type="submit" class="btn btn--primary btn-large" id="submit-claim-btn">
+                                <i class="ph-bold ph-paper-plane-tilt"></i>
+                                <span>Submit Claim for Treasury Approval</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Guidelines Card -->
+                <aside class="guidelines-card">
+                    <div class="guidelines-header">
+                        <i class="ph-bold ph-shield-check"></i>
+                        <h3>Reimbursement Policy</h3>
+                    </div>
+                    <ul class="policy-list">
+                        <li>
+                            <i class="ph-bold ph-check-circle good"></i>
+                            <div>
+                                <strong>Clear Printed or Digital Bills</strong>
+                                <p>Receipts must display the merchant name, date, total amount, and item details.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="ph-bold ph-check-circle good"></i>
+                            <div>
+                                <strong>Direct UPI Disbursement</strong>
+                                <p>Once the Treasurer reviews and signs off, reimbursement is disbursed and recorded to the club's ledger.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="ph-bold ph-check-circle good"></i>
+                            <div>
+                                <strong>Real-time Ledger Sync</strong>
+                                <p>Approved reimbursements instantly balance the event's financial statement.</p>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <div class="treasury-status-box">
+                        <small>Current Treasury Balance</small>
+                        <h4 id="sidebar-treasury-balance">₹1,09,000</h4>
+                        <span class="status-pill good">Funds Available for Disbursement</span>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- TAB 2: Track My Claims -->
+        <section class="tab-content" id="content-my-claims">
+            <div class="claims-list-wrapper">
+                <div class="claims-list-header">
+                    <div>
+                        <h2>Submitted Claims History</h2>
+                        <p class="subtitle">Review the live verification status of claims submitted from this device or account.</p>
+                    </div>
+                    <div class="claims-filter-group">
+                        <select id="claims-status-filter" class="custom-select">
+                            <option value="all">All Statuses</option>
+                            <option value="pending">Pending Review Only</option>
+                            <option value="approved">Approved & Paid</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="claims-grid" id="claims-grid">
+                    <!-- Populated dynamically via JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Receipt Enlarge Lightbox Modal -->
+    <div id="receipt-modal" class="modal-overlay">
+        <div class="modal-dialog receipt-dialog">
+            <button class="close-modal-btn" id="close-receipt-modal" aria-label="Close">
+                <i class="ph-bold ph-x"></i>
+            </button>
+            <div class="receipt-modal-body">
+                <div class="receipt-modal-image-col">
+                    <img id="modal-receipt-img" src="" alt="Full Receipt View">
+                </div>
+                <div class="receipt-modal-info-col">
+                    <div class="receipt-info-chip" id="modal-claim-status">Pending Review</div>
+                    <h3 id="modal-claim-merchant">Merchant Name</h3>
+                    <p class="modal-claim-amount" id="modal-claim-amount">₹0.00</p>
+                    
+                    <div class="modal-meta-table">
+                        <div class="meta-row">
+                            <span>Claimant:</span>
+                            <strong id="modal-claim-name">-</strong>
+                        </div>
+                        <div class="meta-row">
+                            <span>UPI ID:</span>
+                            <strong id="modal-claim-upi">-</strong>
+                        </div>
+                        <div class="meta-row">
+                            <span>Event:</span>
+                            <strong id="modal-claim-event">-</strong>
+                        </div>
+                        <div class="meta-row">
+                            <span>Date:</span>
+                            <strong id="modal-claim-date">-</strong>
+                        </div>
+                        <div class="meta-row">
+                            <span>Category:</span>
+                            <strong id="modal-claim-category">-</strong>
+                        </div>
+                    </div>
+
+                    <div class="modal-desc-box">
+                        <label>Description:</label>
+                        <p id="modal-claim-desc">-</p>
+                    </div>
+
+                    <div class="modal-reimburse-note" id="modal-audit-note" style="display:none;">
+                        <!-- Filled if approved or rejected -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase and Dependencies -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="../lib/contracts/passtrack-core.js"></script>
+    <script src="reimbursements.js"></script>
+</body>
+</html>

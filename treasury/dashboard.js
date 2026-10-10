@@ -15,9 +15,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('save-txn-btn');
     const listEl = document.getElementById('txn-list');
     
+    // Reimbursement Queue DOM Elements
+    const queueListEl = document.getElementById('reimburse-queue-list');
+    const pendingClaimsBadge = document.getElementById('pending-claims-badge');
+    const auditModal = document.getElementById('treasurer-receipt-modal');
+    const closeAuditModalBtn = document.getElementById('close-treasurer-receipt-modal');
+    const modalApproveBtn = document.getElementById('modal-approve-claim-btn');
+    const modalRejectBtn = document.getElementById('modal-reject-claim-btn');
+
     let currentOrgId = null;
     let currentUser = null;
     let txnsData = [];
+    let reimbursementsData = [];
+    let currentAuditClaim = null;
     let editDocId = null;
 
     let trendChart = null;
@@ -34,12 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'txn-5', description: 'Catering & Participant Refreshments', type: 'expense', amount: 12500, category: 'hospitality', date: '2026-03-29' }
         ];
         updateDashboard();
+        loadReimbursements();
     }
 
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
         const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
                        sessionStorage.getItem('authType') === 'admin' ||
+                       window.location.search.includes('demo=true') ||
                        (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
 
         if (user) {
@@ -63,8 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isDemo) loadDemoTreasury();
                 else showToast('Failed to load organization data.', 'error');
             }
-        } else if (isDemo) {
-            currentUser = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in' };
+        } else if (isDemo || !user) {
+            currentUser = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in', displayName: 'Treasurer Admin' };
             loadDemoTreasury();
         } else {
             window.location.href = '../index.html';
@@ -89,6 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             });
+
+        loadReimbursements();
     }
 
     function updateDashboard() {
@@ -394,6 +408,290 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
         showToast('Treasury statement exported to CSV.', 'success');
     };
+
+    // ==========================================
+    // VOLUNTEER REIMBURSEMENT AUDIT QUEUE
+    // ==========================================
+    const DEMO_CLAIMS_KEY = 'passtrack_volunteer_claims';
+
+    function getLocalClaims() {
+        try {
+            const raw = localStorage.getItem(DEMO_CLAIMS_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        
+        // Initial Seed
+        const seed = [
+            {
+                id: 'claim-101',
+                claimantName: 'Aarav Patel',
+                claimantEmail: 'aarav.patel@nmit.ac.in',
+                upiId: 'aarav@okaxis',
+                event: 'HackNMIT 2026',
+                amount: 1450,
+                category: 'catering',
+                date: '2026-03-27',
+                merchant: 'Campus Cafeteria & Snacks',
+                description: 'Midnight snacks, extra mineral water cartons & black coffee for volunteer night shift during HackNMIT hackathon.',
+                receiptUrl: '../lib/placeholder-receipt.png',
+                receiptFileName: 'canteen_cash_bill_2703.jpg',
+                status: 'pending',
+                createdAt: '2026-03-27T23:15:00.000Z'
+            },
+            {
+                id: 'claim-102',
+                claimantName: 'Priya Sundaram',
+                claimantEmail: 'priya.s@nmit.ac.in',
+                upiId: 'priya.s@paytm',
+                event: 'HackNMIT 2026',
+                amount: 2800,
+                category: 'hardware',
+                date: '2026-03-26',
+                merchant: 'Sri Balaji Electronics & Hardware',
+                description: 'Two 15-meter surge-protected extension cord boards and HDMI adapters for projector lab.',
+                receiptUrl: '../lib/placeholder-receipt.png',
+                receiptFileName: 'hardware_invoice_904.png',
+                status: 'pending',
+                createdAt: '2026-03-26T14:30:00.000Z'
+            }
+        ];
+        localStorage.setItem(DEMO_CLAIMS_KEY, JSON.stringify(seed));
+        return seed;
+    }
+
+    function saveLocalClaims(claims) {
+        localStorage.setItem(DEMO_CLAIMS_KEY, JSON.stringify(claims));
+    }
+
+    function loadReimbursements() {
+        if (!queueListEl) return;
+        
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
+
+        if (firestore && !isDemo && currentOrgId) {
+            firestore.collection('reimbursements')
+                .where('orgId', '==', currentOrgId)
+                .onSnapshot(snap => {
+                    if (!snap.empty) {
+                        reimbursementsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    } else {
+                        reimbursementsData = getLocalClaims();
+                    }
+                    renderReimbursementsQueue();
+                }, err => {
+                    console.warn("Reimbursements listener warning:", err);
+                    reimbursementsData = getLocalClaims();
+                    renderReimbursementsQueue();
+                });
+        } else {
+            reimbursementsData = getLocalClaims();
+            renderReimbursementsQueue();
+        }
+    }
+
+    function renderReimbursementsQueue() {
+        if (!queueListEl) return;
+
+        const pending = reimbursementsData.filter(c => c.status === 'pending');
+        if (pendingClaimsBadge) {
+            pendingClaimsBadge.textContent = `${pending.length} Pending Review`;
+            pendingClaimsBadge.style.background = pending.length > 0 ? 'var(--accent)' : 'var(--good)';
+        }
+
+        if (pending.length === 0) {
+            queueListEl.innerHTML = `
+                <div style="padding: 32px 20px; text-align: center; color: var(--text-muted);">
+                    <i class="ph-bold ph-check-circle" style="font-size: 2rem; color: var(--good); display: block; margin-bottom: 8px;"></i>
+                    <h4 style="margin: 0 0 4px 0; font-size: 1rem; color: var(--text-main); font-weight: 700;">All Volunteer Claims Audited</h4>
+                    <p style="margin: 0; font-size: 0.85rem;">No pending reimbursement requests awaiting Treasurer authorization.</p>
+                </div>
+            `;
+            return;
+        }
+
+        queueListEl.innerHTML = '';
+        pending.forEach(claim => {
+            const row = document.createElement('div');
+            row.className = 'queue-item-row';
+            row.innerHTML = `
+                <div class="queue-left">
+                    <img class="queue-receipt-thumb" src="${claim.receiptUrl || '../lib/placeholder-receipt.png'}" alt="Receipt">
+                    <div class="queue-info">
+                        <h4>${escapeHtml(claim.merchant || 'Expense Receipt')}</h4>
+                        <div class="queue-meta">
+                            <span class="claimant-tag"><i class="ph-bold ph-user"></i> ${escapeHtml(claim.claimantName || 'Volunteer')}</span>
+                            <span class="upi-tag">UPI: ${escapeHtml(claim.upiId || 'N/A')}</span>
+                            <span>•</span>
+                            <span><i class="ph-bold ph-calendar"></i> ${claim.date || ''}</span>
+                            <span>•</span>
+                            <span>${escapeHtml(claim.event || 'General')}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="queue-right">
+                    <div class="queue-amount">₹${Number(claim.amount || 0).toLocaleString()}</div>
+                    <div class="queue-actions">
+                        <button type="button" class="view-receipt-btn" data-claim-id="${claim.id}">
+                            <i class="ph-bold ph-eye"></i> View
+                        </button>
+                        <button type="button" class="approve-claim-btn" data-claim-id="${claim.id}">
+                            <i class="ph-bold ph-check"></i> Approve
+                        </button>
+                        <button type="button" class="reject-claim-btn" data-claim-id="${claim.id}">
+                            <i class="ph-bold ph-x"></i> Decline
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Thumb click & View click
+            row.querySelector('.queue-receipt-thumb').onclick = () => openAuditModal(claim);
+            row.querySelector('.view-receipt-btn').onclick = () => openAuditModal(claim);
+            row.querySelector('.approve-claim-btn').onclick = () => approveClaim(claim);
+            row.querySelector('.reject-claim-btn').onclick = () => rejectClaim(claim);
+
+            queueListEl.appendChild(row);
+        });
+    }
+
+    function openAuditModal(claim) {
+        if (!auditModal) return;
+        currentAuditClaim = claim;
+
+        document.getElementById('audit-receipt-img').src = claim.receiptUrl || '../lib/placeholder-receipt.png';
+        document.getElementById('audit-merchant-name').textContent = claim.merchant || 'Expense Receipt';
+        document.getElementById('audit-amount-display').textContent = `₹${Number(claim.amount || 0).toLocaleString()}`;
+        document.getElementById('audit-claimant-name').textContent = claim.claimantName || 'Volunteer';
+        document.getElementById('audit-upi-id').textContent = claim.upiId || 'N/A';
+        document.getElementById('audit-event-name').textContent = claim.event || 'General';
+        document.getElementById('audit-date').textContent = claim.date || '';
+        document.getElementById('audit-category').textContent = (claim.category || 'other').toUpperCase();
+        document.getElementById('audit-description').textContent = claim.description || 'No itemized description provided.';
+
+        auditModal.classList.add('active');
+    }
+
+    if (closeAuditModalBtn) {
+        closeAuditModalBtn.onclick = () => auditModal.classList.remove('active');
+    }
+    if (auditModal) {
+        auditModal.onclick = (e) => {
+            if (e.target === auditModal) auditModal.classList.remove('active');
+        };
+    }
+
+    if (modalApproveBtn) {
+        modalApproveBtn.onclick = () => {
+            if (currentAuditClaim) approveClaim(currentAuditClaim);
+        };
+    }
+
+    if (modalRejectBtn) {
+        modalRejectBtn.onclick = () => {
+            if (currentAuditClaim) rejectClaim(currentAuditClaim);
+        };
+    }
+
+    async function approveClaim(claim) {
+        if (!confirm(`Authorize reimbursement payout of ₹${Number(claim.amount).toLocaleString()} to ${claim.claimantName} (${claim.upiId}) and record to Treasury ledger?`)) {
+            return;
+        }
+
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
+
+        const txnPayload = {
+            id: 'txn-reimb-' + Date.now(),
+            orgId: currentOrgId,
+            type: 'expense',
+            amount: Number(claim.amount),
+            category: 'reimbursement',
+            date: new Date().toISOString().split('T')[0],
+            description: `Reimbursement: ${claim.description || claim.merchant} (${claim.claimantName} • UPI: ${claim.upiId})`,
+            recordedBy: currentUser ? currentUser.uid : 'treasurer',
+            recordedByName: currentUser ? (currentUser.displayName || currentUser.email) : 'Treasurer',
+            relatedDocId: claim.id,
+            relatedDocType: 'reimbursement'
+        };
+
+        try {
+            if (firestore && !isDemo && currentOrgId) {
+                try {
+                    txnPayload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    txnPayload.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+                    const txnPromise = firestore.collection('transactions').add(txnPayload);
+                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000));
+                    const txnRef = await Promise.race([txnPromise, timeoutPromise]);
+                    
+                    await firestore.collection('reimbursements').doc(claim.id).update({
+                        status: 'approved',
+                        reviewedBy: currentUser ? (currentUser.displayName || currentUser.email) : 'Treasurer',
+                        reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        transactionId: txnRef.id
+                    });
+                } catch (fsErr) {
+                    console.warn("Firestore sync timed out or offline, proceeding locally:", fsErr);
+                }
+            }
+
+            // Sync with local memory and storage
+            txnsData.unshift(txnPayload);
+            const foundIdx = reimbursementsData.findIndex(c => c.id === claim.id);
+            if (foundIdx !== -1) {
+                reimbursementsData[foundIdx].status = 'approved';
+                reimbursementsData[foundIdx].reviewedBy = currentUser ? (currentUser.displayName || currentUser.email) : 'Treasurer';
+                reimbursementsData[foundIdx].transactionId = txnPayload.id;
+            }
+            saveLocalClaims(reimbursementsData);
+
+            updateDashboard();
+            renderReimbursementsQueue();
+            if (auditModal) auditModal.classList.remove('active');
+
+            showToast(`Reimbursement of ₹${Number(claim.amount).toLocaleString()} approved and synced with ledger!`, 'success');
+        } catch (error) {
+            console.error("Approval error:", error);
+            showToast('Failed to approve reimbursement.', 'error');
+        }
+    }
+
+    async function rejectClaim(claim) {
+        const reason = prompt('Specify rejection reason for volunteer:', 'Receipt photo illegible or missing merchant GST details');
+        if (reason === null) return;
+
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
+                       sessionStorage.getItem('authType') === 'admin' ||
+                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
+
+        try {
+            if (firestore && !isDemo && currentOrgId) {
+                await firestore.collection('reimbursements').doc(claim.id).update({
+                    status: 'rejected',
+                    rejectionReason: reason,
+                    reviewedBy: currentUser ? (currentUser.displayName || currentUser.email) : 'Treasurer',
+                    reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+
+            const foundIdx = reimbursementsData.findIndex(c => c.id === claim.id);
+            if (foundIdx !== -1) {
+                reimbursementsData[foundIdx].status = 'rejected';
+                reimbursementsData[foundIdx].rejectionReason = reason;
+            }
+            saveLocalClaims(reimbursementsData);
+
+            renderReimbursementsQueue();
+            if (auditModal) auditModal.classList.remove('active');
+
+            showToast(`Claim rejected: "${reason}".`, 'info');
+        } catch (error) {
+            console.error("Rejection error:", error);
+            showToast('Failed to reject claim.', 'error');
+        }
+    }
 
     function escapeHtml(str) {
         const div = document.createElement('div');

@@ -24,6 +24,9 @@
             </div>
         </div>
         <div class="header-buttons">
+            <a href="reimbursements.html" class="secondary-btn" id="claim-portal-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                <i class="ph-bold ph-receipt"></i> <span>Volunteer Claims</span>
+            </a>
             <button id="add-txn-btn" class="primary-btn">
                 <i class="ph-bold ph-plus"></i> <span>Add Transaction</span>
             </button>
@@ -73,6 +76,33 @@
                     <h3><i class="ph-bold ph-chart-pie-slice"></i> Expenses by Category</h3>
                 </div>
                 <div class="chart-canvas-wrapper"><canvas id="categoryChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Volunteer Reimbursements Approval Queue -->
+        <div class="card reimburse-queue-card" id="reimburse-queue-section" style="width: 100%;">
+            <div class="reimburse-card-header">
+                <div class="header-title-group">
+                    <div class="reimburse-badge-icon">
+                        <i class="ph-bold ph-receipt"></i>
+                    </div>
+                    <div>
+                        <h2>Volunteer Reimbursements Queue</h2>
+                        <p class="section-sub">Audit volunteer receipts, verify UPI disbursements, and approve with 1-click automatic ledger expense entry.</p>
+                    </div>
+                </div>
+                <div class="queue-status-actions">
+                    <span class="queue-count-badge" id="pending-claims-badge">2 Pending Review</span>
+                    <a href="reimbursements.html" class="btn-text-link">
+                        <span>All Claims</span> <i class="ph-bold ph-arrow-up-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div id="reimburse-queue-list" class="reimburse-queue-list">
+                <div class="empty-state" style="padding: 24px; text-align: center; color: var(--text-muted);">
+                    <i class="ph-bold ph-spinner-gap spin" style="font-size: 1.8rem; display: block; margin-bottom: 8px;"></i>
+                    <p>Loading pending claims...</p>
+                </div>
             </div>
         </div>
 
@@ -163,6 +193,46 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Treasurer Receipt Audit Lightbox Modal -->
+    <div id="treasurer-receipt-modal" class="modal-overlay">
+        <div class="modal-content treasurer-audit-dialog">
+            <button class="close-modal" id="close-treasurer-receipt-modal">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="audit-modal-body">
+                <div class="audit-image-col">
+                    <img id="audit-receipt-img" src="" alt="Audited Receipt">
+                </div>
+                <div class="audit-details-col">
+                    <div class="modal-header" style="padding:0; margin-bottom:1rem; border:none; text-align:left;">
+                        <span class="audit-status-chip pending" id="audit-status-chip">Pending Review</span>
+                        <h3 id="audit-merchant-name" style="margin:0.5rem 0 0.2rem 0; font-size:1.4rem;">Merchant Name</h3>
+                        <p class="audit-amount-display" id="audit-amount-display">₹0</p>
+                    </div>
+                    <div class="audit-meta-grid">
+                        <div><small>Claimant:</small><strong id="audit-claimant-name">-</strong></div>
+                        <div><small>Disbursement UPI:</small><strong id="audit-upi-id" class="upi-highlight">-</strong></div>
+                        <div><small>Event:</small><strong id="audit-event-name">-</strong></div>
+                        <div><small>Purchase Date:</small><strong id="audit-date">-</strong></div>
+                        <div><small>Category:</small><strong id="audit-category">-</strong></div>
+                    </div>
+                    <div class="audit-desc-box">
+                        <small>Itemized Purpose:</small>
+                        <p id="audit-description">-</p>
+                    </div>
+                    <div class="audit-actions-row" id="audit-actions-row">
+                        <button type="button" class="danger-btn" id="modal-reject-claim-btn">
+                            <i class="ph-bold ph-x-circle"></i> Decline Claim
+                        </button>
+                        <button type="button" class="primary-btn approve-btn" id="modal-approve-claim-btn">
+                            <i class="ph-bold ph-check-circle"></i> Approve & Log to Ledger
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
