@@ -145,8 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const collaborators = eventData.collaborators || [];
 
                     const match = collaborators.find(c =>
-                        c.email.toLowerCase() === email &&
-                        c.accessCode === code
+                        c.email.trim().toLowerCase() === email &&
+                        (c.accessCode || '').trim().toUpperCase() === code
                     );
 
                     if (match) {
@@ -162,8 +162,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 showMessage('✓ Access verified! Signing in...', 'success');
 
-                // Sign in anonymously to get Firebase auth for Firestore writes
-                await auth.signInAnonymously();
+                // Attempt anonymous sign-in for Firestore tokens, but do not block if restricted in Firebase Console
+                try {
+                    await auth.signInAnonymously();
+                } catch (anonErr) {
+                    console.warn("Anonymous auth restricted or skipped, continuing with verified collaborator session:", anonErr.code || anonErr.message);
+                }
 
                 // Store collaborator info in session
                 sessionStorage.setItem('authType', 'collaborator');
@@ -172,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Redirect to dashboard
                 setTimeout(() => {
                     window.location.href = '../organizer/dashboard.html';
-                }, 800);
+                }, 600);
 
             } catch (error) {
                 console.error("Delegated auth error:", error);

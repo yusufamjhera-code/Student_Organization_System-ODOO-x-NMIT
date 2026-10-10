@@ -7,7 +7,7 @@
   <br><br>
   <h1>🚀 PassTrack | Student Organization Operating System</h1>
   <p><strong>The unified digital platform engineered to eliminate chaotic spreadsheets, lost cash, and disjointed messaging groups across campus clubs.</strong></p>
-  <p><em>Designed & Developed by <strong>Team ByteSmiths for Odoo</strong></em></p>
+  <p><em>Designed & Developed by <strong>Team ByteSmiths for Odoo x NMIT.</strong></em></p>
 </div>
 
 <hr>
@@ -266,5 +266,5 @@ firebase deploy --only firestore:rules
 Developed for the **Odoo x NMIT Hackathon** to demonstrate how an integrated, modular digital ecosystem can streamline campus club administration, eliminate human error in ticketing, and deliver complete financial transparency.
 
 <div align="center">
-  <p>© 2026 PassTrack. Designed and Developed by <strong>Team ByteSmiths for Odoo</strong>.</p>
+  <p>© 2026 PassTrack. Designed and Developed by <strong>Team ByteSmiths for Odoo x NMIT.</strong>.</p>
 </div>

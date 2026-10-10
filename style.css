@@ -243,7 +243,7 @@ body.landing-page {
         height: 100vh;
         max-height: 100vh;
         overflow-y: hidden; /* Zero scroll on desktop PC */
-        padding: 1.25rem 2rem;
+        padding: 1.5rem 2.5rem;
     }
 
     .landing-container {
@@ -251,12 +251,12 @@ body.landing-page {
         max-height: 94vh;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: space-evenly;
     }
 }
 
 .landing-container {
-    max-width: 1120px;
+    max-width: 1240px;
     width: 100%;
     margin: 0 auto;
     text-align: center;
@@ -264,37 +264,7 @@ body.landing-page {
 }
 
 .landing-header {
-    margin-bottom: 1.25rem;
-}
-
-.badge-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(106, 17, 203, 0.08);
-    border: 1px solid rgba(106, 17, 203, 0.2);
-    color: var(--primary);
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    margin-bottom: 0.6rem;
-}
-
-.pulse-dot {
-    width: 7px;
-    height: 7px;
-    background: var(--primary);
-    border-radius: 50%;
-    box-shadow: 0 0 0 rgba(106, 17, 203, 0.4);
-    animation: pulseDot 2s infinite;
-}
-
-@keyframes pulseDot {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(106, 17, 203, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(106, 17, 203, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(106, 17, 203, 0); }
+    margin-bottom: 0.85rem;
 }
 
 .gradient-text {
@@ -304,42 +274,42 @@ body.landing-page {
 }
 
 .landing-header h1 {
-    font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+    font-size: clamp(2.1rem, 3.5vw, 3.1rem);
     font-weight: 900;
     letter-spacing: -0.03em;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.45rem;
     color: var(--text-main);
 }
 
 .landing-header p {
-    font-size: clamp(0.88rem, 1.3vw, 1rem);
+    font-size: clamp(0.98rem, 1.25vw, 1.15rem);
     color: var(--text-sub);
     font-weight: 500;
-    max-width: 650px;
+    max-width: 740px;
     margin: 0 auto;
-    line-height: 1.45;
+    line-height: 1.5;
 }
 
 /* 6 Card Portal Grid: 3 cols x 2 rows on PC */
 .portal-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.1rem;
+    gap: 1.35rem;
     width: 100%;
 }
 
 .portal-card {
     background: #ffffff;
     border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 1.15rem 1.35rem;
+    border-radius: 20px;
+    padding: 1.45rem 1.6rem;
     text-decoration: none;
     color: var(--text-main);
     display: flex;
     align-items: center;
-    gap: 1.1rem;
+    gap: 1.25rem;
     text-align: left;
-    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.035);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
@@ -367,13 +337,13 @@ body.landing-page {
 }
 
 .card-icon-wrap {
-    width: 50px;
-    height: 50px;
-    border-radius: 14px;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     flex-shrink: 0;
     transition: transform 0.25s ease;
 }
@@ -388,24 +358,24 @@ body.landing-page {
 }
 
 .portal-card-body h2 {
-    font-size: 1.05rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.3rem;
     color: var(--text-main);
     letter-spacing: -0.01em;
 }
 
 .portal-card-body p {
-    font-size: 0.81rem;
+    font-size: 0.9rem;
     color: var(--text-sub);
-    line-height: 1.35;
+    line-height: 1.42;
     margin: 0;
 }
 
 .portal-card-action {
     color: var(--text-sub);
-    font-size: 1.1rem;
-    opacity: 0.4;
+    font-size: 1.25rem;
+    opacity: 0.45;
     transition: all 0.2s ease;
     flex-shrink: 0;
 }
@@ -437,10 +407,10 @@ body.landing-page {
 
 /* Landing Footer */
 .landing-footer {
-    margin-top: 1.25rem;
-    font-size: 0.8rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
     color: var(--text-sub);
-    opacity: 0.8;
+    opacity: 0.85;
 }
 
 /* Modal box for selector */

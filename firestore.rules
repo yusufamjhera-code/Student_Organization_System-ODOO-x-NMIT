@@ -82,20 +82,20 @@ service cloud.firestore {
       // Public read: Attendee pass viewer & door QR scanner
       allow read: if true;
       
-      // Public create: Attendees generate passes upon payment/booking
+      // Public / Collaborator create: Attendees generate passes upon booking, or event managers register attendees
       allow create: if (
         isValidString(request.resource.data.name, 2, 100) &&
         isValidEmail(request.resource.data.contact) &&
         request.resource.data.qrToken is string &&
         request.resource.data.eventDocId is string &&
-        request.resource.data.paymentStatus in ['paid', 'free', 'pending']
+        (!('paymentStatus' in request.resource.data) || request.resource.data.paymentStatus in ['paid', 'free', 'pending'])
       );
       
-      // Update: Organizers have full edit rights;
+      // Update: Organizers & collaborators have full edit rights;
       // Gate scanner staff can update check-in permissions & timestamps
       allow update: if isAuthenticated() || (
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'status', 'permissions', 'scannedAt', 'scannedBy', 'updatedAt', 'checkInTime'
+          'name', 'contact', 'permissions', 'status', 'scannedAt', 'scannedBy', 'updatedAt', 'checkInTime'
         ])
       );
       

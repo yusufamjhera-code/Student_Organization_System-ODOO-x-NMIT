@@ -319,9 +319,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const listenForCollaboratorEvents = (email) => {
         firestore.collection('events')
             .where('collaboratorEmails', 'array-contains', email.toLowerCase())
-            .orderBy('createdAt', 'desc')
             .onSnapshot((snapshot) => {
                 const accessibleEvents = snapshot.docs;
+
+                // In-memory sort by createdAt descending to avoid requiring composite indexes
+                accessibleEvents.sort((a, b) => {
+                    const tA = a.data().createdAt?.toMillis ? a.data().createdAt.toMillis() : new Date(a.data().createdAt || 0).getTime();
+                    const tB = b.data().createdAt?.toMillis ? b.data().createdAt.toMillis() : new Date(b.data().createdAt || 0).getTime();
+                    return tB - tA;
+                });
 
                 eventCountEl.textContent = accessibleEvents.length;
                 if (accessibleEvents.length === 0) {
@@ -331,6 +337,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 eventListEl.innerHTML = '';
                 accessibleEvents.forEach(doc => renderEventCard(doc, false));
+            }, (error) => {
+                console.error("Collaborator events query error:", error);
+                eventListEl.innerHTML = `<div class="empty-state"><i class="ph ph-warning"></i><p>Could not load events: ${error.message}</p></div>`;
             });
     };
 

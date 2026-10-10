@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const collaboratorEmail = sessionStorage.getItem('collaboratorEmail') || '';
     const isCollaboratorUser = authType === 'collaborator' && collaboratorEmail;
     let eventCollaborators = [];
+    let eventOwnerId = "";
 
     if (!eventDocId) {
         window.location.href = 'dashboard.html';
@@ -194,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             if (doc.exists && (isOwner || isCollaborator)) {
+                eventOwnerId = data.organizerId || "";
                 currentEventName = data.name;
                 currentEventStartDate = data.eventDate;
                 currentEventEndDate = data.eventEndDate;
@@ -863,8 +865,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const existing = await firestore.collection('users').where('eventDocId', '==', eventDocId).where('contact', '==', contact).get();
+            const effectiveOrgId = currentOrganizer ? currentOrganizer.uid : eventOwnerId;
             const data = {
-                organizerId: currentOrganizer.uid, eventDocId, eventId: displayEventId.textContent,
+                organizerId: effectiveOrgId, eventDocId, eventId: displayEventId.textContent,
                 name, contact, permissions: perms,
                 qrToken: existing.empty ? `p-${crypto.randomUUID()}` : existing.docs[0].data().qrToken,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -944,7 +947,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (existingMap.has(contact)) {
                             batch.update(firestore.collection('users').doc(existingMap.get(contact)), { name, permissions: batchPerms, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
                         } else {
-                            batch.set(firestore.collection('users').doc(), { organizerId: currentOrganizer.uid, eventDocId, eventId: displayEventId.textContent, name, contact, permissions: batchPerms, qrToken: `p-${crypto.randomUUID()}`, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                            const effectiveOrgId = currentOrganizer ? currentOrganizer.uid : eventOwnerId;
+                            batch.set(firestore.collection('users').doc(), { organizerId: effectiveOrgId, eventDocId, eventId: displayEventId.textContent, name, contact, permissions: batchPerms, qrToken: `p-${crypto.randomUUID()}`, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                         }
                     }
                 }
@@ -1317,13 +1321,23 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             renderCollaboratorsList();
-            showToast(`Collaborator added! Code: ${accessCode}`, 'success');
 
             // Clear input
             document.getElementById('collab-email-input').value = '';
 
+            // Copy access details to clipboard for convenient sharing
+            const inviteMsg = `You're invited to collaborate on "${currentEventName}"!\nPortal: ${window.location.origin}/auth/login.html\n(Select 'Team Member' Tab)\nEmail: ${newCollab.email}\nAccess Code: ${accessCode}`;
+            if (navigator.clipboard) {
+                try { await navigator.clipboard.writeText(inviteMsg); } catch (_) {}
+            }
+
             // Send invite email
-            await sendCollaboratorInviteEmail(newCollab);
+            const emailSent = await sendCollaboratorInviteEmail(newCollab);
+            if (emailSent) {
+                showToast(`Collaborator added! Code: ${accessCode} (Invite email sent)`, 'success');
+            } else {
+                showToast(`Collaborator added! Code: ${accessCode} (Copied to clipboard. Note: Configure Google Script URL in Netlify for auto-email)`, 'info');
+            }
 
         } catch (e) {
             console.error('Error adding collaborator:', e);
@@ -1356,6 +1370,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sendCollaboratorInviteEmail = async (collab) => {
         try {
+            const scriptUrl = window.GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL;
+            if (!scriptUrl || scriptUrl === 'YOUR_GOOGLE_SCRIPT_URL' || scriptUrl.includes('YOUR_SCRIPT')) {
+                console.warn('Google Script URL is not configured. Email cannot be dispatched automatically.');
+                return false;
+            }
+
             const payload = {
                 security_token: SECURITY_TOKEN,
                 type: 'collaborator',
@@ -1365,7 +1385,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 portal_url: `${window.location.origin}/auth/login.html`
             };
 
-            await fetch(GOOGLE_SCRIPT_URL, {
+            await fetch(scriptUrl, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
@@ -1388,7 +1408,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (collab) {
             const success = await sendCollaboratorInviteEmail(collab);
-            if (success) showToast(`Invite sent to ${collab.email}`, 'success');
+            if (success) {
+                showToast(`Invite sent to ${collab.email}`, 'success');
+            } else {
+                showToast(`Code is ${collab.accessCode}. Auto-email not configured; copied to clipboard.`, 'info');
+                if (navigator.clipboard) {
+                    try {
+                        await navigator.clipboard.writeText(`Collaborator Access Code for ${currentEventName}: ${collab.accessCode}\nEmail: ${collab.email}\nPortal: ${window.location.origin}/auth/login.html`);
+                    } catch (_) {}
+                }
+            }
         }
 
         if (btn) btn.classList.remove('loading');
@@ -1442,9 +1471,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="collab-avatar">${initials}</div>
                     <div class="collab-info">
                         <div class="collab-email">${collab.email}</div>
-                        <div class="collab-code">Code: ${collab.accessCode}</div>
+                        <div class="collab-code">Code: <strong>${collab.accessCode}</strong></div>
                     </div>
                     <div class="collab-actions">
+                        <button class="collab-btn copy-invite" title="Copy Invite & Code" data-email="${collab.email}" data-code="${collab.accessCode}">
+                            <i class="ph-bold ph-copy"></i>
+                        </button>
                         <button class="collab-btn resend" title="Resend Invite" data-email="${collab.email}">
                             <i class="ph-bold ph-paper-plane-tilt"></i>
                         </button>
@@ -1456,6 +1488,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
 
         // Attach event handlers
+        listEl.querySelectorAll('.collab-btn.copy-invite').forEach(btn => {
+            btn.onclick = async (e) => {
+                e.stopPropagation();
+                const email = btn.dataset.email;
+                const code = btn.dataset.code;
+                const text = `You're invited to collaborate on "${currentEventName}"!\nPortal: ${window.location.origin}/auth/login.html\n(Select 'Team Member' Tab)\nEmail: ${email}\nAccess Code: ${code}`;
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showToast(`Copied invite info & code (${code}) to clipboard!`, 'success');
+                } catch (_) {
+                    showToast(`Access Code: ${code}`, 'info');
+                }
+            };
+        });
+
         listEl.querySelectorAll('.collab-btn.remove').forEach(btn => {
             btn.onclick = (e) => {
                 e.stopPropagation();
