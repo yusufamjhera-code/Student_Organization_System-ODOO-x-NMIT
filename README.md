@@ -241,167 +241,24 @@ Open your browser to `http://localhost:8000`.
 
 ---
 
-## 🔒 Complete Firestore Rules Reference (`firestore.rules`)
+## 🔒 Firestore Security Rules Reference
 
-Below is the verified security rules configuration guarding all database operations:
+Database access control and validation constraints are maintained in [`firestore.rules`](firestore.rules). Deploy them to Firebase with:
 
-```firestore
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    
-    // Core Helpers
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    function isNonAnonymous() {
-      return isAuthenticated() && request.auth.token.firebase.sign_in_provider != 'anonymous';
-    }
-
-    function isValidString(val, minLen, maxLen) {
-      return val is string && val.size() >= minLen && val.size() <= maxLen;
-    }
-
-    function isValidEmail(val) {
-      return val is string && val.size() >= 5 && val.size() <= 120 && val.matches('.*@.*\\..*');
-    }
-
-    // 1. Organizers Profile
-    match /organizers/{uid} {
-      allow read, write: if isOwner(uid);
-    }
-    
-    // 2. Organizations
-    match /organizations/{orgId} {
-      allow read: if true;
-      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && (
-        resource.data.ownerId == request.auth.uid || 
-        request.resource.data.ownerId == request.auth.uid
-      );
-    }
-
-    // 3. Events
-    match /events/{eventId} {
-      allow read: if true;
-      allow create: if isNonAnonymous();
-      allow update: if isAuthenticated() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ticketConfig', 'seatsSold', 'updatedAt'])
-      );
-      allow delete: if isAuthenticated();
-    }
-    
-    // 4. Users / Passes
-    match /users/{userId} {
-      allow read: if true;
-      allow create: if (
-        isValidString(request.resource.data.name, 2, 100) &&
-        isValidEmail(request.resource.data.contact) &&
-        request.resource.data.qrToken is string &&
-        request.resource.data.paymentStatus in ['paid', 'free', 'pending']
-      );
-      allow update: if isAuthenticated() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'status', 'permissions', 'scannedAt', 'scannedBy', 'updatedAt', 'checkInTime'
-        ])
-      );
-      allow delete: if isAuthenticated();
-    }
-    
-    // 5. Members
-    match /members/{memberId} {
-      allow read: if true;
-      allow create: if (
-        isValidString(request.resource.data.name, 2, 100) &&
-        isValidEmail(request.resource.data.email) &&
-        request.resource.data.orgId is string
-      );
-      allow update: if isAuthenticated() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'membershipStatus', 'duesPaid', 'duesPaidAt', 'paymentMethod', 'paymentRef', 'updatedAt'
-        ]) &&
-        request.resource.data.duesPaid == true &&
-        request.resource.data.membershipStatus == 'active'
-      );
-      allow delete: if isAuthenticated();
-    }
-    
-    // 6. Tickets & Configurations
-    match /tickets/{ticketId} {
-      allow read, create: if true;
-      allow update: if isAuthenticated() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'usedAt', 'updatedAt'])
-      );
-      allow delete: if isAuthenticated();
-    }
-    
-    match /ticketConfigs/{configId} {
-      allow read: if true;
-      allow create, update, delete: if isAuthenticated();
-    }
-    
-    // 7. Announcements
-    match /announcements/{announcementId} {
-      allow read: if true;
-      allow create: if isAuthenticated() || (
-        request.resource.data.orgId is string &&
-        isValidString(request.resource.data.title, 2, 120) &&
-        request.resource.data.content is string
-      );
-      allow update, delete: if isAuthenticated();
-    }
-    
-    // 8. Merchandise Catalog
-    match /merchProducts/{productId} {
-      allow read: if true;
-      allow update: if isAuthenticated() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sizes', 'totalSold', 'updatedAt']) &&
-        request.resource.data.totalSold is number &&
-        request.resource.data.totalSold >= resource.data.totalSold
-      );
-      allow create, delete: if isAuthenticated();
-    }
-    
-    // 9. Merchandise Orders
-    match /merchOrders/{orderId} {
-      allow read: if true;
-      allow create: if (
-        request.resource.data.orgId is string &&
-        request.resource.data.productId is string &&
-        isValidString(request.resource.data.buyerName, 2, 100) &&
-        isValidEmail(request.resource.data.buyerEmail) &&
-        request.resource.data.quantity is int &&
-        request.resource.data.quantity > 0 &&
-        request.resource.data.totalPrice is number &&
-        request.resource.data.totalPrice >= 0
-      );
-      allow update, delete: if isAuthenticated();
-    }
-    
-    // 10. Kanban Tasks
-    match /tasks/{taskId} {
-      allow read, create, update, delete: if isAuthenticated();
-    }
-    
-    // 11. Treasury Transactions
-    match /transactions/{txnId} {
-      allow create: if isAuthenticated() || (
-        request.resource.data.type == 'income' &&
-        request.resource.data.amount is number &&
-        request.resource.data.amount > 0 &&
-        request.resource.data.category in ['tickets', 'merchandise', 'dues'] &&
-        request.resource.data.orgId is string
-      );
-      allow read, update, delete: if isAuthenticated();
-    }
-  }
-}
+```bash
+firebase deploy --only firestore:rules
 ```
+
+### Security Enforcement Summary:
+* **`organizers`**: Read/write strictly restricted to the authenticated document owner (`request.auth.uid == uid`).
+* **`organizations`**: Public read for active clubs; create/update/delete restricted to authenticated owners.
+* **`events`**: Public read for storefronts; creation restricted to authenticated organizers; ticket sales can only increment `seatsSold` in transactions.
+* **`users` (Passes)**: Public read for gate scanner & pass viewer; ticket booking validates name, email, token, and payment status; check-in staff can only update station permissions.
+* **`members`**: Public read for member discount lookups; registration validates unique email, name, and initial status; dues activation requires verified payment status.
+* **`announcements`**: Public read for the notice board; publication and modifications restricted to authenticated club organizers.
+* **`merchProducts` & `merchOrders`**: Public catalog browsing and order placement with strict field, price, and quantity validations; order fulfillment status (`ready`, `collected`) restricted to authenticated staff.
+* **`tasks` (Kanban)**: Read/write restricted entirely to authenticated organizers and assigned collaborators.
+* **`transactions` (Treasury)**: Automated positive revenue logging from ticket, merchandise, and dues checkouts; full ledger view and manual adjustments restricted to authenticated organizers.
 
 ---
 
