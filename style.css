@@ -31,11 +31,11 @@ body.sonnet-home {
 .editorial-panel {
     background: var(--surface);
     border-right: 1px solid var(--line);
-    padding: clamp(18px, 2.5vh, 32px) clamp(24px, 3.5vw, 48px);
+    padding: clamp(24px, 3.2vh, 38px) clamp(32px, 4.5vw, 60px);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    gap: clamp(8px, 1.5vh, 18px);
+    justify-content: flex-start;
+    gap: clamp(14px, 2.2vh, 22px);
     position: relative;
     overflow: hidden;
     height: 100%;
@@ -61,21 +61,21 @@ body.sonnet-home {
 }
 
 .brand-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
     background: var(--ink);
     color: #ffffff;
     display: grid;
     place-items: center;
-    font-size: 17px;
+    font-size: 19px;
     box-shadow: 0 4px 12px -2px rgba(23, 19, 15, 0.25);
     flex-shrink: 0;
 }
 
 .brand-name {
     font-family: var(--serif);
-    font-size: 1.5rem;
+    font-size: 1.65rem;
     letter-spacing: -0.015em;
     color: var(--ink);
     line-height: 1;
@@ -93,9 +93,9 @@ body.sonnet-home {
     gap: 8px;
     background: var(--surface-2);
     border: 1px solid var(--line);
-    padding: 4px 12px;
+    padding: 5px 14px;
     border-radius: var(--r-pill);
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 700;
     color: var(--ink-2);
     letter-spacing: 0.04em;
@@ -112,23 +112,27 @@ body.sonnet-home {
 
 /* Hero Center */
 .editorial-hero {
-    max-width: 580px;
+    max-width: 660px;
     margin: 0;
     flex-shrink: 0;
 }
 
 .editorial-hero .kicker {
-    margin-bottom: clamp(4px, 0.8vh, 8px);
-    font-size: 10.5px;
+    margin-bottom: clamp(6px, 1vh, 10px);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
 }
 
 .editorial-hero h1 {
     font-family: var(--serif);
-    font-size: clamp(1.75rem, 2.3vw, 2.45rem);
-    line-height: 1.08;
-    letter-spacing: -0.018em;
+    font-size: clamp(2.35rem, 3.4vw, 3.35rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
     color: var(--ink);
-    margin-bottom: clamp(6px, 1vh, 10px);
+    margin-bottom: clamp(8px, 1.2vh, 12px);
 }
 
 .editorial-hero h1 em {
@@ -137,17 +141,18 @@ body.sonnet-home {
 }
 
 .editorial-hero p.lead {
-    font-size: clamp(0.85rem, 0.98vw, 0.94rem);
+    font-size: clamp(0.95rem, 1.15vw, 1.06rem);
     color: var(--ink-2);
-    line-height: 1.44;
+    line-height: 1.52;
     margin: 0;
+    max-width: 620px;
 }
 
 /* Feature Rows matching Sonnet Clip */
 .features-stack {
     display: grid;
-    gap: clamp(6px, 1.1vh, 11px);
-    max-width: 540px;
+    gap: clamp(9px, 1.4vh, 13px);
+    max-width: 640px;
     margin: 0;
     flex-shrink: 0;
 }
@@ -155,24 +160,30 @@ body.sonnet-home {
 .feature-item {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 14px;
 }
 
 .feature-icon-box {
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     border-radius: var(--r-sm);
     background: var(--surface-2);
     border: 1px solid var(--line);
     display: grid;
     place-items: center;
     color: var(--accent);
-    font-size: 16px;
+    font-size: 18px;
     flex-shrink: 0;
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.feature-item:hover .feature-icon-box {
+    border-color: var(--accent);
+    transform: translateY(-1px);
 }
 
 .feature-content h4 {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--ink);
     margin-bottom: 2px;
@@ -180,9 +191,9 @@ body.sonnet-home {
 }
 
 .feature-content p {
-    font-size: 11.5px;
+    font-size: 12.5px;
     color: var(--muted);
-    line-height: 1.34;
+    line-height: 1.38;
     margin: 0;
 }
 
@@ -190,22 +201,23 @@ body.sonnet-home {
 .editorial-footer {
     display: flex;
     flex-direction: column;
-    gap: clamp(6px, 1vh, 10px);
+    gap: clamp(8px, 1vh, 11px);
     border-top: 1px solid var(--line);
-    padding-top: clamp(8px, 1.2vh, 12px);
+    padding-top: clamp(10px, 1.4vh, 14px);
     flex-shrink: 0;
+    margin-top: auto;
 }
 
 .guest-action-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .guest-action-bar span {
-    font-size: 11.5px;
+    font-size: 12.5px;
     color: var(--muted);
 }
 
