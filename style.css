@@ -224,3 +224,268 @@ body {
         font-size: 1.35rem;
     }
 }
+
+/* =========================================================================
+   COMPACT ZERO-SCROLL PC LANDING PAGE DESIGN
+   ========================================================================= */
+body.landing-page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    overflow-x: hidden;
+}
+
+@media (min-width: 1024px) and (min-height: 600px) {
+    body.landing-page {
+        height: 100vh;
+        max-height: 100vh;
+        overflow-y: hidden; /* Zero scroll on desktop PC */
+        padding: 1.25rem 2rem;
+    }
+
+    .landing-container {
+        height: 100%;
+        max-height: 94vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+}
+
+.landing-container {
+    max-width: 1120px;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-header {
+    margin-bottom: 1.25rem;
+}
+
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(106, 17, 203, 0.08);
+    border: 1px solid rgba(106, 17, 203, 0.2);
+    color: var(--primary);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin-bottom: 0.6rem;
+}
+
+.pulse-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: 0 0 0 rgba(106, 17, 203, 0.4);
+    animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(106, 17, 203, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(106, 17, 203, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(106, 17, 203, 0); }
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.landing-header h1 {
+    font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.3rem;
+    color: var(--text-main);
+}
+
+.landing-header p {
+    font-size: clamp(0.88rem, 1.3vw, 1rem);
+    color: var(--text-sub);
+    font-weight: 500;
+    max-width: 650px;
+    margin: 0 auto;
+    line-height: 1.45;
+}
+
+/* 6 Card Portal Grid: 3 cols x 2 rows on PC */
+.portal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem;
+    width: 100%;
+}
+
+.portal-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.15rem 1.35rem;
+    text-decoration: none;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    text-align: left;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.03);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.portal-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.portal-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px rgba(106, 17, 203, 0.12);
+    border-color: rgba(106, 17, 203, 0.3);
+}
+
+.portal-card:hover::before {
+    opacity: 1;
+}
+
+.card-icon-wrap {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+}
+
+.portal-card:hover .card-icon-wrap {
+    transform: scale(1.08);
+}
+
+.portal-card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.portal-card-body h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+}
+
+.portal-card-body p {
+    font-size: 0.81rem;
+    color: var(--text-sub);
+    line-height: 1.35;
+    margin: 0;
+}
+
+.portal-card-action {
+    color: var(--text-sub);
+    font-size: 1.1rem;
+    opacity: 0.4;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.portal-card:hover .portal-card-action {
+    opacity: 1;
+    transform: translateX(3px);
+    color: var(--primary);
+}
+
+/* Accent Color Variations */
+.theme-organizer .card-icon-wrap { background: rgba(106, 17, 203, 0.1); color: #6a11cb; }
+.theme-organizer::before { background: #6a11cb; }
+
+.theme-staff .card-icon-wrap { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.theme-staff::before { background: #059669; }
+
+.theme-member .card-icon-wrap { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+.theme-member::before { background: #2563eb; }
+
+.theme-tickets .card-icon-wrap { background: rgba(234, 88, 12, 0.1); color: #ea580c; }
+.theme-tickets::before { background: #ea580c; }
+
+.theme-notice .card-icon-wrap { background: rgba(124, 58, 237, 0.1); color: #7c3aed; }
+.theme-notice::before { background: #7c3aed; }
+
+.theme-merch .card-icon-wrap { background: rgba(219, 39, 119, 0.1); color: #db2777; }
+.theme-merch::before { background: #db2777; }
+
+/* Landing Footer */
+.landing-footer {
+    margin-top: 1.25rem;
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    opacity: 0.8;
+}
+
+/* Modal box for selector */
+.selector-modal-box {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* Tablet & Mobile Breakpoints */
+@media (max-width: 1023px) {
+    .portal-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    body.landing-page {
+        overflow-y: auto;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .portal-grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+    .landing-header {
+        margin-bottom: 1.25rem;
+    }
+    .portal-card {
+        padding: 1rem 1.1rem;
+        border-radius: 16px;
+    }
+    .card-icon-wrap {
+        width: 46px;
+        height: 46px;
+        font-size: 1.35rem;
+    }
+    .landing-footer {
+        margin-top: 1.5rem;
+        font-size: 0.75rem;
+    }
+}
