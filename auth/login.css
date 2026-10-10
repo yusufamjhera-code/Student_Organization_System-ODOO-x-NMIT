@@ -416,3 +416,88 @@ body {
     background: var(--accent);
     color: #ffffff;
 }
+
+/* ==================== RESPONSIVE ADAPTATIONS ==================== */
+@media (max-width: 540px) {
+    body {
+        padding: 1.25rem 0.75rem;
+        align-items: flex-start;
+    }
+
+    .login-wrapper,
+    .register-wrapper {
+        max-width: 100%;
+    }
+
+    .form-container {
+        padding: 2rem 1.25rem;
+        border-radius: var(--r-md);
+    }
+
+    .icon-circle {
+        width: 48px;
+        height: 48px;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .login-header h2 {
+        font-size: 1.75rem;
+    }
+
+    .login-header .subtitle {
+        font-size: 0.85rem;
+    }
+
+    .input-wrapper input {
+        font-size: 16px; /* Prevents auto-zoom on iOS */
+        padding: 11px 12px 11px 40px;
+    }
+
+    .google-btn {
+        padding: 11px 16px;
+        font-size: 13.5px;
+    }
+
+    .primary-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+    .role-card-label {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .role-icon-box {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+
+    .role-text-title {
+        font-size: 13px;
+    }
+
+    .role-text-desc {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 380px) {
+    body {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .form-container {
+        padding: 1.75rem 1rem;
+    }
+
+    .login-header h2 {
+        font-size: 1.55rem;
+    }
+
+    .role-text-desc {
+        display: none;
+    }
+}

@@ -222,3 +222,51 @@
     border: 1px solid var(--line);
     border-radius: var(--r-sm);
 }
+
+/* ==================== RESPONSIVE ADAPTATIONS ==================== */
+@media (max-width: 520px) {
+    .centered-layout {
+        padding: 16px 12px;
+        align-items: flex-start;
+    }
+
+    .ticket-nav-bar {
+        margin-bottom: 14px;
+        gap: 8px;
+    }
+
+    .ticket-nav-btn {
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+
+    .ticket-card {
+        border-radius: var(--r-md);
+    }
+
+    .ticket-header {
+        padding: 24px 18px;
+    }
+
+    .ticket-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .ticket-body {
+        padding: 20px 16px;
+    }
+
+    .input-group input,
+    .input-group select {
+        font-size: 16px; /* Prevents iOS auto-zoom */
+    }
+
+    .ticket-summary strong {
+        font-size: 1.35rem;
+    }
+
+    .success-card {
+        padding: 28px 18px;
+    }
+}
+

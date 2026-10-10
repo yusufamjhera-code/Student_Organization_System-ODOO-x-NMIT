@@ -783,4 +783,18 @@ body.sonnet-home {
     .auth-card-header h2 {
         font-size: 1.6rem;
     }
+
+    .input-container input {
+        font-size: 16px; /* Prevents iOS auto-zoom */
+    }
+
+    .stats-bar {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .stat-chip {
+        padding: 5px 10px;
+        font-size: 11px;
+    }
 }

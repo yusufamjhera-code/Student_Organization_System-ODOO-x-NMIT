@@ -152,3 +152,42 @@
     margin: 16px 0;
     border: 1px solid var(--line);
 }
+
+/* ==================== RESPONSIVE ADAPTATIONS ==================== */
+@media (max-width: 600px) {
+    .centered-layout {
+        padding: 16px 12px;
+    }
+
+    .board-nav-bar {
+        margin-bottom: 18px;
+    }
+
+    .board-nav-btn {
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+
+    .board-header {
+        margin-bottom: 24px;
+    }
+
+    .board-header h1 {
+        font-size: 2.1rem;
+    }
+
+    .post-card {
+        padding: 20px 16px;
+        margin-bottom: 18px;
+        border-radius: var(--r-md);
+    }
+
+    .post-title {
+        font-size: 1.45rem;
+    }
+
+    .post-content {
+        font-size: 14px;
+    }
+}
+

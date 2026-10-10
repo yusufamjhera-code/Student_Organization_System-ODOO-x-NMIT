@@ -816,3 +816,43 @@ header, .app-header {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
 }
+
+/* ==================== GLOBAL MOBILE COMPONENT ADAPTATIONS ==================== */
+@media (max-width: 540px) {
+    .pt-modal-overlay {
+        padding: 0.75rem;
+    }
+
+    .pt-modal {
+        border-radius: var(--r-md);
+        max-height: 94vh;
+    }
+
+    .pt-modal-header {
+        padding: 16px 18px;
+    }
+
+    .pt-modal-body {
+        padding: 18px;
+    }
+
+    .pt-modal-footer {
+        padding: 14px 18px;
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .pt-modal-footer .btn {
+        width: 100%;
+    }
+
+    /* Form input touch optimization */
+    .input-wrapper input,
+    .input-group input,
+    .input-group select,
+    .custom-select {
+        font-size: 16px !important; /* Prevents iOS auto-zoom */
+    }
+}
+
