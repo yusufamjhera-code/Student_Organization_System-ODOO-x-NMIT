@@ -85,8 +85,17 @@ service cloud.firestore {
       // Public create: Prospective members register via public registration form
       allow create: if true;
       
-      // Organizers manage membership approval, status changes, and removals
-      allow update, delete: if isAuthenticated();
+      // Update: Organizers have full management access;
+      // Public members can activate membership upon paying dues
+      allow update: if isAuthenticated() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'membershipStatus', 'duesPaid', 'duesPaidAt', 'updatedAt'
+        ]) &&
+        request.resource.data.duesPaid == true &&
+        request.resource.data.membershipStatus == 'active'
+      );
+      
+      allow delete: if isAuthenticated();
     }
     
     // ==========================================
@@ -126,11 +135,9 @@ service cloud.firestore {
       allow read: if true;
       
       // Update: Organizers have full access;
-      // Storefront checkout can ONLY decrement inventory stock
+      // Storefront checkout can update inventory stock sizes and totalSold
       allow update: if isAuthenticated() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'updatedAt']) &&
-        request.resource.data.stock is number &&
-        request.resource.data.stock <= resource.data.stock
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['sizes', 'totalSold', 'updatedAt'])
       );
       
       allow create, delete: if isAuthenticated();

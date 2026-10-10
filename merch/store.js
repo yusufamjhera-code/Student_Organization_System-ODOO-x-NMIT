@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const firestore = db;
 
     const urlParams = new URLSearchParams(window.location.search);
-    const orgId = urlParams.get('org');
+    let orgId = urlParams.get('org');
 
     const spinner = document.getElementById('loading-spinner');
     const productsGrid = document.getElementById('products-grid');
@@ -27,14 +27,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentProduct = null;
     let isMemberVerif = false;
     
-    if (!orgId) {
-        spinner.innerHTML = '<p>Error: Missing organization ID.</p>';
-        return;
+    // --- RESOLVE ORGID IF MISSING ---
+    let activeOrgId = orgId;
+    if (!activeOrgId) {
+        try {
+            const orgsSnap = await firestore.collection('organizations').limit(10).get();
+            if (orgsSnap.empty) {
+                spinner.innerHTML = '<p>No student organizations found. Please set up an organization first.</p>';
+                return;
+            } else if (orgsSnap.docs.length === 1) {
+                activeOrgId = orgsSnap.docs[0].id;
+                orgId = activeOrgId;
+            } else {
+                spinner.style.display = 'none';
+                productsGrid.style.display = 'block';
+                productsGrid.innerHTML = `
+                    <div class="card" style="grid-column: 1 / -1; max-width: 550px; margin: 40px auto; padding: 30px; text-align: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;">
+                        <i class="ph-bold ph-storefront" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+                        <h2 style="margin-bottom: 10px; color: #fff;">Choose Organization</h2>
+                        <p style="color: var(--text-muted); margin-bottom: 25px;">Select an organization to view its merchandise catalog:</p>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            ${orgsSnap.docs.map(d => `
+                                <a href="store.html?org=${d.id}" class="secondary-btn" style="padding: 14px 20px; text-decoration: none; font-weight: 600; justify-content: space-between; display: flex; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; color: #fff;">
+                                    <span>${d.data().name}</span>
+                                    <i class="ph-bold ph-arrow-right"></i>
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+        } catch (err) {
+            console.error("Error finding organizations:", err);
+            spinner.innerHTML = '<p>Error loading store options.</p>';
+            return;
+        }
     }
 
     // --- LOAD DATA ---
     try {
-        const orgDoc = await firestore.collection('organizations').doc(orgId).get();
+        const orgDoc = await firestore.collection('organizations').doc(activeOrgId).get();
         if (!orgDoc.exists) {
             spinner.innerHTML = '<p>Organization not found.</p>';
             return;
@@ -42,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         orgNameEl.textContent = orgDoc.data().name;
 
         firestore.collection('merchProducts')
-            .where('orgId', '==', orgId)
+            .where('orgId', '==', activeOrgId)
             .where('isActive', '==', true)
             .onSnapshot(snap => {
                 productsData = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -75,13 +108,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             el.className = 'product-card';
             
             let icon = 'ph-t-shirt';
-            if (p.category === 'hoodie') icon = 'ph-hoodie'; // Assuming phosphor has it, else fallback to t-shirt
+            if (p.category === 'hoodie') icon = 'ph-t-shirt';
             if (p.category === 'cap') icon = 'ph-baseball-cap';
+            if (p.category === 'other') icon = 'ph-tote';
             
             const totalStock = Object.values(p.sizes || {}).reduce((a,b)=>a+b, 0);
             
             el.innerHTML = `
-                <div class="product-img ${p.category}">
+                <div class="product-img ${p.category || 'other'}">
                     <i class="ph-fill ${icon}"></i>
                 </div>
                 <div class="product-info">

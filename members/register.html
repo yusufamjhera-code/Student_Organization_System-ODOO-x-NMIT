@@ -21,6 +21,22 @@
                 <p id="org-desc">Become a member today.</p>
             </div>
 
+            <div style="margin-bottom: 20px;">
+                <a href="../index.html" class="secondary-btn" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-muted); font-size: 0.85rem; padding: 6px 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--border);">
+                    <i class="ph-bold ph-caret-left"></i> <span>Back to Home</span>
+                </a>
+            </div>
+
+            <!-- Tabs: Register vs Pay Dues -->
+            <div class="tabs-container" style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <button type="button" id="tab-register-btn" class="active" style="flex: 1; padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+                    <i class="ph-bold ph-user-plus"></i> Join as Member
+                </button>
+                <button type="button" id="tab-dues-btn" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+                    <i class="ph-bold ph-credit-card"></i> Pay Dues / Status
+                </button>
+            </div>
+
             <div id="loading-spinner" class="loading-spinner">
                 <i class="ph-bold ph-spinner-gap spin"></i>
                 <p>Fetching organization details...</p>
@@ -29,6 +45,7 @@
             <div id="error-message" class="message-area error" style="display: none;"></div>
             <div id="success-message" class="message-area success" style="display: none;"></div>
 
+            <!-- Panel 1: Registration Form -->
             <form id="register-form" style="display: none;">
                 <div class="input-group">
                     <label for="member-name">Full Name *</label>
@@ -61,6 +78,21 @@
                     <span>Register Now</span>
                 </button>
             </form>
+
+            <!-- Panel 2: Pay Dues / Check Status -->
+            <div id="dues-panel" style="display: none;">
+                <div class="input-group">
+                    <label for="check-dues-email">Registered Email Address</label>
+                    <input type="email" id="check-dues-email" placeholder="john@example.com">
+                </div>
+
+                <button type="button" id="check-dues-btn" class="primary-btn full-width" style="margin-bottom: 20px;">
+                    <i class="ph-bold ph-magnifying-glass"></i>
+                    <span>Check Membership & Dues</span>
+                </button>
+
+                <div id="dues-result" style="display: none;"></div>
+            </div>
         </div>
     </main>
 
