@@ -1,88 +1,143 @@
-/* File: merch/store.css */
+/* File: merch/store.css - Harmonized with Sonnet Clip Theme */
+@import url('../lib/theme.css');
+@import url('../lib/components.css');
+
 .store-layout {
     min-height: 100vh;
-    padding: 20px;
-    background: #0a0a0a;
+    padding: 24px 16px;
+    background-color: var(--bg);
+    color: var(--ink);
+}
+
+.store-nav-bar {
+    max-width: 1200px;
+    margin: 0 auto 24px;
+    padding: 0 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.store-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    font-weight: 600;
+    background: var(--surface);
+    padding: 8px 18px;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--line-strong);
+    box-shadow: var(--shadow-sm);
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.store-nav-btn:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+    transform: translateY(-1px);
+}
+
+.store-nav-btn--primary {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent-border);
+}
+
+.store-nav-btn--primary:hover {
+    background: var(--accent);
+    color: var(--accent-ink);
 }
 
 .store-header {
     text-align: center;
-    margin: 40px 0;
+    margin: 20px 0 36px;
 }
 
 .store-header h1 {
-    font-size: 2.5rem;
-    margin: 0 0 10px 0;
-    background: linear-gradient(135deg, #fff, var(--text-muted));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-family: var(--serif);
+    font-size: clamp(2.4rem, 4vw, 3.5rem);
+    margin: 0 0 8px 0;
+    color: var(--ink);
+    font-weight: 400;
+    letter-spacing: -0.015em;
 }
 
 .store-header p {
-    color: var(--primary);
-    font-weight: 500;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 0.18em;
 }
 
 .store-container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 0 16px;
 }
 
 .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 30px;
+    gap: 24px;
 }
 
 .product-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: var(--shadow);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
     display: flex;
     flex-direction: column;
 }
 
 .product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(106, 17, 203, 0.15);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--line-strong);
 }
 
 .product-img {
-    height: 250px;
-    background: rgba(255,255,255,0.05);
+    height: 230px;
+    background: var(--surface-2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 5rem;
-    color: var(--primary);
+    font-size: 4.5rem;
+    border-bottom: 1px solid var(--line);
 }
 
 .product-img.tshirt { color: #3b82f6; }
-.product-img.hoodie { color: #6a11cb; }
-.product-img.cap { color: #db2777; }
-.product-img.other { color: #ea580c; }
+.product-img.hoodie { color: var(--accent); }
+.product-img.cap { color: #8b5cf6; }
+.product-img.other { color: var(--good); }
 
 .product-info {
-    padding: 20px;
+    padding: 22px;
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
 .product-title {
-    margin: 0 0 10px 0;
-    font-size: 1.3rem;
-    color: white;
+    margin: 0 0 8px 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
 }
 
 .product-desc {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-bottom: 20px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-bottom: 18px;
     line-height: 1.5;
     flex: 1;
 }
@@ -91,55 +146,41 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
 }
 
 .price-reg {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     font-weight: 700;
-    color: white;
+    color: var(--ink);
 }
 
 .price-mem {
-    font-size: 0.85rem;
-    color: var(--primary);
-    background: rgba(106,17,203,0.1);
-    padding: 4px 8px;
-    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
 }
 
 .stock-info {
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--muted);
     text-align: center;
     margin-top: 10px;
-}
-
-.alert-box.success {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    display: flex;
-}
-
-.alert-box.warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-    display: flex;
 }
 
 /* Modal Overlay & Dialog */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-    background: rgba(10, 15, 29, 0.85);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    inset: 0;
+    background: rgba(23, 19, 15, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 10000;
     display: flex;
     align-items: center;
@@ -147,7 +188,7 @@
     padding: 16px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity var(--transition-normal);
 }
 
 .modal-overlay.active {
@@ -156,18 +197,19 @@
 }
 
 .modal-content {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
     padding: 30px;
     position: relative;
     width: 100%;
     max-width: 480px;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
-    transform: translateY(20px) scale(0.97);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(16px) scale(0.97);
+    transition: transform var(--transition-normal);
     max-height: 90vh;
     overflow-y: auto;
+    color: var(--ink);
 }
 
 .modal-overlay.active .modal-content {
@@ -177,60 +219,61 @@
 .custom-select,
 .input-group input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border);
-    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
     padding: 12px 14px;
-    color: #f8fafc;
-    font-size: 0.95rem;
+    color: var(--ink);
+    font-size: 14.5px;
+    font-family: var(--ui);
     outline: none;
-    transition: border-color 0.2s;
-    box-sizing: border-box;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .custom-select:focus,
 .input-group input:focus {
-    border-color: var(--primary);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .custom-select option {
-    background: #1e293b;
-    color: #fff;
+    background: #ffffff;
+    color: var(--ink);
 }
 
 .secondary-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--border);
-    color: #fff;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    color: var(--ink-2);
     padding: 10px 18px;
-    border-radius: 10px;
+    border-radius: var(--r-pill);
     font-size: 0.9rem;
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color var(--transition-fast);
 }
 
 .secondary-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-1px);
+    background: var(--surface-2);
+    color: var(--ink);
 }
 
 /* Responsive tweaks */
 @media (max-width: 640px) {
     .store-layout {
-        padding: 12px;
+        padding: 16px 12px;
     }
 
     .store-header {
-        margin: 25px 0;
+        margin: 20px 0;
     }
 
     .store-header h1 {
-        font-size: 1.8rem;
+        font-size: 2rem;
     }
 
     .products-grid {
@@ -239,8 +282,7 @@
     }
 
     .modal-content {
-        padding: 20px;
-        border-radius: 16px;
+        padding: 22px;
+        border-radius: var(--r);
     }
 }
-

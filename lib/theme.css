@@ -1,0 +1,261 @@
+/* ==========================================================================
+   PassTrack Global Design Tokens & Theme Engine
+   Inspired by Sonnet Clip Editorial Warm Luxury Aesthetic
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap');
+
+:root {
+    /* --- Base Color Palette --- */
+    --bg: #f6f3ee;
+    --surface: #ffffff;
+    --surface-2: #fbf9f5;
+    --surface-3: #f2ece1;
+    --ink: #17130f;
+    --ink-2: #4b443b;
+    --muted: #8c8578;
+    --faint: #b4ac9e;
+    --line: rgba(23, 19, 15, 0.10);
+    --line-strong: rgba(23, 19, 15, 0.18);
+
+    /* --- Brand & Intent Accents --- */
+    --accent: #e25b2e;
+    --accent-hover: #cc4d22;
+    --accent-ink: #fff8f3;
+    --accent-soft: #fbebe3;
+    --accent-border: rgba(226, 91, 46, 0.25);
+
+    --good: #1e7a4d;
+    --good-soft: #e7f2ec;
+    --good-border: rgba(30, 122, 77, 0.25);
+
+    --warn: #a8680a;
+    --warn-soft: #f6eddc;
+    --warn-border: rgba(168, 104, 10, 0.25);
+
+    --bad: #b3402f;
+    --bad-soft: #f7e7e4;
+    --bad-border: rgba(179, 64, 47, 0.25);
+
+    /* --- Typography Stacks --- */
+    --serif: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+    --ui: "Inter Tight", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* --- Geometry & Radii --- */
+    --r: 18px;
+    --r-lg: 24px;
+    --r-sm: 12px;
+    --r-xs: 8px;
+    --r-pill: 999px;
+
+    /* --- Elevation & Shadows --- */
+    --shadow: 0 1px 2px rgba(23, 19, 15, 0.04), 0 12px 32px -16px rgba(23, 19, 15, 0.14);
+    --shadow-sm: 0 1px 3px rgba(23, 19, 15, 0.06), 0 4px 12px -2px rgba(23, 19, 15, 0.06);
+    --shadow-lg: 0 30px 70px -28px rgba(23, 19, 15, 0.28);
+    --shadow-glow: 0 0 40px -10px rgba(226, 91, 46, 0.22);
+
+    /* --- Motion & Timing --- */
+    --bezier: cubic-bezier(0.22, 1, 0.36, 1);
+    --transition-fast: 0.15s var(--bezier);
+    --transition-normal: 0.25s var(--bezier);
+    --transition-slow: 0.45s var(--bezier);
+
+    /* --- Backward Compatibility Aliases for Existing Pages --- */
+    --primary: var(--accent);
+    --primary-grad: linear-gradient(135deg, #e25b2e 0%, #17130f 100%);
+    --primary-soft: var(--accent-soft);
+    --text-main: var(--ink);
+    --text-sub: var(--ink-2);
+    --border: var(--line-strong);
+    --card: var(--surface);
+    --shadow-premium: var(--shadow);
+}
+
+/* --- Universal Reset & Box Model --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--ui);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    background-image:
+        radial-gradient(1200px 480px at 85% -8%, rgba(226, 91, 46, 0.06), transparent 60%),
+        radial-gradient(900px 420px at -10% 110%, rgba(30, 122, 77, 0.05), transparent 55%);
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+::selection {
+    background: var(--accent);
+    color: #ffffff;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+button, input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+/* --- Focus States --- */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--r-xs);
+}
+
+/* --- Headline & Editorial Typography --- */
+.display {
+    font-family: var(--serif);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    color: var(--ink);
+}
+
+.display em {
+    font-style: italic;
+    color: var(--accent);
+    padding-right: 0.04em;
+}
+
+.display-lg {
+    font-size: clamp(2.5rem, 6vw, 4.25rem);
+}
+
+.display-md {
+    font-size: clamp(2rem, 4.5vw, 3rem);
+}
+
+.display-sm {
+    font-size: clamp(1.5rem, 3vw, 2.15rem);
+}
+
+.kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kicker::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--r-pill);
+    background: var(--accent);
+}
+
+.lead {
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    color: var(--ink-2);
+    line-height: 1.6;
+    max-width: 640px;
+}
+
+/* --- Film / Ticket Sprocket Perforation Band (Signature Sonnet Clip Detail) --- */
+.sprockets {
+    height: 12px;
+    width: 100%;
+    background-image: repeating-linear-gradient(
+        90deg,
+        transparent 0 26px,
+        var(--line) 26px 31px
+    );
+    mix-blend-mode: multiply;
+    animation: sprocket-drift 24s linear infinite;
+}
+
+.sprockets--soft {
+    height: 10px;
+    width: 100%;
+    background-image: repeating-linear-gradient(
+        90deg,
+        transparent 0 26px,
+        rgba(23, 19, 15, 0.07) 26px 30px
+    );
+    animation: sprocket-drift 32s linear infinite;
+}
+
+@keyframes sprocket-drift {
+    from { background-position-x: 0; }
+    to { background-position-x: 248px; }
+}
+
+/* --- Perforated Ticket Divider --- */
+.ticket-perforation {
+    position: relative;
+    height: 1px;
+    width: 100%;
+    border-top: 2px dashed var(--line-strong);
+    margin: 1.5rem 0;
+}
+
+.ticket-perforation::before,
+.ticket-perforation::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    background: var(--bg);
+    border-radius: var(--r-pill);
+    transform: translateY(-50%);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.ticket-perforation::before { left: -10px; }
+.ticket-perforation::after { right: -10px; }
+
+/* --- Utility Micro-Animations --- */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.animate-fade-up {
+    animation: fadeUp 0.5s var(--bezier) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,50 +1,105 @@
-/* File: tickets/buy.css */
+/* File: tickets/buy.css - Harmonized with Sonnet Clip Theme */
+@import url('../lib/theme.css');
+@import url('../lib/components.css');
 
 .centered-layout {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 20px;
+    padding: 24px 16px;
+    background-color: var(--bg);
+}
+
+.ticket-nav-bar {
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ticket-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--ink-2);
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-radius: var(--r-pill);
+    border: 1px solid var(--line-strong);
+    box-shadow: var(--shadow-sm);
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.ticket-nav-btn:hover {
+    background: var(--surface-2);
+    transform: translateY(-1px);
+    color: var(--ink);
+}
+
+.ticket-nav-btn--primary {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent-border);
+}
+
+.ticket-nav-btn--primary:hover {
+    background: var(--accent);
+    color: var(--accent-ink);
 }
 
 .ticket-card {
     max-width: 500px;
     width: 100%;
-    border-radius: 20px;
+    border-radius: var(--r);
     overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-lg);
 }
 
 .ticket-header {
-    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-    padding: 30px 20px;
+    background: var(--ink);
+    padding: 32px 24px;
     text-align: center;
-    color: white;
+    color: #ffffff;
+    position: relative;
 }
 
 .ticket-header h1 {
-    margin: 0 0 10px 0;
-    font-size: 1.8rem;
+    margin: 0 0 8px 0;
+    font-family: var(--serif);
+    font-size: 2.15rem;
+    font-weight: 400;
+    color: #ffffff;
+    letter-spacing: -0.015em;
 }
 
 .ticket-header p {
     margin: 0;
-    opacity: 0.9;
+    color: var(--faint);
+    font-size: 0.92rem;
 }
 
 .ticket-body {
-    padding: 30px;
+    padding: 28px 24px;
 }
 
 .price-tier-selection {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-bottom: 25px;
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
 .price-tier {
     cursor: pointer;
+    user-select: none;
 }
 
 .price-tier input {
@@ -52,102 +107,118 @@
 }
 
 .tier-box {
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 15px 20px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    padding: 16px 18px;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.2s ease;
+    background: var(--surface);
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.tier-box:hover {
+    background: var(--surface-2);
 }
 
 .price-tier input:checked + .tier-box {
-    border-color: var(--primary);
-    background: rgba(106, 17, 203, 0.05);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1px var(--accent);
 }
 
 .tier-name {
-    font-weight: 600;
-    font-size: 1.1rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--ink);
 }
 
 .tier-price {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: var(--primary);
+    color: var(--accent);
 }
 
 .tier-note {
     width: 100%;
-    margin-top: 5px;
-    color: var(--text-muted);
+    margin-top: 6px;
+    color: var(--muted);
     font-size: 0.8rem;
 }
 
 .alert-box {
-    padding: 12px 15px;
-    border-radius: 10px;
+    padding: 12px 16px;
+    border-radius: var(--r-sm);
     font-size: 0.9rem;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
+    font-weight: 500;
 }
 
 .alert-box.warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-    border: 1px solid rgba(245, 158, 11, 0.2);
+    background: var(--warn-soft);
+    color: var(--warn);
+    border: 1px solid var(--warn-border);
 }
 
 .alert-box.success {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: var(--good-soft);
+    color: var(--good);
+    border: 1px solid var(--good-border);
 }
 
 .alert-box.danger {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: var(--bad-soft);
+    color: var(--bad);
+    border: 1px solid var(--bad-border);
 }
 
 .ticket-summary {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 0;
-    border-top: 1px dashed var(--border);
-    margin-bottom: 20px;
-    margin-top: 10px;
+    padding: 18px 0;
+    border-top: 2px dashed var(--line-strong);
+    margin-bottom: 22px;
+    margin-top: 14px;
 }
 
 .ticket-summary span {
-    color: var(--text-muted);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.95rem;
 }
 
 .ticket-summary strong {
-    font-size: 1.5rem;
-    color: white;
+    font-size: 1.6rem;
+    color: var(--ink);
+    font-weight: 700;
 }
 
 .success-card {
     max-width: 500px;
     width: 100%;
-    padding: 40px;
+    padding: 40px 28px;
     text-align: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-lg);
 }
 
 .success-icon {
-    font-size: 4rem;
-    color: var(--success);
-    margin-bottom: 20px;
+    font-size: 3.5rem;
+    color: var(--good);
+    margin-bottom: 16px;
 }
 
 .qr-preview {
-    margin: 30px 0;
+    margin: 24px 0;
     padding: 20px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 15px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
 }

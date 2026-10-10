@@ -1,15 +1,18 @@
-/* File: organizer/manage-event.css - Ultra Compact */
+/* File: organizer/manage-event.css - Harmonized with Sonnet Clip Theme */
+@import url('../lib/theme.css');
+@import url('../lib/components.css');
+
 :root {
-    --primary: #6a11cb;
-    --primary-grad: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-    --bg: #f8fafc;
+    --primary: var(--accent);
+    --primary-grad: linear-gradient(135deg, #e25b2e 0%, #17130f 100%);
+    --bg: #f6f3ee;
     --card: #ffffff;
-    --text-main: #1e293b;
-    --text-sub: #64748b;
-    --border: #e2e8f0;
-    --danger: #ef4444;
-    --success: #10b981;
-    --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --text-main: #17130f;
+    --text-sub: #8c8578;
+    --border: rgba(23, 19, 15, 0.12);
+    --danger: var(--bad);
+    --success: var(--good);
+    --shadow-soft: var(--shadow);
 }
 
 * {

@@ -2,21 +2,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-    --primary: #6a11cb;
-    --primary-light: #8b5cf6;
-    --accent: #00f5d4;
-    --accent-glow: rgba(0, 245, 212, 0.4);
-    --success: #10b981;
-    --success-glow: rgba(16, 185, 129, 0.25);
-    --danger: #ef4444;
-    --danger-glow: rgba(239, 68, 68, 0.25);
-    --dark-bg: #0a0a0f;
-    --dark-surface: rgba(20, 20, 30, 0.85);
-    --dark-card: rgba(30, 30, 45, 0.95);
+    --primary: #e25b2e;
+    --primary-light: #ea6d43;
+    --accent: #e25b2e;
+    --accent-glow: rgba(226, 91, 46, 0.4);
+    --success: #1e7a4d;
+    --success-glow: rgba(30, 122, 77, 0.3);
+    --danger: #b3402f;
+    --danger-glow: rgba(179, 64, 47, 0.3);
+    --dark-bg: #17130f;
+    --dark-surface: rgba(23, 19, 15, 0.9);
+    --dark-card: rgba(35, 30, 24, 0.95);
     --white: #ffffff;
-    --text-sub: #94a3b8;
-    --border-glow: rgba(255, 255, 255, 0.08);
-    --glass-bg: rgba(255, 255, 255, 0.06);
+    --text-sub: #b4ac9e;
+    --border-glow: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.08);
     --shadow-deep: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 }
 

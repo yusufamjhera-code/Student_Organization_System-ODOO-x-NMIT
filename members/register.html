@@ -25,17 +25,17 @@
 
             <!-- Single Clean Back Navigation -->
             <div style="margin-bottom: 20px;">
-                <a href="../index.html" class="secondary-btn" id="nav-back-home" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: #fff; font-size: 0.85rem; padding: 6px 14px; background: rgba(255,255,255,0.06); border-radius: 8px; border: 1px solid var(--border);">
+                <a href="../index.html" class="back-nav-btn" id="nav-back-home">
                     <i class="ph-bold ph-caret-left"></i> <span>Back to Home</span>
                 </a>
             </div>
 
             <!-- Tabs: Register vs Pay Dues / Status -->
-            <div class="tabs-container" style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
-                <button type="button" id="tab-register-btn" class="active" style="flex: 1; padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+            <div class="tabs-container">
+                <button type="button" id="tab-register-btn" class="tab-btn active">
                     <i class="ph-bold ph-user-plus"></i> Join as Member
                 </button>
-                <button type="button" id="tab-dues-btn" style="flex: 1; padding: 10px; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+                <button type="button" id="tab-dues-btn" class="tab-btn">
                     <i class="ph-bold ph-credit-card"></i> Pay Dues / Status
                 </button>
             </div>
@@ -104,6 +104,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="../lib/firebase-config.js"></script>
+    <script src="../lib/contracts/passtrack-core.js"></script>
+    <script src="../lib/toast.js"></script>
     <script src="../lib/upi-gateway.js"></script>
     <script src="register.js"></script>
 </body>

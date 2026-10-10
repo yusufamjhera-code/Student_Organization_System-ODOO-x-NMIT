@@ -14,11 +14,11 @@
 
     <div id="toast-container" class="toast-container"></div>
 
-    <div style="max-width: 1200px; margin: 10px auto 0; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
-        <a href="../index.html" class="secondary-btn" id="nav-back-home" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #fff; font-size: 0.9rem; background: rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);">
+    <div class="store-nav-bar">
+        <a href="../index.html" class="store-nav-btn" id="nav-back-home">
             <i class="ph-bold ph-caret-left"></i> <span>Back to Home</span>
         </a>
-        <button type="button" id="my-orders-btn" class="secondary-btn" style="display: inline-flex; align-items: center; gap: 8px; color: #fff; font-size: 0.9rem; background: rgba(106, 17, 203, 0.2); border: 1px solid var(--primary); padding: 8px 16px; border-radius: 8px;">
+        <button type="button" id="my-orders-btn" class="store-nav-btn store-nav-btn--primary">
             <i class="ph-bold ph-receipt"></i> <span>My Orders</span>
         </button>
     </div>
@@ -147,6 +147,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="../lib/firebase-config.js"></script>
+    <script src="../lib/contracts/passtrack-core.js"></script>
+    <script src="../lib/toast.js"></script>
     <script src="../lib/upi-gateway.js"></script>
     <script src="store.js"></script>
 </body>
