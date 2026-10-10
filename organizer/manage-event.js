@@ -214,6 +214,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Load staff email history from Firebase
                 loadStaffEmailHistory(data.staffEmailHistory || []);
 
+                // Load Ticketing Config
+                const tConfig = data.ticketConfig || {};
+                document.getElementById('ticket-member-price').value = tConfig.memberPrice || '';
+                document.getElementById('ticket-nonmember-price').value = tConfig.nonmemberPrice || '';
+                document.getElementById('ticket-total-seats').value = tConfig.totalSeats || '';
+                document.getElementById('ticket-sales-start').value = tConfig.salesStart || '';
+                document.getElementById('ticket-sales-end').value = tConfig.salesEnd || '';
+                document.getElementById('ticket-sales-open').checked = tConfig.salesOpen !== false; // default true
+                document.getElementById('ticket-seats-sold').textContent = tConfig.seatsSold || 0;
+                document.getElementById('view-tickets-link').href = `../tickets/view.html?event=${eventDocId}`;
+
                 // Both admin and collaborators have full access (including managing collaborators)
                 renderCollaboratorsList();
                 setupCollaboratorHandlers();
@@ -1585,6 +1596,39 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.removeItem('collaboratorEmail');
         auth.signOut().then(() => window.location.href = '../index.html');
     };
+
+    // --- TICKETING CONFIGURATION ---
+    const ticketingForm = document.getElementById('ticketing-config-form');
+    if (ticketingForm) {
+        ticketingForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('save-ticketing-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Saving...</span>';
+
+            const config = {
+                memberPrice: parseFloat(document.getElementById('ticket-member-price').value),
+                nonmemberPrice: parseFloat(document.getElementById('ticket-nonmember-price').value),
+                totalSeats: parseInt(document.getElementById('ticket-total-seats').value, 10),
+                salesStart: document.getElementById('ticket-sales-start').value,
+                salesEnd: document.getElementById('ticket-sales-end').value,
+                salesOpen: document.getElementById('ticket-sales-open').checked
+            };
+
+            try {
+                await firestore.collection('events').doc(eventDocId).set({
+                    ticketConfig: config
+                }, { merge: true });
+                showToast('Ticketing config saved!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to save config.', 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ph-bold ph-check"></i> <span>Save Ticketing Config</span>';
+            }
+        };
+    }
 
     // --- COLLAPSIBLE CARDS TOGGLE ---
     // Only the collapse icon triggers collapse, not the whole header

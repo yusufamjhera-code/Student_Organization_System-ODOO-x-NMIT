@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Join Organization | Pass Track</title>
+    <link rel="stylesheet" href="register.css">
+    <link rel="stylesheet" href="../style.css"> <!-- Fallback basic styles if any -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <main class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="logo-placeholder">
+                    <i class="ph-bold ph-users-three"></i>
+                </div>
+                <h1 id="org-name-header">Loading...</h1>
+                <p id="org-desc">Become a member today.</p>
+            </div>
+
+            <div id="loading-spinner" class="loading-spinner">
+                <i class="ph-bold ph-spinner-gap spin"></i>
+                <p>Fetching organization details...</p>
+            </div>
+
+            <div id="error-message" class="message-area error" style="display: none;"></div>
+            <div id="success-message" class="message-area success" style="display: none;"></div>
+
+            <form id="register-form" style="display: none;">
+                <div class="input-group">
+                    <label for="member-name">Full Name *</label>
+                    <input type="text" id="member-name" placeholder="e.g. John Doe" required minlength="2" maxlength="100">
+                </div>
+
+                <div class="input-group">
+                    <label for="member-email">Email Address *</label>
+                    <input type="email" id="member-email" placeholder="john@example.com" required>
+                    <small class="feedback-text">Must be unique for this organization</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="member-phone">Phone Number</label>
+                    <input type="tel" id="member-phone" placeholder="Optional" minlength="10">
+                </div>
+
+                <div class="input-group">
+                    <label for="member-studentid">Student ID</label>
+                    <input type="text" id="member-studentid" placeholder="Optional">
+                </div>
+
+                <div class="dues-info-box" id="dues-info-box">
+                    <strong>Membership Fee: <span id="fee-amount">₹0</span></strong>
+                    <p>Membership valid for <span id="duration-days">365</span> days.</p>
+                </div>
+
+                <button type="submit" id="submit-btn" class="primary-btn full-width">
+                    <i class="ph-bold ph-user-plus"></i>
+                    <span>Register Now</span>
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="register.js"></script>
+</body>
+</html>

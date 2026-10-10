@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Buy Tickets | Pass Track</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="buy.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="centered-layout">
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="card ticket-card" id="ticket-card" style="display: none;">
+        <div class="ticket-header">
+            <h1 id="event-name">Event Name</h1>
+            <p id="event-date">Loading date...</p>
+        </div>
+
+        <div class="ticket-body">
+            <div id="sales-closed-msg" class="alert-box warning" style="display: none;">
+                Ticket sales are currently closed or sold out.
+            </div>
+
+            <form id="buy-ticket-form">
+                <div class="price-tier-selection">
+                    <label class="price-tier">
+                        <input type="radio" name="ticket-type" value="nonmember" checked>
+                        <div class="tier-box">
+                            <span class="tier-name">General Admission</span>
+                            <span class="tier-price" id="price-nonmember">₹0</span>
+                        </div>
+                    </label>
+                    <label class="price-tier">
+                        <input type="radio" name="ticket-type" value="member">
+                        <div class="tier-box">
+                            <span class="tier-name">Member Ticket</span>
+                            <span class="tier-price" id="price-member">₹0</span>
+                            <small class="tier-note">Requires active membership</small>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label for="buyer-name">Full Name *</label>
+                    <input type="text" id="buyer-name" placeholder="John Doe" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="buyer-email">Email Address *</label>
+                    <input type="email" id="buyer-email" placeholder="john@example.com" required>
+                    <small>Your token will be sent here.</small>
+                </div>
+
+                <div id="member-verification-status" class="alert-box" style="display: none;"></div>
+
+                <div class="ticket-summary">
+                    <span>Total Amount:</span>
+                    <strong id="total-amount">₹0</strong>
+                </div>
+
+                <button type="submit" class="primary-btn full-width" id="checkout-btn">
+                    <i class="ph-bold ph-credit-card"></i> <span>Proceed to Payment</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-spinner" class="loading-state">
+        <i class="ph-bold ph-spinner-gap spin"></i>
+        <p>Loading event details...</p>
+    </div>
+
+    <!-- Success State -->
+    <div id="success-state" class="card success-card" style="display: none;">
+        <div class="success-icon">
+            <i class="ph-fill ph-check-circle"></i>
+        </div>
+        <h2>Payment Successful!</h2>
+        <p>Your ticket has been booked. We've sent the QR token to your email.</p>
+        <div class="qr-preview" id="qr-preview">
+            <!-- QR link here -->
+        </div>
+        <a href="../index.html" class="secondary-btn">Return Home</a>
+    </div>
+
+    <!-- Firebase and Dependencies -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="buy.js"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+/* File: treasury/dashboard.css */
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+}
+
+.stat-details h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    margin: 5px 0 0 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+.text-primary { color: var(--primary); }
+
+.txn-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.txn-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.txn-left {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.txn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.txn-icon.income {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.txn-icon.expense {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.txn-info h4 {
+    margin: 0 0 5px 0;
+    color: white;
+}
+
+.txn-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.txn-right {
+    text-align: right;
+}
+
+.txn-amount {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.txn-amount.income {
+    color: var(--success);
+}
+
+.txn-amount.expense {
+    color: var(--danger);
+}
+
+.txn-category-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    font-size: 0.75rem;
+    margin-top: 5px;
+    text-transform: capitalize;
+}

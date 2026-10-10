@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Member Directory | Pass Track</title>
+    <link rel="stylesheet" href="../organizer/manage-event.css"> <!-- Reuse organizer styling -->
+    <link rel="stylesheet" href="directory.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <header>
+        <div class="header-left">
+            <a href="../organizer/dashboard.html" id="back-to-dashboard" class="back-link" title="Back to Dashboard">
+                <i class="ph-bold ph-caret-left"></i>
+            </a>
+            <div class="event-title-meta">
+                <h1>Member Directory</h1>
+                <small id="org-name-meta" class="event-meta-text">Loading...</small>
+            </div>
+        </div>
+        <div class="header-buttons">
+            <button id="logout-btn" class="logout-btn icon-only-mobile">
+                <i class="ph-bold ph-sign-out"></i> <span>Logout</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- TOP ROW: Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="ph-bold ph-users"></i></div>
+                <div class="stat-info">
+                    <span class="stat-value" id="stat-total">0</span>
+                    <span class="stat-label">Total Members</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success"><i class="ph-bold ph-check-circle"></i></div>
+                <div class="stat-info">
+                    <span class="stat-value" id="stat-active">0</span>
+                    <span class="stat-label">Active</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon warning"><i class="ph-bold ph-hourglass-high"></i></div>
+                <div class="stat-info">
+                    <span class="stat-value" id="stat-pending">0</span>
+                    <span class="stat-label">Pending Dues</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon danger"><i class="ph-bold ph-x-circle"></i></div>
+                <div class="stat-info">
+                    <span class="stat-value" id="stat-expired">0</span>
+                    <span class="stat-label">Expired</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content-full">
+            <div class="card list-card">
+                <div class="list-sticky-header">
+                    <div class="list-header">
+                        <div class="header-main">
+                            <div class="search-wrapper">
+                                <i class="ph ph-magnifying-glass"></i>
+                                <input type="text" id="member-search" placeholder="Search name, email, or Student ID...">
+                            </div>
+                            
+                            <div class="filters-group">
+                                <select id="filter-status" class="custom-select">
+                                    <option value="all">All Statuses</option>
+                                    <option value="active">Active</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="expired">Expired</option>
+                                </select>
+                                <select id="sort-dropdown" class="custom-select">
+                                    <option value="newest">Newest First</option>
+                                    <option value="alpha">A - Z (Name)</option>
+                                    <option value="expiring">Expiring Soon</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="selection-header">
+                        <label class="checkbox-container item-checkbox">
+                            <input type="checkbox" id="select-all-members">
+                            <div class="checkbox-box"></div>
+                            <span>Select All</span>
+                        </label>
+                        <button id="remind-expiring-btn" class="secondary-btn small-btn">
+                            <i class="ph-bold ph-bell-ringing"></i> Remind Expiring Soon
+                        </button>
+                    </div>
+                </div>
+
+                <div id="member-list" class="scrollable-list directory-list">
+                    <div class="empty-state">
+                        <i class="ph-bold ph-spinner-gap spin"></i>
+                        <p>Loading members...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Bulk Action Island -->
+    <div id="bulk-actions-bar" class="bulk-floating-island hidden">
+        <div class="bulk-content">
+            <button id="bulk-remind-btn" class="bulk-btn email">
+                <i class="ph-bold ph-bell"></i> 
+                <span id="bulk-remind-text">Send Reminders</span>
+            </button>
+            <div class="bulk-divider"></div>
+            <button id="bulk-delete-btn" class="bulk-btn delete">
+                <i class="ph-bold ph-trash"></i> <span>Delete</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Member Detail Modal -->
+    <div id="member-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="close-member-modal" aria-label="Close Modal">
+                <i class="ph ph-x"></i>
+            </button>
+
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-user-circle"></i>
+                </div>
+                <h3 id="modal-member-name">Member Name</h3>
+                <span id="modal-member-status" class="modal-subtitle badge">Status</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="member-details-grid">
+                    <div class="detail-item">
+                        <label>Email</label>
+                        <span id="modal-member-email">email@example.com</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Phone</label>
+                        <span id="modal-member-phone">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Student ID</label>
+                        <span id="modal-member-studentid">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Joined</label>
+                        <span id="modal-member-joined">--</span>
+                    </div>
+                </div>
+
+                <hr class="modal-divider">
+
+                <div class="dues-section">
+                    <h4>Membership & Dues</h4>
+                    <div class="dues-status-box">
+                        <div class="dues-info">
+                            <span class="dues-amount" id="modal-dues-amount">₹0</span>
+                            <span class="dues-period" id="modal-dues-period">Valid till: --</span>
+                        </div>
+                        <div class="dues-action">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="modal-dues-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span id="modal-dues-label" class="toggle-label">Mark as Paid</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-actions" style="margin-top: 20px;">
+                    <button type="button" class="danger-btn full-width" id="modal-delete-btn">
+                        <i class="ph-bold ph-trash"></i> Delete Member
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase and Dependencies -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="directory.js"></script>
+</body>
+</html>

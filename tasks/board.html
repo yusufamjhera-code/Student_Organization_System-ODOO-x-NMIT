@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Task Board | Pass Track</title>
+    <link rel="stylesheet" href="../organizer/manage-event.css">
+    <link rel="stylesheet" href="board.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <header>
+        <div class="header-left">
+            <a href="../organizer/dashboard.html" class="back-link" title="Back to Dashboard">
+                <i class="ph-bold ph-caret-left"></i>
+            </a>
+            <div class="event-title-meta">
+                <h1>Task Board</h1>
+                <small id="org-name-meta" class="event-meta-text">Loading...</small>
+            </div>
+        </div>
+        <div class="header-buttons">
+            <button id="add-task-btn" class="primary-btn">
+                <i class="ph-bold ph-plus"></i> <span>Add Task</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container kanban-container">
+        
+        <div class="kanban-column" id="col-todo">
+            <div class="column-header">
+                <h3>To Do</h3>
+                <span class="task-count" id="count-todo">0</span>
+            </div>
+            <div class="column-body" data-status="todo"></div>
+        </div>
+
+        <div class="kanban-column" id="col-inprogress">
+            <div class="column-header">
+                <h3>In Progress</h3>
+                <span class="task-count" id="count-inprogress">0</span>
+            </div>
+            <div class="column-body" data-status="inprogress"></div>
+        </div>
+
+        <div class="kanban-column" id="col-done">
+            <div class="column-header">
+                <h3>Done</h3>
+                <span class="task-count" id="count-done">0</span>
+            </div>
+            <div class="column-body" data-status="done"></div>
+        </div>
+
+    </main>
+
+    <!-- Task Modal -->
+    <div id="task-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="close-task-modal">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-check-square"></i>
+                </div>
+                <h3 id="task-modal-title">New Task</h3>
+            </div>
+            
+            <form id="task-form">
+                <div class="input-group">
+                    <label for="task-title">Task Title *</label>
+                    <input type="text" id="task-title" required placeholder="e.g. Order new ID cards">
+                </div>
+                
+                <div class="input-group">
+                    <label for="task-desc">Description</label>
+                    <textarea id="task-desc" rows="3" placeholder="Additional details..."></textarea>
+                </div>
+
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="task-assignee">Assignee</label>
+                        <input type="text" id="task-assignee" placeholder="Name or Email">
+                    </div>
+                    <div class="input-group">
+                        <label for="task-due">Due Date</label>
+                        <input type="date" id="task-due">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="task-status">Status</label>
+                    <select id="task-status" class="custom-select">
+                        <option value="todo">To Do</option>
+                        <option value="inprogress">In Progress</option>
+                        <option value="done">Done</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="danger-btn" id="delete-task-btn" style="display:none; margin-right:auto;">
+                        <i class="ph-bold ph-trash"></i> Delete
+                    </button>
+                    <button type="button" class="secondary-btn" id="cancel-task-btn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-task-btn">
+                        <i class="ph-bold ph-check"></i> <span>Save Task</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase and Dependencies -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="board.js"></script>
+</body>
+</html>

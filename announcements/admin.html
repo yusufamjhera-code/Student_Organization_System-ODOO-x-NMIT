@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manage Announcements | Pass Track</title>
+    <link rel="stylesheet" href="../organizer/manage-event.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Simple Markdown Parser (marked.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <header>
+        <div class="header-left">
+            <a href="../organizer/dashboard.html" class="back-link" title="Back to Dashboard">
+                <i class="ph-bold ph-caret-left"></i>
+            </a>
+            <div class="event-title-meta">
+                <h1>Manage Announcements</h1>
+                <small id="org-name-meta" class="event-meta-text">Loading...</small>
+            </div>
+        </div>
+        <div class="header-buttons">
+            <button id="post-new-btn" class="primary-btn">
+                <i class="ph-bold ph-plus"></i> <span>New Post</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="card list-card" style="width: 100%;">
+            <div id="announcements-list" class="scrollable-list">
+                <div class="empty-state">
+                    <i class="ph-bold ph-spinner-gap spin"></i>
+                    <p>Loading announcements...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create/Edit Modal -->
+    <div id="post-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="close-modal" id="close-post-modal">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-megaphone"></i>
+                </div>
+                <h3 id="post-modal-title">New Announcement</h3>
+            </div>
+            
+            <form id="post-form">
+                <div class="input-group">
+                    <label for="post-title">Title *</label>
+                    <input type="text" id="post-title" required placeholder="Important Update: Meeting Rescheduled">
+                </div>
+                
+                <div class="input-group">
+                    <label for="post-content">Message (Markdown Supported) *</label>
+                    <textarea id="post-content" rows="6" required placeholder="Type your message here..."></textarea>
+                </div>
+
+                <div class="all-days-row" style="margin-bottom: 15px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="post-notify">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label" style="display:flex; flex-direction:column;">
+                        <span>Notify Members via Email</span>
+                        <small style="color:var(--text-muted); font-size:0.75rem;">Emails all active members immediately</small>
+                    </span>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="danger-btn" id="delete-post-btn" style="display:none; margin-right:auto;">
+                        <i class="ph-bold ph-trash"></i> Delete
+                    </button>
+                    <button type="button" class="secondary-btn" id="cancel-post-btn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-post-btn">
+                        <i class="ph-bold ph-paper-plane-tilt"></i> <span>Post Announcement</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase and Dependencies -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

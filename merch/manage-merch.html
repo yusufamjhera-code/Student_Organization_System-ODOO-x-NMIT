@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manage Merch | Pass Track</title>
+    <link rel="stylesheet" href="../organizer/manage-event.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <header>
+        <div class="header-left">
+            <a href="../organizer/dashboard.html" class="back-link" title="Back to Dashboard">
+                <i class="ph-bold ph-caret-left"></i>
+            </a>
+            <div class="event-title-meta">
+                <h1>Manage Merchandise</h1>
+                <small id="org-name-meta" class="event-meta-text">Loading...</small>
+            </div>
+        </div>
+        <div class="header-buttons">
+            <button id="add-product-btn" class="primary-btn">
+                <i class="ph-bold ph-plus"></i> <span>Add Product</span>
+            </button>
+            <a href="store.html" id="view-store-link" target="_blank" class="secondary-btn">
+                <i class="ph-bold ph-storefront"></i> <span>View Store</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Tabs -->
+        <div class="tabs-container" style="display: flex; gap: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; padding-bottom: 10px;">
+            <button class="tab-btn active" data-target="products-view" style="background:none; border:none; color:white; font-size:1.1rem; cursor:pointer; font-weight:600; padding:5px 10px; border-radius:8px;">Products</button>
+            <button class="tab-btn" data-target="orders-view" style="background:none; border:none; color:var(--text-muted); font-size:1.1rem; cursor:pointer; font-weight:600; padding:5px 10px; border-radius:8px;">Orders</button>
+        </div>
+
+        <!-- Products View -->
+        <div id="products-view" class="tab-content active" style="display: block;">
+            <div class="card list-card" style="width: 100%;">
+                <div id="products-list" class="scrollable-list directory-list">
+                    <div class="empty-state">
+                        <i class="ph-bold ph-spinner-gap spin"></i>
+                        <p>Loading products...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders View -->
+        <div id="orders-view" class="tab-content" style="display: none;">
+            <div class="card list-card" style="width: 100%;">
+                <div class="list-sticky-header">
+                    <div class="list-header" style="justify-content: space-between;">
+                        <h2>All Orders</h2>
+                        <select id="order-filter" class="custom-select" style="width: auto;">
+                            <option value="all">All Statuses</option>
+                            <option value="ordered">Ordered</option>
+                            <option value="ready">Ready for Pickup</option>
+                            <option value="collected">Collected</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="orders-list" class="scrollable-list directory-list">
+                    <div class="empty-state">
+                        <i class="ph-bold ph-spinner-gap spin"></i>
+                        <p>Loading orders...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="close-modal" id="close-product-modal">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-t-shirt"></i>
+                </div>
+                <h3 id="product-modal-title">New Product</h3>
+            </div>
+            
+            <form id="product-form">
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label>Product Name *</label>
+                        <input type="text" id="prod-name" required placeholder="e.g. Skyline Hoodie">
+                    </div>
+                    <div class="input-group">
+                        <label>Category *</label>
+                        <select id="prod-category" class="custom-select" required>
+                            <option value="hoodie">Hoodie</option>
+                            <option value="tshirt">T-Shirt</option>
+                            <option value="cap">Cap</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="prod-desc" rows="2"></textarea>
+                </div>
+
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label>Regular Price (₹) *</label>
+                        <input type="number" id="prod-price" required min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Member Price (₹) *</label>
+                        <input type="number" id="prod-member-price" required min="0">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Stock Inventory (by size)</label>
+                    <div style="display:flex; gap:10px; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
+                        <div style="flex:1;"><small>S</small><input type="number" id="stock-s" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
+                        <div style="flex:1;"><small>M</small><input type="number" id="stock-m" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
+                        <div style="flex:1;"><small>L</small><input type="number" id="stock-l" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
+                        <div style="flex:1;"><small>XL</small><input type="number" id="stock-xl" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
+                        <div style="flex:1;"><small>XXL</small><input type="number" id="stock-xxl" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
+                    </div>
+                </div>
+
+                <div class="all-days-row" style="margin-bottom: 15px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="prod-active" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Active / Available in Store</span>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="danger-btn" id="delete-product-btn" style="display:none; margin-right:auto;">
+                        <i class="ph-bold ph-trash"></i> Delete
+                    </button>
+                    <button type="button" class="secondary-btn" id="cancel-product-btn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-product-btn">
+                        <i class="ph-bold ph-check"></i> <span>Save Product</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase and Dependencies -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="manage-merch.js"></script>
+</body>
+</html>

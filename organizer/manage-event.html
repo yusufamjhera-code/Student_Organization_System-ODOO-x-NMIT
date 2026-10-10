@@ -112,6 +112,59 @@
                 </div>
             </div>
 
+            <!-- Ticketing Configuration Card (Collapsible) -->
+            <div class="card collapsible-card" id="ticketing-card">
+                <div class="card-header collapsible-header" id="ticketing-toggle">
+                    <i class="ph-bold ph-ticket"></i>
+                    <h2>Ticketing Configuration</h2>
+                    <div class="header-actions">
+                        <i class="ph-bold ph-caret-down collapse-icon"></i>
+                    </div>
+                </div>
+                <div id="ticketing-body" class="collapsible-body">
+                    <form id="ticketing-config-form">
+                        <div class="time-inputs-row">
+                            <div class="input-group">
+                                <label for="ticket-member-price">Member Price (₹)</label>
+                                <input type="number" id="ticket-member-price" min="0" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="ticket-nonmember-price">Non-Member Price (₹)</label>
+                                <input type="number" id="ticket-nonmember-price" min="0" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="ticket-total-seats">Total Seats</label>
+                            <input type="number" id="ticket-total-seats" min="1" max="10000" required>
+                        </div>
+                        <div class="time-inputs-row">
+                            <div class="input-group">
+                                <label for="ticket-sales-start">Sales Start Date</label>
+                                <input type="date" id="ticket-sales-start" required>
+                            </div>
+                            <div class="input-group">
+                                <label for="ticket-sales-end">Sales End Date</label>
+                                <input type="date" id="ticket-sales-end" required>
+                            </div>
+                        </div>
+                        <div class="all-days-row" style="margin-bottom: 15px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ticket-sales-open" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Sales Open</span>
+                        </div>
+                        <button type="submit" class="primary-btn" id="save-ticketing-btn">
+                            <i class="ph-bold ph-check"></i> <span>Save Ticketing Config</span>
+                        </button>
+                    </form>
+                    <div style="margin-top: 15px; display:flex; justify-content:space-between; font-size:0.9rem; color:var(--text-muted);">
+                        <span>Seats Sold: <strong id="ticket-seats-sold" style="color:#fff;">0</strong></span>
+                        <a href="#" id="view-tickets-link" style="color:var(--primary); text-decoration:none;">View All Tickets &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Staff Access Setup Card (Collapsible) -->
             <div class="card access-card-theme collapsible-card" id="staff-access-card">
                 <div class="card-header collapsible-header" id="staff-access-toggle">
@@ -449,7 +502,7 @@
             <form id="access-point-form">
                 <p class="modal-info-note">
                     <i class="ph-bold ph-info"></i>
-                    New access points won't automatically apply to existing participants. They'll only be available for new tokens.
+                    When creating new access points won't automatically apply to existing participants. They'll only be available for new tokens.
                 </p>
                 <div class="input-group">
                     <label for="access-point-name">Station Name *</label>

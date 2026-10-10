@@ -1,0 +1,153 @@
+/* File: tickets/buy.css */
+
+.centered-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.ticket-card {
+    max-width: 500px;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.ticket-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    padding: 30px 20px;
+    text-align: center;
+    color: white;
+}
+
+.ticket-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 1.8rem;
+}
+
+.ticket-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.ticket-body {
+    padding: 30px;
+}
+
+.price-tier-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.price-tier {
+    cursor: pointer;
+}
+
+.price-tier input {
+    display: none;
+}
+
+.tier-box {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 15px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.price-tier input:checked + .tier-box {
+    border-color: var(--primary);
+    background: rgba(106, 17, 203, 0.05);
+}
+
+.tier-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.tier-price {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.tier-note {
+    width: 100%;
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.alert-box {
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-box.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.alert-box.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.alert-box.danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.ticket-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-top: 1px dashed var(--border);
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.ticket-summary span {
+    color: var(--text-muted);
+}
+
+.ticket-summary strong {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.success-card {
+    max-width: 500px;
+    width: 100%;
+    padding: 40px;
+    text-align: center;
+}
+
+.success-icon {
+    font-size: 4rem;
+    color: var(--success);
+    margin-bottom: 20px;
+}
+
+.qr-preview {
+    margin: 30px 0;
+    padding: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 15px;
+}

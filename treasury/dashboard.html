@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Treasury Dashboard | Pass Track</title>
+    <link rel="stylesheet" href="../organizer/manage-event.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <header>
+        <div class="header-left">
+            <a href="../organizer/dashboard.html" class="back-link" title="Back to Dashboard">
+                <i class="ph-bold ph-caret-left"></i>
+            </a>
+            <div class="event-title-meta">
+                <h1>Treasury</h1>
+                <small id="org-name-meta" class="event-meta-text">Loading...</small>
+            </div>
+        </div>
+        <div class="header-buttons">
+            <button id="add-txn-btn" class="primary-btn">
+                <i class="ph-bold ph-plus"></i> <span>Add Transaction</span>
+            </button>
+            <button id="export-csv-btn" class="secondary-btn">
+                <i class="ph-bold ph-download-simple"></i> <span>Export</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <div class="stats-grid" style="margin-bottom: 25px;">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="ph-bold ph-trend-up"></i></div>
+                <div class="stat-details">
+                    <h3>Total Income</h3>
+                    <p class="stat-value text-success" id="stat-income">₹0</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);"><i class="ph-bold ph-trend-down"></i></div>
+                <div class="stat-details">
+                    <h3>Total Expenses</h3>
+                    <p class="stat-value text-danger" id="stat-expenses">₹0</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(106, 17, 203, 0.1); color: var(--primary);"><i class="ph-bold ph-scales"></i></div>
+                <div class="stat-details">
+                    <h3>Current Balance</h3>
+                    <p class="stat-value text-primary" id="stat-balance">₹0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-row" style="display: flex; gap: 20px; margin-bottom: 25px;">
+            <div class="card" style="flex: 1;">
+                <h3>Income vs Expenses (Monthly)</h3>
+                <div style="height: 300px;"><canvas id="trendChart"></canvas></div>
+            </div>
+            <div class="card" style="flex: 1;">
+                <h3>Expenses by Category</h3>
+                <div style="height: 300px;"><canvas id="categoryChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="card list-card" style="width: 100%;">
+            <div class="list-sticky-header">
+                <div class="list-header" style="justify-content: space-between;">
+                    <h2>Transactions</h2>
+                    <div class="search-bar">
+                        <i class="ph-bold ph-magnifying-glass"></i>
+                        <input type="text" id="txn-search" placeholder="Search description...">
+                    </div>
+                    <select id="txn-filter" class="custom-select" style="width: auto;">
+                        <option value="all">All Transactions</option>
+                        <option value="income">Income Only</option>
+                        <option value="expense">Expenses Only</option>
+                    </select>
+                </div>
+            </div>
+            <div id="txn-list" class="scrollable-list directory-list">
+                <div class="empty-state">
+                    <i class="ph-bold ph-spinner-gap spin"></i>
+                    <p>Loading transactions...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Transaction Modal -->
+    <div id="txn-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="close-txn-modal">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-currency-inr"></i>
+                </div>
+                <h3 id="txn-modal-title">Log Transaction</h3>
+            </div>
+            
+            <form id="txn-form">
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label>Type *</label>
+                        <select id="txn-type" class="custom-select" required>
+                            <option value="income">Income (+)</option>
+                            <option value="expense">Expense (-)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Amount (₹) *</label>
+                        <input type="number" id="txn-amount" step="0.01" min="0" required placeholder="0.00">
+                    </div>
+                </div>
+                
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label>Category *</label>
+                        <select id="txn-category" class="custom-select" required>
+                            <option value="dues">Membership Dues</option>
+                            <option value="tickets">Event Tickets</option>
+                            <option value="merchandise">Merchandise</option>
+                            <option value="fundraiser">Fundraiser</option>
+                            <option value="reimbursement">Reimbursement</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Date *</label>
+                        <input type="date" id="txn-date" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Description *</label>
+                    <input type="text" id="txn-desc" required placeholder="e.g. Venue Booking Advance">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="danger-btn" id="delete-txn-btn" style="display:none; margin-right:auto;">
+                        <i class="ph-bold ph-trash"></i> Delete
+                    </button>
+                    <button type="button" class="secondary-btn" id="cancel-txn-btn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-txn-btn">
+                        <i class="ph-bold ph-check"></i> <span>Save Transaction</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase and Dependencies -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

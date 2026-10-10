@@ -77,6 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         organizationName: user.displayName || "New Organization",
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
+
+                    // Auto-create organization document for new admin
+                    await firestore.collection('organizations').add({
+                        ownerId: user.uid,
+                        name: user.displayName || "My Organization",
+                        membershipFee: 0,
+                        membershipDuration: 365,
+                        memberDiscountPercent: 10,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 }
 
                 // Store auth type in session
