@@ -174,6 +174,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btn.innerHTML = '<i class="ph-bold ph-credit-card"></i> <span>Proceed to Payment</span>';
                 return;
             }
+            // Calculate price
+            const evConfig = eventData.ticketConfig || {};
+            const pricePaid = selectedType === 'member' ? (evConfig.memberPrice || 0) : (evConfig.nonmemberPrice || 0);
+
+            // Realistic UPI Payment Gateway Simulation
+            let paymentDetails = null;
+            if (pricePaid > 0 && window.UpiGateway) {
+                btn.innerHTML = '<i class="ph-bold ph-wallet"></i> <span>Awaiting UPI Payment...</span>';
+                paymentDetails = await window.UpiGateway.pay({
+                    amount: pricePaid,
+                    merchantName: eventData.name ? `${eventData.name}` : 'PassTrack Events',
+                    description: `Ticket (${selectedType === 'member' ? 'Member' : 'General'}): ${eventData.name || 'Event Pass'}`,
+                    customerName: name,
+                    customerEmail: email
+                });
+                btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Issuing Ticket...</span>';
+            }
+
             // Check seats again using transaction
             const eventRef = firestore.collection('events').doc(eventId);
             
@@ -193,16 +211,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             await firestore.runTransaction(async (transaction) => {
                 const evDoc = await transaction.get(eventRef);
                 const evData = evDoc.data();
-                const evConfig = evData.ticketConfig || {};
-                const sold = evConfig.seatsSold || 0;
+                const currentConfig = evData.ticketConfig || {};
+                const sold = currentConfig.seatsSold || 0;
                 
-                if (evConfig.totalSeats && sold >= evConfig.totalSeats) {
+                if (currentConfig.totalSeats && sold >= currentConfig.totalSeats) {
                     throw new Error("SoldOut");
                 }
                 
                 // Increment sold
-                evConfig.seatsSold = sold + 1;
-                transaction.update(eventRef, { ticketConfig: evConfig });
+                currentConfig.seatsSold = sold + 1;
+                transaction.update(eventRef, { ticketConfig: currentConfig });
                 
                 // Create user
                 const userRef = firestore.collection('users').doc();
@@ -215,22 +233,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                     qrToken: qrToken,
                     permissions: permissions,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    ticketType: selectedType
+                    ticketType: selectedType,
+                    paymentStatus: 'paid',
+                    paymentMethod: paymentDetails ? 'UPI' : 'free',
+                    paymentRef: paymentDetails ? paymentDetails.utr : null,
+                    amountPaid: pricePaid
                 });
 
                 // Auto-create transaction for Treasury
-                const txnRef = firestore.collection('transactions').doc();
-                const pricePaid = selectedType === 'member' ? (evConfig.memberPrice || 0) : (evConfig.nonmemberPrice || 0);
                 if (pricePaid > 0) {
+                    const txnRef = firestore.collection('transactions').doc();
                     transaction.set(txnRef, {
                         orgId: orgId,
                         type: 'income',
                         amount: pricePaid,
                         category: 'tickets',
                         date: new Date().toISOString().split('T')[0],
-                        description: `Ticket Purchase (${selectedType}): ${evData.name}`,
+                        description: `Ticket Purchase (${selectedType}): ${evData.name}${paymentDetails ? ` [UPI UTR: ${paymentDetails.utr}]` : ''}`,
                         recordedBy: 'System',
-                        recordedByName: 'System',
+                        recordedByName: name,
+                        paymentMethod: 'UPI',
+                        paymentRef: paymentDetails ? paymentDetails.utr : null,
                         relatedDocId: userRef.id,
                         relatedDocType: 'ticket',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -271,6 +294,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (err.message === "SoldOut") {
                 showToast("Sorry, tickets are sold out!", "danger");
                 document.getElementById('sales-closed-msg').style.display = 'flex';
+            } else if (err.message === "PAYMENT_CANCELLED") {
+                showToast("Payment process cancelled.", "warning");
+            } else if (err.message === "PAYMENT_EXPIRED") {
+                showToast("Payment session timed out. Please try again.", "danger");
             } else {
                 showToast("Payment failed. Please try again.", "danger");
             }

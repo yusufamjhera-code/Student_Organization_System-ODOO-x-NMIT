@@ -197,6 +197,156 @@ header {
     font-weight: 500;
 }
 
+/* ==================== ORGANIZATION QUICK HUB ==================== */
+.org-quick-hub {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.org-quick-hub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-sub);
+}
+
+.org-quick-hub-header span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.org-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.65rem;
+}
+
+.org-module-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.65rem 0.85rem;
+    background: rgba(125, 125, 125, 0.05);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text-main);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.org-module-chip:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(106, 17, 203, 0.15);
+}
+
+.module-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.org-module-chip:hover .module-icon {
+    transform: scale(1.08);
+}
+
+.module-icon.users {
+    background: rgba(59, 130, 246, 0.14);
+    color: #3b82f6;
+}
+
+.module-icon.coins {
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+}
+
+.module-icon.megaphone {
+    background: rgba(245, 158, 11, 0.14);
+    color: #f59e0b;
+}
+
+.module-icon.kanban {
+    background: rgba(139, 92, 246, 0.14);
+    color: #8b5cf6;
+}
+
+.module-icon.merch {
+    background: rgba(236, 72, 153, 0.14);
+    color: #ec4899;
+}
+
+.module-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.module-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.module-arrow {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    opacity: 0.45;
+    transition: all 0.2s ease;
+}
+
+.org-module-chip:hover .module-arrow {
+    opacity: 1;
+    color: var(--primary);
+    transform: translate(2px, -2px);
+}
+
+/* Secondary Button fallback */
+.secondary-btn,
+.sidebar-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(125, 125, 125, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 0.65rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.secondary-btn:hover,
+.sidebar-nav a:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
+}
+
 /* ==================== FORM FIELDS ==================== */
 .input-group {
     margin-bottom: 1.5rem;
@@ -1158,9 +1308,31 @@ input[type="date"].valid {
     .time-input-group {
         min-width: 80px;
     }
+
+    .org-modules-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .org-module-chip {
+        padding: 0.55rem 0.7rem;
+    }
+
+    .module-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.95rem;
+    }
+
+    .module-name {
+        font-size: 0.76rem;
+    }
 }
 
 @media (max-width: 400px) {
+    .org-modules-grid {
+        grid-template-columns: 1fr;
+    }
     .card {
         padding: 1.25rem;
         border-radius: var(--radius-lg);

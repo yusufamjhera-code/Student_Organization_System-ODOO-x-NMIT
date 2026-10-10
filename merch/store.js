@@ -255,6 +255,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         const productRef = firestore.collection('merchProducts').doc(currentProduct.id);
         
         try {
+            const unitPrice = isMemberVerif ? currentProduct.memberPrice : currentProduct.price;
+            const totalPrice = unitPrice * qty;
+
+            let paymentDetails = null;
+            if (totalPrice > 0 && window.UpiGateway) {
+                checkoutBtn.innerHTML = '<i class="ph-bold ph-wallet"></i> <span>Awaiting UPI Payment...</span>';
+                paymentDetails = await window.UpiGateway.pay({
+                    amount: totalPrice,
+                    merchantName: orgNameEl.textContent || 'Student Org Store',
+                    description: `Merch: ${currentProduct.name} (${size}) x${qty}`,
+                    customerName: name,
+                    customerEmail: email
+                });
+                checkoutBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Placing Order...</span>';
+            }
+
             await firestore.runTransaction(async (transaction) => {
                 const pDoc = await transaction.get(productRef);
                 const pData = pDoc.data();
@@ -274,9 +290,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 transaction.update(productRef, { sizes: sizes, totalSold: newSold });
                 
-                const unitPrice = isMemberVerif ? pData.memberPrice : pData.price;
-                const totalPrice = unitPrice * qty;
-                
                 // Create Order
                 const orderRef = firestore.collection('merchOrders').doc();
                 transaction.set(orderRef, {
@@ -290,7 +303,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     quantity: qty,
                     unitPrice: unitPrice,
                     totalPrice: totalPrice,
-                    paymentStatus: 'paid', // Assuming cash on delivery or instant external pay for now
+                    paymentStatus: 'paid',
+                    paymentMethod: paymentDetails ? 'UPI' : 'free',
+                    paymentRef: paymentDetails ? paymentDetails.utr : null,
                     fulfillmentStatus: 'ordered',
                     orderedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -305,9 +320,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         amount: totalPrice,
                         category: 'merchandise',
                         date: new Date().toISOString().split('T')[0],
-                        description: `Merch Order: ${pData.name} (x${qty})`,
+                        description: `Merch Order: ${pData.name} (x${qty})${paymentDetails ? ` [UPI UTR: ${paymentDetails.utr}]` : ''}`,
                         recordedBy: 'System',
-                        recordedByName: 'System',
+                        recordedByName: name,
+                        paymentMethod: 'UPI',
+                        paymentRef: paymentDetails ? paymentDetails.utr : null,
                         relatedDocId: orderRef.id,
                         relatedDocType: 'merch_order',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -321,7 +338,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 fetch(window.GOOGLE_SCRIPT_URL, {
                     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        type: 'participant', // using participant as a generic hook for now, or you can add merch hook
+                        type: 'participant',
                         to_name: name,
                         to_email: email,
                         event_name: 'Merchandise Order'
@@ -339,6 +356,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast(`Sorry, we only have ${currentProduct.sizes[size]} left in size ${size}.`, "danger");
             } else if (err.message === "Inactive") {
                 showToast("This product is no longer available.", "danger");
+            } else if (err.message === "PAYMENT_CANCELLED") {
+                showToast("Payment was cancelled.", "warning");
+            } else if (err.message === "PAYMENT_EXPIRED") {
+                showToast("Payment session timed out.", "danger");
             } else {
                 showToast("Order failed. Please try again.", "danger");
             }

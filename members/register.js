@@ -205,10 +205,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
+            let paymentDetails = null;
+            if (amount > 0 && window.UpiGateway) {
+                if (actionBtn) {
+                    actionBtn.innerHTML = '<i class="ph-bold ph-wallet"></i> Awaiting UPI Payment...';
+                }
+                paymentDetails = await window.UpiGateway.pay({
+                    amount: Number(amount),
+                    merchantName: organizationData ? organizationData.name : 'Student Organization',
+                    description: `Membership Dues: ${memberData.name}`,
+                    customerName: memberData.name
+                });
+                if (actionBtn) {
+                    actionBtn.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i> Activating Membership...';
+                }
+            }
+
             // 1. Update member document to active
             await firestore.collection('members').doc(memberDocId).update({
                 membershipStatus: 'active',
                 duesPaid: true,
+                paymentMethod: paymentDetails ? 'UPI' : 'free',
+                paymentRef: paymentDetails ? paymentDetails.utr : null,
                 duesPaidAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -221,9 +239,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     amount: Number(amount),
                     category: 'dues',
                     date: new Date().toISOString().split('T')[0],
-                    description: `Membership dues: ${memberData.name}`,
+                    description: `Membership dues: ${memberData.name}${paymentDetails ? ` [UPI UTR: ${paymentDetails.utr}]` : ''}`,
                     recordedBy: 'Member Online Payment',
                     recordedByName: memberData.name,
+                    paymentMethod: 'UPI',
+                    paymentRef: paymentDetails ? paymentDetails.utr : null,
                     relatedDocId: memberDocId,
                     relatedDocType: 'member_dues',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -239,6 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <i class="ph-bold ph-check-circle"></i> Payment Successful!
                     </div>
                     <p style="color: #fff; margin-bottom: 10px;">Welcome, <strong>${memberData.name}</strong>! Your membership is now <strong>ACTIVE</strong>.</p>
+                    ${paymentDetails ? `<p style="font-family: monospace; font-size: 0.85rem; color: #38bdf8; margin-bottom: 10px; background: rgba(56, 189, 248, 0.1); padding: 6px 10px; border-radius: 6px; display: inline-block;">UPI Reference (UTR): ${paymentDetails.utr}</p>` : ''}
                     <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">You now have full access to member discounts on event tickets and merchandise.</p>
                     <a href="../index.html" class="primary-btn" style="text-decoration: none; display: inline-flex;">
                         ← Back to Home
@@ -247,7 +268,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
         } catch (err) {
             console.error("Payment error:", err);
-            showError("Payment processing failed. Please try again or contact your treasurer.");
+            if (err.message === "PAYMENT_CANCELLED") {
+                showError("Payment was cancelled. You can try again when ready.");
+            } else if (err.message === "PAYMENT_EXPIRED") {
+                showError("Payment session timed out. Please try again.");
+            } else {
+                showError("Payment processing failed. Please try again or contact your treasurer.");
+            }
             if (actionBtn) {
                 actionBtn.disabled = false;
                 actionBtn.innerHTML = '<i class="ph-bold ph-credit-card"></i> Pay Dues & Activate';
