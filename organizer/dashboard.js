@@ -449,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTags();
             toggleSubmit();
         } catch (error) {
+            console.error("Event Creation Error:", error);
             showToast("Failed to create event.", "danger");
         } finally {
             submitBtn.disabled = true;
