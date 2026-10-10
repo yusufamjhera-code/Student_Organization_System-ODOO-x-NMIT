@@ -1,0 +1,36 @@
+{
+  "agent": "Agent 2 (Authentication, Single-User Session & RBAC Lead)",
+  "branch": "feature/agent-2-auth",
+  "base_branch": "feature/agent-1-ui",
+  "calibrated_at": "2026-10-11T01:26:10Z",
+  "specifications": {
+    "session_model": {
+      "type": "ENTERPRISE_GRADE",
+      "description": "Strict single-active heartbeat on Firestore /active_sessions/{uid} + automatic role-based routing + 8-char staff access code support",
+      "concurrency_action": "REVOKE_PREVIOUS_SESSION_WITH_TOAST"
+    },
+    "auth_providers": {
+      "google_sso": true,
+      "email_password": true,
+      "staff_access_code": true,
+      "ui_integration": "Directly hooks Agent 1 Universal Auth Card (index.html & auth/login.html)"
+    },
+    "persistence_and_inactivity": {
+      "persistence": "LOCAL",
+      "idle_timeout_ms": 1800000,
+      "idle_timeout_minutes": 30,
+      "protected_portals": ["/organizer/", "/treasury/"]
+    },
+    "route_guard": {
+      "strategy": "IMMEDIATE_REDIRECT_WITH_REDIRECT_PARAM",
+      "fallback_url": "index.html",
+      "preserve_return_url": true,
+      "toast_warning": "Authentication required to access this portal"
+    },
+    "reactive_events": [
+      "passtrack:auth:change",
+      "passtrack:session:revoked",
+      "passtrack:role:updated"
+    ]
+  }
+}
