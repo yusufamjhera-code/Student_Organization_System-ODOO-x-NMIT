@@ -23,6 +23,12 @@
             </div>
         </div>
         <div class="header-buttons">
+            <button id="add-member-btn" class="primary-btn">
+                <i class="ph-bold ph-user-plus"></i> <span>Add Member</span>
+            </button>
+            <button id="share-reg-btn" class="secondary-btn" title="Copy public registration link">
+                <i class="ph-bold ph-share-network"></i> <span>Share Link</span>
+            </button>
             <button id="logout-btn" class="logout-btn icon-only-mobile">
                 <i class="ph-bold ph-sign-out"></i> <span>Logout</span>
             </button>
@@ -77,7 +83,7 @@
                                 <select id="filter-status" class="custom-select">
                                     <option value="all">All Statuses</option>
                                     <option value="active">Active</option>
-                                    <option value="pending">Pending</option>
+                                    <option value="pending">Pending Dues</option>
                                     <option value="expired">Expired</option>
                                 </select>
                                 <select id="sort-dropdown" class="custom-select">
@@ -125,9 +131,83 @@
         </div>
     </div>
 
-    <!-- Member Detail Modal -->
+    <!-- Add Member Modal -->
+    <div id="add-member-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 520px;">
+            <button class="close-modal" id="close-add-member-modal" aria-label="Close Modal">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="modal-header">
+                <div class="modal-avatar-glow">
+                    <i class="ph-fill ph-user-plus"></i>
+                </div>
+                <h3>Add New Member</h3>
+                <span class="modal-subtitle">Register a member to your organization</span>
+            </div>
+
+            <form id="add-member-form">
+                <div class="input-group">
+                    <label for="new-member-name">Full Name *</label>
+                    <input type="text" id="new-member-name" required placeholder="e.g. Rahul Sharma" autocomplete="name">
+                </div>
+
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="new-member-email">Email Address *</label>
+                        <input type="email" id="new-member-email" required placeholder="rahul@example.com" autocomplete="email">
+                    </div>
+                    <div class="input-group">
+                        <label for="new-member-phone">Phone Number (10 digits) *</label>
+                        <input type="tel" id="new-member-phone" required placeholder="9876543210" maxlength="15" autocomplete="tel">
+                    </div>
+                </div>
+
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="new-member-studentid">Student ID / Roll No *</label>
+                        <input type="text" id="new-member-studentid" required placeholder="e.g. 1NT21CS001">
+                    </div>
+                    <div class="input-group">
+                        <label for="new-member-plan">Membership Validity *</label>
+                        <select id="new-member-plan" class="custom-select">
+                            <option value="12">1 Year (12 Months)</option>
+                            <option value="6">6 Months</option>
+                            <option value="24">2 Years</option>
+                            <option value="36">3 Years</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="new-member-dues">Dues Amount (₹) *</label>
+                        <input type="number" id="new-member-dues" min="0" step="1" value="500" required>
+                    </div>
+                    <div class="input-group" style="justify-content: flex-end; padding-bottom: 8px;">
+                        <label style="margin-bottom: 8px;">Payment Status</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="new-member-paid" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span id="new-member-paid-label" style="font-size: 0.85rem; font-weight: 600; color: var(--success);">Paid</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 20px;">
+                    <button type="button" class="secondary-btn" id="cancel-add-member-btn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-new-member-btn">
+                        <i class="ph-bold ph-check"></i> <span>Add Member</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Member Detail / Edit Modal -->
     <div id="member-modal" class="modal-overlay">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 520px;">
             <button class="close-modal" id="close-member-modal" aria-label="Close Modal">
                 <i class="ph ph-x"></i>
             </button>
@@ -140,27 +220,35 @@
                 <span id="modal-member-status" class="modal-subtitle badge">Status</span>
             </div>
 
-            <div class="modal-body">
-                <div class="member-details-grid">
-                    <div class="detail-item">
-                        <label>Email</label>
-                        <span id="modal-member-email">email@example.com</span>
+            <form id="edit-member-form">
+                <div class="input-group">
+                    <label for="edit-member-name">Full Name *</label>
+                    <input type="text" id="edit-member-name" required placeholder="Full Name">
+                </div>
+
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="edit-member-email">Email Address *</label>
+                        <input type="email" id="edit-member-email" required placeholder="email@example.com">
                     </div>
-                    <div class="detail-item">
-                        <label>Phone</label>
-                        <span id="modal-member-phone">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Student ID</label>
-                        <span id="modal-member-studentid">--</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Joined</label>
-                        <span id="modal-member-joined">--</span>
+                    <div class="input-group">
+                        <label for="edit-member-phone">Phone Number *</label>
+                        <input type="tel" id="edit-member-phone" required placeholder="Phone Number">
                     </div>
                 </div>
 
-                <hr class="modal-divider">
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="edit-member-studentid">Student ID *</label>
+                        <input type="text" id="edit-member-studentid" required placeholder="Student ID">
+                    </div>
+                    <div class="input-group">
+                        <label for="edit-member-enddate">Membership Expiry *</label>
+                        <input type="date" id="edit-member-enddate" required>
+                    </div>
+                </div>
+
+                <hr class="modal-divider" style="margin: 15px 0; border: none; border-top: 1px solid var(--border);">
 
                 <div class="dues-section">
                     <h4>Membership & Dues</h4>
@@ -179,12 +267,16 @@
                     </div>
                 </div>
                 
-                <div class="modal-actions" style="margin-top: 20px;">
-                    <button type="button" class="danger-btn full-width" id="modal-delete-btn">
-                        <i class="ph-bold ph-trash"></i> Delete Member
+                <div class="modal-actions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: space-between;">
+                    <button type="button" class="danger-btn" id="modal-delete-btn" style="margin-right: auto;">
+                        <i class="ph-bold ph-trash"></i> Delete
+                    </button>
+                    <button type="button" class="secondary-btn" id="cancel-edit-member-btn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="save-edit-member-btn">
+                        <i class="ph-bold ph-check"></i> Save Changes
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 

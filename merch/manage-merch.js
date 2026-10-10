@@ -1,23 +1,20 @@
-// File: merch/manage-merch.js
+// File: merch/manage-merch.js - Production Merchandise Management Controller
 document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     const firestore = db;
     
     const orgNameMeta = document.getElementById('org-name-meta');
     const viewStoreLink = document.getElementById('view-store-link');
+    const shareStoreBtn = document.getElementById('share-store-btn');
     
     // Tabs
-    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabBtns = document.querySelectorAll('.merch-tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            tabBtns.forEach(b => {
-                b.classList.remove('active');
-                b.style.color = 'var(--text-muted)';
-            });
+            tabBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            btn.style.color = 'white';
             
             tabContents.forEach(c => {
                 c.classList.remove('active');
@@ -25,8 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             const target = document.getElementById(btn.dataset.target);
-            target.classList.add('active');
-            target.style.display = 'block';
+            if (target) {
+                target.classList.add('active');
+                target.style.display = 'block';
+            }
         });
     });
 
@@ -36,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameInput = document.getElementById('prod-name');
     const catInput = document.getElementById('prod-category');
     const descInput = document.getElementById('prod-desc');
+    const imageInput = document.getElementById('prod-image');
     const priceInput = document.getElementById('prod-price');
     const memPriceInput = document.getElementById('prod-member-price');
     const activeCb = document.getElementById('prod-active');
@@ -48,9 +48,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const saveBtn = document.getElementById('save-product-btn');
     const deleteBtn = document.getElementById('delete-product-btn');
+    
     const productsList = document.getElementById('products-list');
     const ordersList = document.getElementById('orders-list');
+    
+    const prodSearch = document.getElementById('prod-search');
+    const prodCatFilter = document.getElementById('prod-cat-filter');
+    const orderSearch = document.getElementById('order-search');
     const orderFilter = document.getElementById('order-filter');
+    
+    const badgeProductsCount = document.getElementById('badge-products-count');
+    const badgeOrdersCount = document.getElementById('badge-orders-count');
     
     let currentOrgId = null;
     let productsData = [];
@@ -59,10 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        if (!user || sessionStorage.getItem('authType') !== 'admin') {
-            window.location.href = '../index.html';
+        if (!user) {
+            window.location.href = '../auth/login.html';
             return;
         }
+        if (sessionStorage.getItem('authType') !== 'collaborator') {
+            sessionStorage.setItem('authType', 'admin');
+        }
+
         try {
             const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
             if (orgsSnapshot.empty) {
@@ -72,13 +84,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const orgDoc = orgsSnapshot.docs[0];
             currentOrgId = orgDoc.id;
             orgNameMeta.textContent = orgDoc.data().name;
-            viewStoreLink.href = `store.html?org=${currentOrgId}`;
+            
+            if (viewStoreLink) {
+                viewStoreLink.href = `store.html?org=${currentOrgId}`;
+            }
             
             setupRealtimeListeners();
         } catch (error) {
-            console.error(error);
+            console.error("Auth init error:", error);
+            showToast('Failed to load store management.', 'error');
         }
     });
+
+    if (shareStoreBtn) {
+        shareStoreBtn.onclick = () => {
+            if (!currentOrgId) return;
+            const storeUrl = `${window.location.origin}/merch/store.html?org=${currentOrgId}`;
+            navigator.clipboard.writeText(storeUrl).then(() => {
+                showToast('Storefront link copied to clipboard!', 'success');
+            }).catch(() => {
+                prompt('Storefront public link:', storeUrl);
+            });
+        };
+    }
 
     // --- REAL-TIME DATA ---
     function setupRealtimeListeners() {
@@ -87,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .where('orgId', '==', currentOrgId)
             .onSnapshot(snap => {
                 productsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (badgeProductsCount) badgeProductsCount.textContent = productsData.length;
                 renderProducts();
             });
 
@@ -95,49 +124,77 @@ document.addEventListener('DOMContentLoaded', () => {
             .where('orgId', '==', currentOrgId)
             .onSnapshot(snap => {
                 ordersData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (badgeOrdersCount) badgeOrdersCount.textContent = ordersData.length;
                 renderOrders();
             });
     }
 
-    // --- PRODUCTS ---
+    // --- PRODUCTS RENDERING ---
     function renderProducts() {
-        if (productsData.length === 0) {
-            productsList.innerHTML = '<div class="empty-state"><p>No products found. Add one!</p></div>';
+        let filtered = [...productsData];
+
+        if (prodCatFilter && prodCatFilter.value !== 'all') {
+            filtered = filtered.filter(p => (p.category || 'other') === prodCatFilter.value);
+        }
+
+        if (prodSearch && prodSearch.value.trim()) {
+            const query = prodSearch.value.trim().toLowerCase();
+            filtered = filtered.filter(p => 
+                (p.name || '').toLowerCase().includes(query) ||
+                (p.description || '').toLowerCase().includes(query)
+            );
+        }
+
+        if (filtered.length === 0) {
+            productsList.innerHTML = `
+                <div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    <i class="ph-bold ph-t-shirt" style="font-size: 2.5rem; margin-bottom: 10px; display: block; color: var(--primary);"></i>
+                    <p style="font-weight: 600;">No merchandise products found. Click "+ Add Product" to add items.</p>
+                </div>
+            `;
             return;
         }
         
         productsList.innerHTML = '';
-        productsData.forEach(p => {
+        filtered.forEach(p => {
             const sizes = p.sizes || {};
-            const totalStock = Object.values(sizes).reduce((a,b)=>a+b, 0);
+            const totalStock = Object.values(sizes).reduce((a, b) => (Number(a) || 0) + (Number(b) || 0), 0);
             
             const el = document.createElement('div');
-            el.className = 'list-item card';
-            el.style.display = 'flex';
-            el.style.justifyContent = 'space-between';
-            el.style.alignItems = 'center';
-            el.style.padding = '15px 20px';
+            el.className = 'product-row-card';
             
             const activeBadge = p.isActive 
-                ? '<span class="badge active" style="background:rgba(16,185,129,0.1); color:#10b981;">Active</span>' 
-                : '<span class="badge expired" style="background:rgba(239,68,68,0.1); color:#ef4444;">Inactive</span>';
+                ? '<span class="badge active" style="background:rgba(16,185,129,0.12); color:#059669;">Active</span>' 
+                : '<span class="badge expired" style="background:rgba(239,68,68,0.12); color:#dc2626;">Inactive</span>';
             
+            const thumbHtml = p.imageUrl 
+                ? `<img src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.name)}" class="product-thumb" onerror="this.outerHTML='<div class=\\'product-thumb-fallback\\'><i class=\\'ph-fill ph-t-shirt\\'></i></div>'">` 
+                : `<div class="product-thumb-fallback"><i class="ph-fill ph-t-shirt"></i></div>`;
+
+            const sizeBreakdown = Object.entries(sizes).map(([k, v]) => `${k}:${v}`).join(' | ');
+
             el.innerHTML = `
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <div style="font-size:2rem; color:var(--primary);"><i class="ph-fill ph-t-shirt"></i></div>
-                    <div>
-                        <h3 style="margin:0 0 5px 0;">${p.name} ${activeBadge}</h3>
-                        <div style="font-size:0.85rem; color:var(--text-muted); display:flex; gap:10px;">
-                            <span>₹${p.price} (Member: ₹${p.memberPrice})</span>
+                <div class="product-media-wrap">
+                    ${thumbHtml}
+                    <div class="product-details">
+                        <div class="product-title-row">
+                            <h3 class="product-title">${escapeHtml(p.name || 'Unnamed Gear')}</h3>
+                            ${activeBadge}
+                        </div>
+                        <div class="product-meta-row">
+                            <span style="font-weight: 700; color: var(--text-main);">₹${p.price}</span>
+                            <span style="color: var(--primary); font-weight: 600;">(Member: ₹${p.memberPrice})</span>
                             <span>•</span>
-                            <span>Stock: ${totalStock}</span>
+                            <span>Stock: <strong>${totalStock}</strong> (${sizeBreakdown})</span>
                             <span>•</span>
-                            <span>Sold: ${p.totalSold || 0}</span>
+                            <span>Sold: <strong>${p.totalSold || 0}</strong></span>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <button class="secondary-btn edit-btn" style="padding:8px 15px;"><i class="ph-bold ph-pencil-simple"></i> Edit</button>
+                    <button class="secondary-btn edit-btn" style="padding: 7px 14px; font-size: 0.88rem;">
+                        <i class="ph-bold ph-pencil-simple"></i> <span>Edit</span>
+                    </button>
                 </div>
             `;
             
@@ -146,9 +203,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (prodSearch) prodSearch.addEventListener('input', renderProducts);
+    if (prodCatFilter) prodCatFilter.addEventListener('change', renderProducts);
+
     document.getElementById('add-product-btn').onclick = () => {
         editDocId = null;
         form.reset();
+        activeCb.checked = true;
+        stockS.value = 10;
+        stockM.value = 15;
+        stockL.value = 15;
+        stockXL.value = 10;
+        stockXXL.value = 5;
         document.getElementById('product-modal-title').textContent = 'New Product';
         deleteBtn.style.display = 'none';
         saveBtn.innerHTML = '<i class="ph-bold ph-check"></i> <span>Save Product</span>';
@@ -160,12 +226,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openProductModal(p) {
         editDocId = p.id;
-        nameInput.value = p.name;
-        catInput.value = p.category;
+        nameInput.value = p.name || '';
+        catInput.value = p.category || 'hoodie';
         descInput.value = p.description || '';
-        priceInput.value = p.price;
-        memPriceInput.value = p.memberPrice;
-        activeCb.checked = p.isActive;
+        if (imageInput) imageInput.value = p.imageUrl || '';
+        priceInput.value = p.price || 0;
+        memPriceInput.value = p.memberPrice || 0;
+        activeCb.checked = p.isActive !== false;
         
         const sizes = p.sizes || {};
         stockS.value = sizes['S'] || 0;
@@ -183,55 +250,71 @@ document.addEventListener('DOMContentLoaded', () => {
     form.onsubmit = async (e) => {
         e.preventDefault();
 
+        const name = nameInput.value.trim();
+        const category = catInput.value;
+        const description = descInput.value.trim();
+        const imageUrl = imageInput ? imageInput.value.trim() : '';
+        const price = parseFloat(priceInput.value);
+        const memberPrice = parseFloat(memPriceInput.value);
+
+        // STRICT VALIDATIONS
+        if (name.length < 2) {
+            showToast('Product name must be at least 2 characters.', 'error'); return;
+        }
+        if (name.length > 80) {
+            showToast('Product name cannot exceed 80 characters.', 'error'); return;
+        }
+        if (isNaN(price) || price <= 0) {
+            showToast('Regular price must be greater than ₹0.', 'error'); return;
+        }
+        if (isNaN(memberPrice) || memberPrice < 0) {
+            showToast('Member price cannot be negative.', 'error'); return;
+        }
+        if (memberPrice > price) {
+            showToast('Member price should not exceed regular price.', 'error'); return;
+        }
+        if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+            showToast('Image URL must start with http:// or https://', 'error'); return;
+        }
+
+        const sizes = {
+            'S': Math.max(0, parseInt(stockS.value) || 0),
+            'M': Math.max(0, parseInt(stockM.value) || 0),
+            'L': Math.max(0, parseInt(stockL.value) || 0),
+            'XL': Math.max(0, parseInt(stockXL.value) || 0),
+            'XXL': Math.max(0, parseInt(stockXXL.value) || 0)
+        };
+
         const data = {
             orgId: currentOrgId,
-            name: nameInput.value.trim(),
-            category: catInput.value,
-            description: descInput.value.trim(),
-            price: parseFloat(priceInput.value),
-            memberPrice: parseFloat(memPriceInput.value),
+            name: name,
+            category: category,
+            description: description,
+            imageUrl: imageUrl || null,
+            price: price,
+            memberPrice: memberPrice,
             isActive: activeCb.checked,
-            sizes: {
-                'S': parseInt(stockS.value) || 0,
-                'M': parseInt(stockM.value) || 0,
-                'L': parseInt(stockL.value) || 0,
-                'XL': parseInt(stockXL.value) || 0,
-                'XXL': parseInt(stockXXL.value) || 0
-            },
+            sizes: sizes,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        // Validation (Task 3.5)
-        if (data.name.length < 2) {
-            showToast('Product name must be at least 2 characters.', 'error'); return;
-        }
-        if (isNaN(data.price) || data.price <= 0) {
-            showToast('Price must be a positive number.', 'error'); return;
-        }
-        if (isNaN(data.memberPrice) || data.memberPrice < 0) {
-            showToast('Member price cannot be negative.', 'error'); return;
-        }
-        if (data.memberPrice > data.price) {
-            showToast('Member price should not exceed regular price.', 'error'); return;
-        }
-
         saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
+        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Saving...';
 
         try {
             if (editDocId) {
                 await firestore.collection('merchProducts').doc(editDocId).update(data);
-                showToast('Product updated', 'success');
+                showToast('Product details updated.', 'success');
             } else {
                 data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                 data.totalSold = 0;
                 await firestore.collection('merchProducts').add(data);
-                showToast('Product added', 'success');
+                showToast('New product added to store!', 'success');
             }
             modal.classList.remove('active');
         } catch (err) {
             console.error(err);
-            showToast('Failed to save product', 'error');
+            showToast('Failed to save product.', 'error');
         } finally {
             saveBtn.disabled = false;
         }
@@ -239,73 +322,95 @@ document.addEventListener('DOMContentLoaded', () => {
 
     deleteBtn.onclick = async () => {
         if (!editDocId) return;
-        
-        // Check if orders exist
         const hasOrders = ordersData.some(o => o.productId === editDocId);
         if (hasOrders) {
-            showToast('Cannot delete product with existing orders. Make it inactive instead.', 'error');
+            showToast('Cannot delete product with existing customer orders. Set it to Inactive instead.', 'error');
             return;
         }
         
-        if (!confirm('Delete this product?')) return;
+        if (!confirm('Are you sure you want to permanently delete this product?')) return;
         try {
             await firestore.collection('merchProducts').doc(editDocId).delete();
-            showToast('Product deleted', 'success');
+            showToast('Product deleted.', 'success');
             modal.classList.remove('active');
         } catch(err) {
-            showToast('Failed to delete', 'error');
+            showToast('Failed to delete product.', 'error');
         }
     };
 
-    // --- ORDERS ---
-    orderFilter.addEventListener('change', renderOrders);
+    // --- ORDERS RENDERING ---
+    if (orderFilter) orderFilter.addEventListener('change', renderOrders);
+    if (orderSearch) orderSearch.addEventListener('input', renderOrders);
 
     function renderOrders() {
-        const filter = orderFilter.value;
-        let filtered = ordersData;
+        const filter = orderFilter ? orderFilter.value : 'all';
+        let filtered = [...ordersData];
+
         if (filter !== 'all') {
             filtered = filtered.filter(o => o.fulfillmentStatus === filter);
         }
 
-        // Sort by date desc
-        filtered.sort((a,b) => (b.orderedAt?.toMillis()||0) - (a.orderedAt?.toMillis()||0));
+        if (orderSearch && orderSearch.value.trim()) {
+            const query = orderSearch.value.trim().toLowerCase();
+            filtered = filtered.filter(o => 
+                (o.buyerName || '').toLowerCase().includes(query) ||
+                (o.buyerEmail || '').toLowerCase().includes(query) ||
+                (o.buyerPhone || '').includes(query) ||
+                (o.id || '').toLowerCase().includes(query) ||
+                (o.productName || '').toLowerCase().includes(query)
+            );
+        }
+
+        filtered.sort((a, b) => (b.orderedAt?.toMillis() || 0) - (a.orderedAt?.toMillis() || 0));
 
         if (filtered.length === 0) {
-            ordersList.innerHTML = '<div class="empty-state"><p>No orders found.</p></div>';
+            ordersList.innerHTML = `
+                <div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    <i class="ph-bold ph-shopping-bag" style="font-size: 2.5rem; margin-bottom: 10px; display: block; color: var(--primary);"></i>
+                    <p style="font-weight: 600;">No customer orders found.</p>
+                </div>
+            `;
             return;
         }
         
         ordersList.innerHTML = '';
         filtered.forEach(o => {
             const el = document.createElement('div');
-            el.className = 'list-item card';
-            el.style.display = 'flex';
-            el.style.justifyContent = 'space-between';
-            el.style.alignItems = 'center';
-            el.style.padding = '15px 20px';
+            el.className = 'order-row-card';
             
-            const dateStr = o.orderedAt ? new Date(o.orderedAt.toMillis()).toLocaleString() : 'Just now';
+            const dateStr = o.orderedAt ? new Date(o.orderedAt.toMillis()).toLocaleString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            }) : 'Recent';
             
-            let statusColor = '#eab308'; // yellow ordered
-            if (o.fulfillmentStatus === 'ready') statusColor = '#3b82f6'; // blue
-            if (o.fulfillmentStatus === 'collected') statusColor = '#10b981'; // green
+            const status = o.fulfillmentStatus || 'ordered';
+            let statusBadge = '<span class="badge pending">Ordered (Awaiting Pickup)</span>';
+            if (status === 'ready') statusBadge = '<span class="badge" style="background:rgba(37,99,235,0.12); color:#2563eb;">Ready for Pickup</span>';
+            if (status === 'collected') statusBadge = '<span class="badge active">Collected (Fulfilled)</span>';
+
+            const phoneText = o.buyerPhone ? `• Phone: <a href="tel:${o.buyerPhone}" style="color:var(--text-main); font-weight:600;">${o.buyerPhone}</a>` : '';
 
             el.innerHTML = `
-                <div>
-                    <h4 style="margin:0 0 5px 0;">${o.buyerName} <span style="font-weight:normal; color:var(--text-muted);">(${o.buyerEmail})</span></h4>
-                    <div style="font-size:0.85rem; color:var(--text-muted); display:flex; gap:10px;">
-                        <span>${o.productName} (Size: ${o.size}) x${o.quantity}</span>
+                <div style="flex: 1;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+                        <h4 class="order-buyer-name">${escapeHtml(o.buyerName || 'Customer')}</h4>
+                        ${statusBadge}
+                    </div>
+                    <div class="order-meta-info">
+                        <span>Email: <a href="mailto:${o.buyerEmail}" style="color:var(--primary);">${escapeHtml(o.buyerEmail || '')}</a></span>
+                        ${phoneText}
                         <span>•</span>
-                        <span style="color:white; font-weight:bold;">₹${o.totalPrice}</span>
+                        <span>Item: <strong>${escapeHtml(o.productName || 'Merch')}</strong> (Size: ${o.size || 'M'}) x${o.quantity || 1}</span>
+                        <span>•</span>
+                        <span style="font-weight: 700; color: var(--text-main);">₹${o.totalPrice || 0}</span>
                         <span>•</span>
                         <span>${dateStr}</span>
                     </div>
                 </div>
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <select class="custom-select status-update-sel" data-id="${o.id}" style="padding:5px 10px; font-size:0.85rem; border-color:${statusColor}; color:${statusColor}; background:transparent;">
-                        <option value="ordered" ${o.fulfillmentStatus==='ordered'?'selected':''} style="color:white;">Ordered</option>
-                        <option value="ready" ${o.fulfillmentStatus==='ready'?'selected':''} style="color:white;">Ready for Pickup</option>
-                        <option value="collected" ${o.fulfillmentStatus==='collected'?'selected':''} style="color:white;">Collected</option>
+                <div class="order-actions-wrap">
+                    <select class="custom-select status-update-sel" data-id="${o.id}" style="padding:6px 10px; font-size:0.85rem; width:auto;">
+                        <option value="ordered" ${status === 'ordered' ? 'selected' : ''}>Ordered</option>
+                        <option value="ready" ${status === 'ready' ? 'selected' : ''}>Ready for Pickup</option>
+                        <option value="collected" ${status === 'collected' ? 'selected' : ''}>Collected</option>
                     </select>
                 </div>
             `;
@@ -317,9 +422,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         fulfillmentStatus: newStatus,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    showToast('Order status updated.', 'success');
+                    showToast(`Order marked as ${newStatus}.`, 'success');
                 } catch(err) {
-                    showToast('Failed to update.', 'error');
+                    showToast('Failed to update order status.', 'error');
                 }
             });
             
@@ -327,17 +432,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     function showToast(message, type = 'success') {
         const toastContainer = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        const icon = type === 'success' ? 'ph-check-circle' : 'ph-x-circle';
-        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${message}</span>`;
+        const icon = type === 'success' ? 'ph-check-circle' : (type === 'error' ? 'ph-x-circle' : 'ph-info');
+        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${escapeHtml(message)}</span>`;
         toastContainer.appendChild(toast);
         setTimeout(() => toast.classList.add('show'), 10);
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        }, 3200);
     }
 });

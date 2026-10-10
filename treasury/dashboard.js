@@ -1,4 +1,4 @@
-// File: treasury/dashboard.js
+// File: treasury/dashboard.js - Production Treasury & Accounting Engine
 document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     const firestore = db;
@@ -25,11 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        if (!user || sessionStorage.getItem('authType') !== 'admin') {
-            window.location.href = '../index.html';
+        if (!user) {
+            window.location.href = '../auth/login.html';
             return;
         }
         currentUser = user;
+        if (sessionStorage.getItem('authType') !== 'collaborator') {
+            sessionStorage.setItem('authType', 'admin');
+        }
+        
         try {
             const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
             if (orgsSnapshot.empty) {
@@ -41,7 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
             orgNameMeta.textContent = orgDoc.data().name;
             setupRealtimeListeners();
         } catch (error) {
-            console.error(error);
+            console.error("Auth init error:", error);
+            showToast('Failed to load organization data.', 'error');
         }
     });
 
@@ -54,11 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 txnsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 updateDashboard();
             }, error => {
-                console.error(error);
+                console.error("Listener error:", error);
                 if (error.message.includes('index')) {
                     firestore.collection('transactions').where('orgId', '==', currentOrgId).get().then(snap => {
                         txnsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-                            .sort((a,b) => b.date.localeCompare(a.date));
+                            .sort((a,b) => (b.date || '').localeCompare(a.date || ''));
                         updateDashboard();
                     });
                 }
@@ -73,8 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const monthlyTotals = {}; // YYYY-MM: {inc, exp}
 
         txnsData.forEach(t => {
-            const amt = t.amount || 0;
-            const month = t.date.substring(0, 7);
+            const amt = Number(t.amount) || 0;
+            const dateStr = t.date || new Date().toISOString().split('T')[0];
+            const month = dateStr.substring(0, 7);
             
             if (!monthlyTotals[month]) monthlyTotals[month] = { inc: 0, exp: 0 };
             
@@ -84,13 +90,18 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 totalExp += amt;
                 monthlyTotals[month].exp += amt;
-                catTotals[t.category] = (catTotals[t.category] || 0) + amt;
+                const cat = t.category || 'other';
+                catTotals[cat] = (catTotals[cat] || 0) + amt;
             }
         });
 
         document.getElementById('stat-income').textContent = `₹${totalInc.toLocaleString()}`;
         document.getElementById('stat-expenses').textContent = `₹${totalExp.toLocaleString()}`;
-        document.getElementById('stat-balance').textContent = `₹${(totalInc - totalExp).toLocaleString()}`;
+        
+        const balance = totalInc - totalExp;
+        const balEl = document.getElementById('stat-balance');
+        balEl.textContent = `₹${balance.toLocaleString()}`;
+        balEl.className = `stat-value ${balance >= 0 ? 'text-primary' : 'text-danger'}`;
 
         renderList();
         renderCharts(monthlyTotals, catTotals);
@@ -98,14 +109,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderList() {
         const filter = document.getElementById('txn-filter').value;
-        const search = document.getElementById('txn-search').value.toLowerCase();
+        const search = document.getElementById('txn-search').value.toLowerCase().trim();
         
         let filtered = txnsData;
         if (filter !== 'all') filtered = filtered.filter(t => t.type === filter);
-        if (search) filtered = filtered.filter(t => (t.description||'').toLowerCase().includes(search));
+        if (search) {
+            filtered = filtered.filter(t => 
+                (t.description || '').toLowerCase().includes(search) ||
+                (t.category || '').toLowerCase().includes(search)
+            );
+        }
 
         if (filtered.length === 0) {
-            listEl.innerHTML = '<div class="empty-state"><p>No transactions found.</p></div>';
+            listEl.innerHTML = `
+                <div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    <i class="ph-bold ph-receipt" style="font-size: 2.5rem; margin-bottom: 10px; display: block; color: var(--primary);"></i>
+                    <p style="font-weight: 600;">No transactions recorded.</p>
+                </div>
+            `;
             return;
         }
 
@@ -121,24 +142,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="txn-left">
                     <div class="txn-icon ${t.type}"><i class="ph-bold ${icon}"></i></div>
                     <div class="txn-info">
-                        <h4>${t.description}</h4>
+                        <h4>${escapeHtml(t.description || 'Transaction')}</h4>
                         <div class="txn-meta">
-                            <span>${new Date(t.date).toLocaleDateString()}</span>
+                            <span><i class="ph-bold ph-calendar-blank"></i> ${new Date(t.date).toLocaleDateString()}</span>
                             <span>•</span>
-                            <span>${t.recordedByName || 'System'}</span>
+                            <span>${escapeHtml(t.recordedByName || 'System')}</span>
                         </div>
                     </div>
                 </div>
                 <div class="txn-right">
-                    <div class="txn-amount ${t.type}">${sign}₹${(t.amount||0).toLocaleString()}</div>
-                    <div class="txn-category-badge">${t.category}</div>
+                    <div class="txn-amount ${t.type}">${sign}₹${(Number(t.amount)||0).toLocaleString()}</div>
+                    <div class="txn-category-badge">${escapeHtml(t.category || 'general')}</div>
                 </div>
             `;
             
             el.onclick = () => {
-                // Only allow editing manual transactions
                 if (t.relatedDocId) {
-                    showToast('Auto-generated transactions cannot be edited directly.', 'info');
+                    showToast('Automated system transaction (dues or tickets). Managed by system.', 'info');
                 } else {
                     openEditModal(t);
                 }
@@ -153,47 +173,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CHARTS ---
     function renderCharts(monthlyTotals, catTotals) {
+        if (typeof Chart === 'undefined') return;
+
         // Trend Chart
         const months = Object.keys(monthlyTotals).sort();
-        const incData = months.map(m => monthlyTotals[m].inc);
-        const expData = months.map(m => monthlyTotals[m].exp);
+        const displayMonths = months.length > 0 ? months : [new Date().toISOString().substring(0, 7)];
+        const incData = displayMonths.map(m => (monthlyTotals[m] ? monthlyTotals[m].inc : 0));
+        const expData = displayMonths.map(m => (monthlyTotals[m] ? monthlyTotals[m].exp : 0));
 
         const trendCtx = document.getElementById('trendChart').getContext('2d');
         if (trendChart) trendChart.destroy();
         
-        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.color = '#64748b';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
         trendChart = new Chart(trendCtx, {
             type: 'bar',
             data: {
-                labels: months,
+                labels: displayMonths,
                 datasets: [
-                    { label: 'Income', data: incData, backgroundColor: '#10b981' },
-                    { label: 'Expenses', data: expData, backgroundColor: '#ef4444' }
+                    { label: 'Income (+)', data: incData, backgroundColor: '#10b981', borderRadius: 6 },
+                    { label: 'Expenses (-)', data: expData, backgroundColor: '#ef4444', borderRadius: 6 }
                 ]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { boxWidth: 12, font: { weight: '600' } } }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: 'rgba(0,0,0,0.04)' } }
+                }
+            }
         });
 
         // Category Chart
         const catLabels = Object.keys(catTotals);
-        const catData = catLabels.map(l => catTotals[l]);
-        
+        const displayCatLabels = catLabels.length > 0 ? catLabels : ['No Expenses'];
+        const catData = catLabels.length > 0 ? catLabels.map(l => catTotals[l]) : [1];
+        const catColors = ['#6a11cb', '#2563eb', '#ec4899', '#f97316', '#eab308', '#14b8a6', '#8b5cf6'];
+
         const catCtx = document.getElementById('categoryChart').getContext('2d');
         if (categoryChart) categoryChart.destroy();
+        
         categoryChart = new Chart(catCtx, {
             type: 'doughnut',
             data: {
-                labels: catLabels,
+                labels: displayCatLabels,
                 datasets: [{
                     data: catData,
-                    backgroundColor: ['#6a11cb', '#2563eb', '#db2777', '#ea580c', '#eab308', '#14b8a6']
+                    backgroundColor: catLabels.length > 0 ? catColors.slice(0, catLabels.length) : ['#e2e8f0'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12, font: { size: 12 } } }
+                },
+                cutout: '70%'
+            }
         });
     }
 
-    // --- ACTIONS ---
+    // --- ACTIONS: MODAL ---
     document.getElementById('add-txn-btn').onclick = () => {
         editDocId = null;
         form.reset();
@@ -211,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editDocId = t.id;
         typeSelect.value = t.type;
         amtInput.value = t.amount;
-        catSelect.value = t.category;
+        catSelect.value = t.category || 'other';
         dateInput.value = t.date;
         descInput.value = t.description;
         
@@ -224,46 +271,60 @@ document.addEventListener('DOMContentLoaded', () => {
     form.onsubmit = async (e) => {
         e.preventDefault();
 
+        const amount = parseFloat(amtInput.value);
+        const description = descInput.value.trim();
+        const date = dateInput.value;
+        const category = catSelect.value;
+        const type = typeSelect.value;
+
+        // RIGOROUS VALIDATIONS
+        if (isNaN(amount) || amount <= 0) {
+            showToast('Amount must be a positive number greater than ₹0.', 'error');
+            return;
+        }
+        if (amount > 10000000) {
+            showToast('Amount exceeds maximum transaction threshold.', 'error');
+            return;
+        }
+        if (!date) {
+            showToast('Please specify a valid transaction date.', 'error');
+            return;
+        }
+        if (description.length < 3) {
+            showToast('Description must be at least 3 characters.', 'error');
+            return;
+        }
+
         const data = {
             orgId: currentOrgId,
-            type: typeSelect.value,
-            amount: parseFloat(amtInput.value),
-            category: catSelect.value,
-            date: dateInput.value,
-            description: descInput.value.trim(),
+            type: type,
+            amount: amount,
+            category: category,
+            date: date,
+            description: description,
             recordedBy: currentUser.uid,
             recordedByName: currentUser.displayName || currentUser.email,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        // Validation (Task 3.5)
-        if (isNaN(data.amount) || data.amount <= 0) {
-            showToast('Amount must be a positive number.', 'error');
-            return;
-        }
-        if (!data.date) {
-            showToast('Please select a date.', 'error');
-            return;
-        }
-
         saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
+        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Saving...';
 
         try {
             if (editDocId) {
                 await firestore.collection('transactions').doc(editDocId).update(data);
-                showToast('Transaction updated', 'success');
+                showToast('Transaction updated successfully.', 'success');
             } else {
                 data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                 data.relatedDocId = null;
                 data.relatedDocType = null;
                 await firestore.collection('transactions').add(data);
-                showToast('Transaction logged', 'success');
+                showToast('Transaction logged successfully.', 'success');
             }
             modal.classList.remove('active');
         } catch (err) {
             console.error(err);
-            showToast('Failed to save transaction', 'error');
+            showToast('Failed to save transaction.', 'error');
         } finally {
             saveBtn.disabled = false;
         }
@@ -271,32 +332,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     deleteBtn.onclick = async () => {
         if (!editDocId) return;
-        if (!confirm('Delete this transaction? This will permanently affect your balance.')) return;
+        if (!confirm('Permanently delete this transaction? This will adjust your treasury balance.')) return;
         try {
             await firestore.collection('transactions').doc(editDocId).delete();
-            showToast('Transaction deleted', 'success');
+            showToast('Transaction deleted.', 'success');
             modal.classList.remove('active');
         } catch(err) {
-            showToast('Failed to delete', 'error');
+            showToast('Failed to delete transaction.', 'error');
         }
     };
 
     // CSV Export
     document.getElementById('export-csv-btn').onclick = () => {
         if (txnsData.length === 0) {
-            showToast('No data to export', 'info');
+            showToast('No transaction data to export.', 'info');
             return;
         }
         
-        const headers = ['Date', 'Type', 'Category', 'Description', 'Amount', 'Recorded By', 'Auto/Manual'];
+        const headers = ['Date', 'Type', 'Category', 'Description', 'Amount (INR)', 'Recorded By', 'Source'];
         const rows = txnsData.map(t => [
             t.date,
             t.type,
             t.category,
-            `"${t.description.replace(/"/g, '""')}"`,
+            `"${(t.description || '').replace(/"/g, '""')}"`,
             t.amount,
-            `"${t.recordedByName || 'System'}"`,
-            t.relatedDocId ? 'Auto' : 'Manual'
+            `"${(t.recordedByName || 'System').replace(/"/g, '""')}"`,
+            t.relatedDocId ? 'Automated' : 'Manual'
         ]);
         
         const csvContent = "data:text/csv;charset=utf-8," 
@@ -306,23 +367,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `pass_track_treasury_${currentOrgId}.csv`);
+        link.setAttribute("download", `PassTrack_Treasury_${orgNameMeta.textContent.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        showToast('Treasury statement exported to CSV.', 'success');
     };
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
 
     function showToast(message, type = 'success') {
         const toastContainer = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         const icon = type === 'success' ? 'ph-check-circle' : (type === 'error' ? 'ph-x-circle' : 'ph-info');
-        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${escapeHtml(message)}</span>`;
         toastContainer.appendChild(toast);
         setTimeout(() => toast.classList.add('show'), 10);
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        }, 3200);
     }
 });

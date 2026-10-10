@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../lib/upi-gateway.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 </head>
 <body>
     <div id="toast-container" class="toast-container"></div>
@@ -22,13 +23,14 @@
                 <p id="org-desc">Become a member today.</p>
             </div>
 
+            <!-- Single Clean Back Navigation -->
             <div style="margin-bottom: 20px;">
-                <a href="../index.html" class="secondary-btn" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-muted); font-size: 0.85rem; padding: 6px 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--border);">
+                <a href="../index.html" class="secondary-btn" id="nav-back-home" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: #fff; font-size: 0.85rem; padding: 6px 14px; background: rgba(255,255,255,0.06); border-radius: 8px; border: 1px solid var(--border);">
                     <i class="ph-bold ph-caret-left"></i> <span>Back to Home</span>
                 </a>
             </div>
 
-            <!-- Tabs: Register vs Pay Dues -->
+            <!-- Tabs: Register vs Pay Dues / Status -->
             <div class="tabs-container" style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
                 <button type="button" id="tab-register-btn" class="active" style="flex: 1; padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;">
                     <i class="ph-bold ph-user-plus"></i> Join as Member
@@ -55,18 +57,19 @@
 
                 <div class="input-group">
                     <label for="member-email">Email Address *</label>
-                    <input type="email" id="member-email" placeholder="john@example.com" required>
+                    <input type="email" id="member-email" placeholder="john@example.com" required maxlength="120">
                     <small class="feedback-text">Must be unique for this organization</small>
                 </div>
 
                 <div class="input-group">
-                    <label for="member-phone">Phone Number</label>
-                    <input type="tel" id="member-phone" placeholder="Optional" minlength="10">
+                    <label for="member-phone">Phone Number *</label>
+                    <input type="tel" id="member-phone" placeholder="e.g. 9876543210" required minlength="10" maxlength="15">
+                    <small class="feedback-text">10-digit mobile number for membership records</small>
                 </div>
 
                 <div class="input-group">
-                    <label for="member-studentid">Student ID</label>
-                    <input type="text" id="member-studentid" placeholder="Optional">
+                    <label for="member-studentid">Student ID / Roll No</label>
+                    <input type="text" id="member-studentid" placeholder="e.g. 1NT22CS001" maxlength="30">
                 </div>
 
                 <div class="dues-info-box" id="dues-info-box">
@@ -84,7 +87,7 @@
             <div id="dues-panel" style="display: none;">
                 <div class="input-group">
                     <label for="check-dues-email">Registered Email Address</label>
-                    <input type="email" id="check-dues-email" placeholder="john@example.com">
+                    <input type="email" id="check-dues-email" placeholder="john@example.com" maxlength="120">
                 </div>
 
                 <button type="button" id="check-dues-btn" class="primary-btn full-width" style="margin-bottom: 20px;">

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manage Merch | Pass Track</title>
     <link rel="stylesheet" href="../organizer/manage-event.css">
+    <link rel="stylesheet" href="manage-merch.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
@@ -24,26 +25,52 @@
             <button id="add-product-btn" class="primary-btn">
                 <i class="ph-bold ph-plus"></i> <span>Add Product</span>
             </button>
-            <a href="store.html" id="view-store-link" target="_blank" class="secondary-btn">
+            <a href="store.html" id="view-store-link" target="_blank" class="secondary-btn" title="Open Public Storefront">
                 <i class="ph-bold ph-storefront"></i> <span>View Store</span>
             </a>
+            <button id="share-store-btn" class="secondary-btn" title="Copy Storefront Link">
+                <i class="ph-bold ph-share-network"></i> <span>Share Link</span>
+            </button>
         </div>
     </header>
 
     <main class="container">
-        <!-- Tabs -->
-        <div class="tabs-container" style="display: flex; gap: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; padding-bottom: 10px;">
-            <button class="tab-btn active" data-target="products-view" style="background:none; border:none; color:white; font-size:1.1rem; cursor:pointer; font-weight:600; padding:5px 10px; border-radius:8px;">Products</button>
-            <button class="tab-btn" data-target="orders-view" style="background:none; border:none; color:var(--text-muted); font-size:1.1rem; cursor:pointer; font-weight:600; padding:5px 10px; border-radius:8px;">Orders</button>
+        <!-- Navigation Tabs -->
+        <div class="merch-tabs-bar">
+            <button class="merch-tab-btn active" data-target="products-view">
+                <i class="ph-bold ph-t-shirt"></i> Products Catalog <span class="tab-badge" id="badge-products-count">0</span>
+            </button>
+            <button class="merch-tab-btn" data-target="orders-view">
+                <i class="ph-bold ph-shopping-bag"></i> Customer Orders <span class="tab-badge" id="badge-orders-count">0</span>
+            </button>
         </div>
 
         <!-- Products View -->
         <div id="products-view" class="tab-content active" style="display: block;">
             <div class="card list-card" style="width: 100%;">
+                <div class="list-sticky-header">
+                    <div class="list-header" style="justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 20px;">
+                        <h2>Product Inventory</h2>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <div class="search-bar" style="position: relative;">
+                                <i class="ph-bold ph-magnifying-glass" style="position: absolute; left: 12px; color: var(--text-muted); top: 50%; transform: translateY(-50%);"></i>
+                                <input type="text" id="prod-search" placeholder="Search products..." style="padding: 9px 12px 9px 36px; border-radius: 10px; border: 1px solid var(--border); font-size: 0.88rem; outline: none; min-width: 200px;">
+                            </div>
+                            <select id="prod-cat-filter" class="custom-select" style="width: auto; padding: 9px 14px;">
+                                <option value="all">All Categories</option>
+                                <option value="hoodie">Hoodies</option>
+                                <option value="tshirt">T-Shirts</option>
+                                <option value="cap">Caps & Hats</option>
+                                <option value="badge">Badges & Accessories</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <div id="products-list" class="scrollable-list directory-list">
                     <div class="empty-state">
                         <i class="ph-bold ph-spinner-gap spin"></i>
-                        <p>Loading products...</p>
+                        <p>Loading merchandise...</p>
                     </div>
                 </div>
             </div>
@@ -53,14 +80,20 @@
         <div id="orders-view" class="tab-content" style="display: none;">
             <div class="card list-card" style="width: 100%;">
                 <div class="list-sticky-header">
-                    <div class="list-header" style="justify-content: space-between;">
-                        <h2>All Orders</h2>
-                        <select id="order-filter" class="custom-select" style="width: auto;">
-                            <option value="all">All Statuses</option>
-                            <option value="ordered">Ordered</option>
-                            <option value="ready">Ready for Pickup</option>
-                            <option value="collected">Collected</option>
-                        </select>
+                    <div class="list-header" style="justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 20px;">
+                        <h2>Order Fulfillment</h2>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <div class="search-bar" style="position: relative;">
+                                <i class="ph-bold ph-magnifying-glass" style="position: absolute; left: 12px; color: var(--text-muted); top: 50%; transform: translateY(-50%);"></i>
+                                <input type="text" id="order-search" placeholder="Search buyer or order..." style="padding: 9px 12px 9px 36px; border-radius: 10px; border: 1px solid var(--border); font-size: 0.88rem; outline: none; min-width: 200px;">
+                            </div>
+                            <select id="order-filter" class="custom-select" style="width: auto; padding: 9px 14px;">
+                                <option value="all">All Statuses</option>
+                                <option value="ordered">Ordered (Awaiting Pickup)</option>
+                                <option value="ready">Ready for Pickup</option>
+                                <option value="collected">Collected (Fulfilled)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div id="orders-list" class="scrollable-list directory-list">
@@ -75,8 +108,8 @@
 
     <!-- Product Modal -->
     <div id="product-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 600px;">
-            <button class="close-modal" id="close-product-modal">
+        <div class="modal-content" style="max-width: 620px;">
+            <button class="close-modal" id="close-product-modal" aria-label="Close Modal">
                 <i class="ph ph-x"></i>
             </button>
             <div class="modal-header">
@@ -84,58 +117,84 @@
                     <i class="ph-fill ph-t-shirt"></i>
                 </div>
                 <h3 id="product-modal-title">New Product</h3>
+                <span class="modal-subtitle">Add official merchandise to your storefront</span>
             </div>
             
             <form id="product-form">
                 <div class="time-inputs-row">
                     <div class="input-group">
-                        <label>Product Name *</label>
-                        <input type="text" id="prod-name" required placeholder="e.g. Skyline Hoodie">
+                        <label for="prod-name">Product Name *</label>
+                        <input type="text" id="prod-name" required placeholder="e.g. Skyline Edition Hoodie" maxlength="80">
                     </div>
                     <div class="input-group">
-                        <label>Category *</label>
+                        <label for="prod-category">Category *</label>
                         <select id="prod-category" class="custom-select" required>
                             <option value="hoodie">Hoodie</option>
                             <option value="tshirt">T-Shirt</option>
-                            <option value="cap">Cap</option>
-                            <option value="other">Other</option>
+                            <option value="cap">Cap / Hat</option>
+                            <option value="badge">Badge / Sticker Pack</option>
+                            <option value="other">Other Gear</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <label>Description</label>
-                    <textarea id="prod-desc" rows="2"></textarea>
+                    <label for="prod-desc">Description & Sizing Details</label>
+                    <textarea id="prod-desc" rows="2" placeholder="e.g. 100% bio-washed cotton, relaxed fit, screen printed logo..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="prod-image">Image URL (Optional)</label>
+                    <input type="url" id="prod-image" placeholder="https://images.unsplash.com/photo-...">
+                    <small style="color:var(--text-muted); font-size:0.75rem; margin-top:4px;">Paste an image link to show a photo preview in store</small>
                 </div>
 
                 <div class="time-inputs-row">
                     <div class="input-group">
-                        <label>Regular Price (₹) *</label>
-                        <input type="number" id="prod-price" required min="0">
+                        <label for="prod-price">Regular Price (₹) *</label>
+                        <input type="number" id="prod-price" required min="1" step="1" placeholder="e.g. 899">
                     </div>
                     <div class="input-group">
-                        <label>Member Price (₹) *</label>
-                        <input type="number" id="prod-member-price" required min="0">
+                        <label for="prod-member-price">Member Price (₹) *</label>
+                        <input type="number" id="prod-member-price" required min="0" step="1" placeholder="e.g. 699">
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <label>Stock Inventory (by size)</label>
-                    <div style="display:flex; gap:10px; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
-                        <div style="flex:1;"><small>S</small><input type="number" id="stock-s" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
-                        <div style="flex:1;"><small>M</small><input type="number" id="stock-m" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
-                        <div style="flex:1;"><small>L</small><input type="number" id="stock-l" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
-                        <div style="flex:1;"><small>XL</small><input type="number" id="stock-xl" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
-                        <div style="flex:1;"><small>XXL</small><input type="number" id="stock-xxl" value="0" min="0" style="padding:8px; margin-top:5px;"></div>
+                    <label>Stock Inventory by Size (Enter quantity per size) *</label>
+                    <div class="stock-inventory-grid">
+                        <div class="stock-size-cell">
+                            <span class="size-label">S</span>
+                            <input type="number" id="stock-s" value="10" min="0" step="1">
+                        </div>
+                        <div class="stock-size-cell">
+                            <span class="size-label">M</span>
+                            <input type="number" id="stock-m" value="15" min="0" step="1">
+                        </div>
+                        <div class="stock-size-cell">
+                            <span class="size-label">L</span>
+                            <input type="number" id="stock-l" value="15" min="0" step="1">
+                        </div>
+                        <div class="stock-size-cell">
+                            <span class="size-label">XL</span>
+                            <input type="number" id="stock-xl" value="10" min="0" step="1">
+                        </div>
+                        <div class="stock-size-cell">
+                            <span class="size-label">XXL</span>
+                            <input type="number" id="stock-xxl" value="5" min="0" step="1">
+                        </div>
                     </div>
                 </div>
 
-                <div class="all-days-row" style="margin-bottom: 15px;">
+                <div class="all-days-row" style="margin-bottom: 20px; background: #f8fafc; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border);">
                     <label class="toggle-switch">
                         <input type="checkbox" id="prod-active" checked>
                         <span class="toggle-slider"></span>
                     </label>
-                    <span class="toggle-label">Active / Available in Store</span>
+                    <span class="toggle-label" style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 600;">Active in Storefront</span>
+                        <small style="color:var(--text-muted); font-size:0.75rem;">When turned on, shoppers can view and purchase this item</small>
+                    </span>
                 </div>
 
                 <div class="modal-actions">

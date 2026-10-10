@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manage Announcements | Pass Track</title>
     <link rel="stylesheet" href="../organizer/manage-event.css">
+    <link rel="stylesheet" href="admin.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- Simple Markdown Parser (marked.js) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -25,6 +26,12 @@
             </div>
         </div>
         <div class="header-buttons">
+            <a href="#" id="view-board-link" target="_blank" class="secondary-btn" title="Open Public Notice Board">
+                <i class="ph-bold ph-arrow-square-out"></i> <span>View Board</span>
+            </a>
+            <button id="share-board-btn" class="secondary-btn" title="Copy Notice Board link">
+                <i class="ph-bold ph-share-network"></i> <span>Share Link</span>
+            </button>
             <button id="post-new-btn" class="primary-btn">
                 <i class="ph-bold ph-plus"></i> <span>New Post</span>
             </button>
@@ -33,6 +40,24 @@
 
     <main class="container">
         <div class="card list-card" style="width: 100%;">
+            <div class="list-sticky-header">
+                <div class="list-header" style="justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 20px;">
+                    <h2>Published Notices</h2>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <div class="search-bar" style="position: relative;">
+                            <i class="ph-bold ph-magnifying-glass" style="position: absolute; left: 12px; color: var(--text-muted); top: 50%; transform: translateY(-50%);"></i>
+                            <input type="text" id="announcement-search" placeholder="Search notices..." style="padding: 9px 12px 9px 36px; border-radius: 10px; border: 1px solid var(--border); font-size: 0.88rem; outline: none; min-width: 220px;">
+                        </div>
+                        <select id="announcement-filter" class="custom-select" style="width: auto; padding: 9px 14px;">
+                            <option value="all">All Tags</option>
+                            <option value="Event">Event</option>
+                            <option value="General">General</option>
+                            <option value="Urgent">Urgent</option>
+                            <option value="Meeting">Meeting</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
             <div id="announcements-list" class="scrollable-list">
                 <div class="empty-state">
                     <i class="ph-bold ph-spinner-gap spin"></i>
@@ -44,8 +69,8 @@
 
     <!-- Create/Edit Modal -->
     <div id="post-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 600px;">
-            <button class="close-modal" id="close-post-modal">
+        <div class="modal-content" style="max-width: 640px;">
+            <button class="close-modal" id="close-post-modal" aria-label="Close Modal">
                 <i class="ph ph-x"></i>
             </button>
             <div class="modal-header">
@@ -53,27 +78,57 @@
                     <i class="ph-fill ph-megaphone"></i>
                 </div>
                 <h3 id="post-modal-title">New Announcement</h3>
+                <span class="modal-subtitle">Post a bulletin or notice for members</span>
             </div>
             
             <form id="post-form">
                 <div class="input-group">
-                    <label for="post-title">Title *</label>
-                    <input type="text" id="post-title" required placeholder="Important Update: Meeting Rescheduled">
+                    <label for="post-title">Announcement Title *</label>
+                    <input type="text" id="post-title" required placeholder="e.g. Workshop Rescheduled: Saturday 10 AM" maxlength="100">
+                </div>
+
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="post-category">Category / Tag *</label>
+                        <select id="post-category" class="custom-select">
+                            <option value="Event">Event Announcement</option>
+                            <option value="General">General Update</option>
+                            <option value="Urgent">Urgent Alert</option>
+                            <option value="Meeting">Meeting Agenda</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="justify-content: flex-end; padding-bottom: 6px;">
+                        <label style="margin-bottom: 8px;">Pin to Top</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="post-pinned">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Feature at top</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="input-group">
-                    <label for="post-content">Message (Markdown Supported) *</label>
-                    <textarea id="post-content" rows="6" required placeholder="Type your message here..."></textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label for="post-content" style="margin: 0;">Message (Markdown Supported) *</label>
+                        <div class="markdown-tabs">
+                            <button type="button" id="tab-write" class="md-tab-btn active">Write</button>
+                            <button type="button" id="tab-preview" class="md-tab-btn">Preview</button>
+                        </div>
+                    </div>
+                    <textarea id="post-content" rows="6" required placeholder="Type your announcement using Markdown (headers, bullet points, links, etc.)..."></textarea>
+                    <div id="post-preview-pane" class="markdown-preview-box" style="display: none;"></div>
                 </div>
 
-                <div class="all-days-row" style="margin-bottom: 15px;">
+                <div class="all-days-row" style="margin-bottom: 18px; background: #f8fafc; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border);">
                     <label class="toggle-switch">
                         <input type="checkbox" id="post-notify">
                         <span class="toggle-slider"></span>
                     </label>
                     <span class="toggle-label" style="display:flex; flex-direction:column;">
-                        <span>Notify Members via Email</span>
-                        <small style="color:var(--text-muted); font-size:0.75rem;">Emails all active members immediately</small>
+                        <span style="font-weight: 600;">Notify Members via Email</span>
+                        <small style="color:var(--text-muted); font-size:0.75rem;">Emails all active members immediately via Google Apps Script</small>
                     </span>
                 </div>
 

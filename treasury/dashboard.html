@@ -60,30 +60,36 @@
             </div>
         </div>
 
-        <div class="charts-row" style="display: flex; gap: 20px; margin-bottom: 25px;">
-            <div class="card" style="flex: 1;">
-                <h3>Income vs Expenses (Monthly)</h3>
-                <div style="height: 300px;"><canvas id="trendChart"></canvas></div>
+        <div class="charts-row">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h3><i class="ph-bold ph-chart-bar"></i> Income vs Expenses (Monthly)</h3>
+                </div>
+                <div class="chart-canvas-wrapper"><canvas id="trendChart"></canvas></div>
             </div>
-            <div class="card" style="flex: 1;">
-                <h3>Expenses by Category</h3>
-                <div style="height: 300px;"><canvas id="categoryChart"></canvas></div>
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h3><i class="ph-bold ph-chart-pie-slice"></i> Expenses by Category</h3>
+                </div>
+                <div class="chart-canvas-wrapper"><canvas id="categoryChart"></canvas></div>
             </div>
         </div>
 
         <div class="card list-card" style="width: 100%;">
             <div class="list-sticky-header">
-                <div class="list-header" style="justify-content: space-between;">
+                <div class="list-header txn-list-header">
                     <h2>Transactions</h2>
-                    <div class="search-bar">
-                        <i class="ph-bold ph-magnifying-glass"></i>
-                        <input type="text" id="txn-search" placeholder="Search description...">
+                    <div class="txn-controls">
+                        <div class="search-bar">
+                            <i class="ph-bold ph-magnifying-glass"></i>
+                            <input type="text" id="txn-search" placeholder="Search description, category...">
+                        </div>
+                        <select id="txn-filter" class="custom-select">
+                            <option value="all">All Transactions</option>
+                            <option value="income">Income Only (+)</option>
+                            <option value="expense">Expenses Only (-)</option>
+                        </select>
                     </div>
-                    <select id="txn-filter" class="custom-select" style="width: auto;">
-                        <option value="all">All Transactions</option>
-                        <option value="income">Income Only</option>
-                        <option value="expense">Expenses Only</option>
-                    </select>
                 </div>
             </div>
             <div id="txn-list" class="scrollable-list directory-list">

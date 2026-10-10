@@ -1,4 +1,4 @@
-// File: members/register.js
+// File: members/register.js - Production Member Registration & Dues Controller
 document.addEventListener('DOMContentLoaded', async () => {
     const firestore = db; // Initialized in lib/firebase-config.js
 
@@ -20,6 +20,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const checkDuesEmail = document.getElementById('check-dues-email');
     const checkDuesBtn = document.getElementById('check-dues-btn');
     const duesResult = document.getElementById('dues-result');
+
+    // Safe HTML Escaping Helper
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
 
     // Get orgId from URL or resolve if missing
     const urlParams = new URLSearchParams(window.location.search);
@@ -52,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     btn.href = `register.html?org=${doc.id}`;
                     btn.className = 'secondary-btn';
                     btn.style.cssText = 'padding: 12px 16px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 10px; color: #fff;';
-                    btn.innerHTML = `<strong>${doc.data().name}</strong> <i class="ph-bold ph-arrow-right"></i>`;
+                    btn.innerHTML = `<strong>${escapeHtml(doc.data().name)}</strong> <i class="ph-bold ph-arrow-right"></i>`;
                     selectorList.appendChild(btn);
                 });
                 
@@ -81,9 +89,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         organizationData = orgDoc.data();
         
         // Update UI
-        orgNameHeader.textContent = organizationData.name;
+        orgNameHeader.textContent = organizationData.name || 'Organization';
         orgDesc.textContent = organizationData.description || 'Become a member today.';
-        feeAmountEl.textContent = `₹${organizationData.membershipFee || 0}`;
+        feeAmountEl.textContent = `₹${Number(organizationData.membershipFee || 0)}`;
         durationDaysEl.textContent = organizationData.membershipDuration || 365;
 
         // Show form
@@ -141,8 +149,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (memberSnap.empty) {
                 duesResult.style.display = 'block';
                 duesResult.innerHTML = `
-                    <div class="message-area error" style="margin-top: 15px;">
-                        <i class="ph-bold ph-x-circle"></i> No member record found for <strong>${email}</strong> in this organization. Please join as a new member first.
+                    <div class="message-area error" style="margin-top: 15px; text-align: left;">
+                        <i class="ph-bold ph-x-circle"></i> No member record found for <strong>${escapeHtml(email)}</strong> in this organization. Please join as a new member first.
                     </div>
                 `;
             } else {
@@ -151,28 +159,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 duesResult.style.display = 'block';
 
                 if (member.membershipStatus === 'active' && member.duesPaid) {
-                    duesResult.innerHTML = `
-                        <div class="message-area success" style="margin-top: 15px; text-align: left;">
-                            <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 5px;">
-                                <i class="ph-bold ph-check-circle"></i> Membership is Active!
-                            </div>
-                            <p style="margin: 0 0 8px 0; color: #fff;">Hello, <strong>${member.name}</strong>!</p>
-                            <p style="margin: 0; font-size: 0.9rem; color: #94a3b8;">
-                                Dues Status: <span style="color: #10b981; font-weight: 600;">Paid in Full</span><br>
-                                Valid Until: ${member.membershipEndDate || 'Active'}
-                            </p>
-                        </div>
-                    `;
+                    duesResult.innerHTML = renderActiveMemberCard(member, memberDoc.id);
                 } else {
                     // Pending dues
-                    const amount = member.duesAmount || organizationData.membershipFee || 0;
+                    const amount = Number(member.duesAmount || organizationData.membershipFee || 0);
                     duesResult.innerHTML = `
-                        <div style="background: rgba(106, 17, 203, 0.1); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 15px; text-align: left;">
-                            <h3 style="margin-top: 0; color: #fff; margin-bottom: 5px;">Member: ${member.name}</h3>
-                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px;">
-                                Status: <span style="color: #f59e0b; font-weight: 600;">Pending Activation (Dues Unpaid)</span><br>
-                                Amount Due: <strong style="color: var(--primary); font-size: 1.2rem;">₹${amount}</strong>
-                            </p>
+                        <div style="background: rgba(106, 17, 203, 0.08); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-top: 15px; text-align: left;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <h3 style="margin: 0; color: #fff; font-size:1.15rem;">Member: ${escapeHtml(member.name)}</h3>
+                                <span style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700;">
+                                    Pending Activation
+                                </span>
+                            </div>
+                            <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:16px;">
+                                <div>Email: <strong style="color:#fff;">${escapeHtml(member.email)}</strong></div>
+                                ${member.studentId ? `<div>Student ID: <strong style="color:#fff;">${escapeHtml(member.studentId)}</strong></div>` : ''}
+                                <div style="margin-top:6px;">Amount Due: <strong style="color:var(--primary); font-size:1.25rem;">₹${amount}</strong></div>
+                            </div>
                             <button type="button" id="pay-dues-action-btn" class="primary-btn" style="width: 100%; justify-content: center; margin-bottom: 12px;">
                                 <i class="ph-bold ph-credit-card"></i> Pay Dues (₹${amount}) & Activate
                             </button>
@@ -183,7 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `;
 
                     document.getElementById('pay-dues-action-btn').onclick = async () => {
-                        await processDuesPayment(memberDoc.id, member, amount);
+                        await processDuesPayment(memberDoc.id, member, amount, duesResult);
                     };
                 }
             }
@@ -196,8 +199,60 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // Helper: Render Active Member Card
+    function renderActiveMemberCard(member, docId, paymentDetails = null) {
+        return `
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 24px; margin-top: 15px; text-align: left;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <i class="ph-fill ph-shield-check" style="color:#10b981; font-size:1.5rem;"></i>
+                        <span style="font-size:1.15rem; font-weight:700; color:#fff;">Membership Active</span>
+                    </div>
+                    <span style="background:rgba(16, 185, 129, 0.2); color:#10b981; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; letter-spacing:0.5px;">
+                        VERIFIED MEMBER
+                    </span>
+                </div>
+                
+                <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid var(--border);">
+                    <div style="font-size:1.2rem; font-weight:800; color:#fff; margin-bottom:4px;">${escapeHtml(member.name)}</div>
+                    <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:8px;">${escapeHtml(member.email)}</div>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.85rem; padding-top:10px; border-top:1px dashed var(--border);">
+                        <div>
+                            <span style="color:var(--text-muted);">Student ID:</span><br>
+                            <strong style="color:#fff;">${escapeHtml(member.studentId || 'N/A')}</strong>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-muted);">Member Since:</span><br>
+                            <strong style="color:#fff;">${member.membershipStartDate || 'Active'}</strong>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-muted);">Valid Until:</span><br>
+                            <strong style="color:#10b981;">${member.membershipEndDate || 'Active'}</strong>
+                        </div>
+                        <div>
+                            <span style="color:var(--text-muted);">Dues Status:</span><br>
+                            <strong style="color:#10b981;">Paid in Full</strong>
+                        </div>
+                    </div>
+                </div>
+
+                ${paymentDetails ? `
+                    <div style="background:rgba(56, 189, 248, 0.1); border:1px dashed #38bdf8; border-radius:8px; padding:10px 12px; font-family:monospace; font-size:0.85rem; color:#38bdf8; margin-bottom:14px;">
+                        UPI Payment Ref (UTR): ${escapeHtml(paymentDetails.utr)}
+                    </div>
+                ` : ''}
+
+                <div style="background:rgba(255,255,255,0.02); border-radius:8px; padding:10px 12px; font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+                    <i class="ph-bold ph-sparkle" style="color:var(--primary);"></i>
+                    Your membership qualifies you for discounted event tickets and official merchandise store discounts.
+                </div>
+            </div>
+        `;
+    }
+
     // --- REUSABLE DUES PAYMENT PROCESSOR ---
-    async function processDuesPayment(memberDocId, memberData, amount) {
+    async function processDuesPayment(memberDocId, memberData, amount, targetContainer = null) {
         const actionBtn = document.getElementById('pay-dues-action-btn') || document.getElementById('instant-pay-dues-btn');
         if (actionBtn) {
             actionBtn.disabled = true;
@@ -214,14 +269,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     amount: Number(amount),
                     merchantName: organizationData ? organizationData.name : 'Student Organization',
                     description: `Membership Dues: ${memberData.name}`,
-                    customerName: memberData.name
+                    customerName: memberData.name,
+                    customerEmail: memberData.email
                 });
                 if (actionBtn) {
                     actionBtn.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i> Activating Membership...';
                 }
             }
 
-            // 1. Update member document to active
+            // 1. Update member document to active in Firestore
             await firestore.collection('members').doc(memberDocId).update({
                 membershipStatus: 'active',
                 duesPaid: true,
@@ -251,25 +307,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
 
-            // 3. Show Success State
-            duesResult.style.display = 'block';
-            duesResult.innerHTML = `
-                <div class="message-area success" style="margin-top: 15px; text-align: left; padding: 20px;">
-                    <div style="font-size: 1.2rem; font-weight: 700; color: #10b981; margin-bottom: 8px;">
-                        <i class="ph-bold ph-check-circle"></i> Payment Successful!
-                    </div>
-                    <p style="color: #fff; margin-bottom: 10px;">Welcome, <strong>${memberData.name}</strong>! Your membership is now <strong>ACTIVE</strong>.</p>
-                    ${paymentDetails ? `<p style="font-family: monospace; font-size: 0.85rem; color: #38bdf8; margin-bottom: 10px; background: rgba(56, 189, 248, 0.1); padding: 6px 10px; border-radius: 6px; display: inline-block;">UPI Reference (UTR): ${paymentDetails.utr}</p>` : ''}
-                    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px;">You now have full access to member discounts on event tickets and merchandise.</p>
-                    <a href="../index.html" class="primary-btn" style="text-decoration: none; display: inline-flex;">
-                        ← Back to Home
-                    </a>
-                </div>
-            `;
+            // 3. Show Success State in the active container
+            const updatedMember = {
+                ...memberData,
+                membershipStatus: 'active',
+                duesPaid: true,
+                membershipEndDate: memberData.membershipEndDate || new Date(Date.now() + 365*24*60*60*1000).toISOString().split('T')[0]
+            };
+
+            const successHtml = renderActiveMemberCard(updatedMember, memberDocId, paymentDetails);
+
+            if (targetContainer) {
+                targetContainer.style.display = 'block';
+                targetContainer.innerHTML = successHtml;
+            } else {
+                // If called from the registration success panel, update successEl directly
+                successEl.style.display = 'block';
+                successEl.innerHTML = successHtml;
+            }
+
+            showToast("Payment successful! Your membership is now active.", "success");
+
         } catch (err) {
             console.error("Payment error:", err);
             if (err.message === "PAYMENT_CANCELLED") {
-                showError("Payment was cancelled. You can try again when ready.");
+                showError("Payment was cancelled. You can try again whenever ready.");
             } else if (err.message === "PAYMENT_EXPIRED") {
                 showError("Payment session timed out. Please try again.");
             } else {
@@ -291,16 +353,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const phone = document.getElementById('member-phone').value.trim();
         const studentId = document.getElementById('member-studentid').value.trim();
 
-        if (name.length < 2) return showError('Name must be at least 2 characters.');
+        if (name.length < 2) return showError('Full name must be at least 2 characters.');
         
         // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) return showError('Please enter a valid email address.');
 
-        // Phone validation (Task 3.5)
-        if (phone) {
-            const phoneRegex = /^[+]?[\d\s\-()]{7,15}$/;
-            if (!phoneRegex.test(phone)) return showError('Please enter a valid phone number (7-15 digits).');
+        // Phone validation
+        const phoneRegex = /^[+]?[\d\s\-()]{10,15}$/;
+        const rawDigits = phone.replace(/\D/g, '');
+        if (!phoneRegex.test(phone) || rawDigits.length < 10) {
+            return showError('Please enter a valid 10-digit mobile number.');
         }
 
         // Loading state
@@ -317,26 +380,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!existingMemberQuery.empty) {
                 setLoading(false);
-                return showError('This email is already registered with this organization. Use "Pay Dues / Status" to check your status.');
+                return showError('This email is already registered with this organization. Use "Pay Dues / Status" tab to check your membership.');
             }
 
             // Calculate dates
             const now = new Date();
             const todayStr = now.toISOString().split('T')[0];
             
-            const duration = organizationData.membershipDuration || 365;
+            const duration = Number(organizationData.membershipDuration) || 365;
             const endDate = new Date(now.getTime() + (duration * 24 * 60 * 60 * 1000));
             const endDateStr = endDate.toISOString().split('T')[0];
 
             const fee = Number(organizationData.membershipFee) || 0;
             const isFree = fee === 0;
 
-            // Add member
-            const docRef = await firestore.collection('members').add({
+            // Add member to Firestore
+            const newMemberData = {
                 orgId: orgId,
                 name: name,
                 email: email,
-                phone: phone || null,
+                phone: phone,
                 studentId: studentId || null,
                 membershipStatus: isFree ? 'active' : 'pending',
                 membershipStartDate: todayStr,
@@ -347,42 +410,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                 joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 renewalReminderSent: false
-            });
+            };
+
+            const docRef = await firestore.collection('members').add(newMemberData);
 
             registerForm.style.display = 'none';
             
             if (isFree) {
-                successEl.innerHTML = `
-                    <div style="padding: 10px 0; text-align: left;">
-                        <div style="font-size: 1.2rem; font-weight: 700; color: #10b981; margin-bottom: 8px;">
-                            <i class="ph-bold ph-check-circle"></i> Registration Successful!
-                        </div>
-                        <p style="color: #fff; margin-bottom: 12px;">Welcome to <strong>${organizationData.name}</strong>, ${name}! Your membership is <strong>ACTIVE</strong>.</p>
-                        <a href="../index.html" class="primary-btn" style="text-decoration: none; display: inline-flex;">← Back to Home</a>
-                    </div>
-                `;
+                successEl.innerHTML = renderActiveMemberCard(newMemberData, docRef.id);
             } else {
                 successEl.innerHTML = `
                     <div style="padding: 10px 0; text-align: left;">
                         <div style="font-size: 1.2rem; font-weight: 700; color: #10b981; margin-bottom: 8px;">
                             <i class="ph-bold ph-check-circle"></i> Registration Recorded!
                         </div>
-                        <p style="color: #fff; margin-bottom: 8px;">Welcome, <strong>${name}</strong>!</p>
-                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 15px;">
+                        <p style="color: #fff; margin-bottom: 8px;">Welcome, <strong>${escapeHtml(name)}</strong>!</p>
+                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 16px;">
                             Your membership status is currently <span style="color: #f59e0b; font-weight: 600;">Pending Activation</span>. Pay your dues of <strong>₹${fee}</strong> to activate your membership and unlock member benefits.
                         </p>
                         <button type="button" id="instant-pay-dues-btn" class="primary-btn" style="width: 100%; justify-content: center; margin-bottom: 12px;">
                             <i class="ph-bold ph-credit-card"></i> Pay Dues (₹${fee}) & Activate Now
                         </button>
-                        <div style="font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px dashed var(--border); margin-bottom: 15px;">
+                        <div style="font-size: 0.85rem; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px dashed var(--border);">
                             <i class="ph-bold ph-info"></i> <strong>Paying Offline?</strong> You can also pay cash or UPI to your club treasurer, who will activate your membership in the Member Directory.
                         </div>
-                        <a href="../index.html" class="secondary-btn" style="text-decoration: none; display: inline-flex;">← Back to Home</a>
                     </div>
                 `;
 
                 document.getElementById('instant-pay-dues-btn').onclick = async () => {
-                    await processDuesPayment(docRef.id, { name: name }, fee);
+                    await processDuesPayment(docRef.id, newMemberData, fee, successEl);
                 };
             }
             successEl.style.display = 'block';
@@ -398,6 +454,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     function showError(msg) {
         errorEl.textContent = msg;
         errorEl.style.display = 'block';
+    }
+
+    function showToast(message, type = 'success') {
+        const toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icon = type === 'success' ? 'ph-check-circle' : 'ph-x-circle';
+        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${escapeHtml(message)}</span>`;
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 
     function setLoading(isLoading) {

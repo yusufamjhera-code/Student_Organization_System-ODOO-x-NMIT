@@ -1,4 +1,4 @@
-// File: members/directory.js
+// File: members/directory.js - Production Grade Directory Controller
 document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     const firestore = db; // from firebase-config.js
@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     const orgNameMeta = document.getElementById('org-name-meta');
     const memberListEl = document.getElementById('member-list');
+    
+    // Header Actions
+    const addMemberBtn = document.getElementById('add-member-btn');
+    const shareRegBtn = document.getElementById('share-reg-btn');
     
     // Stats
     const statTotal = document.getElementById('stat-total');
@@ -26,9 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
     const remindExpiringBtn = document.getElementById('remind-expiring-btn');
     
-    // Modal
-    const modal = document.getElementById('member-modal');
-    const closeModalBtn = document.getElementById('close-member-modal');
+    // Add Member Modal
+    const addModal = document.getElementById('add-member-modal');
+    const closeAddModalBtn = document.getElementById('close-add-member-modal');
+    const cancelAddModalBtn = document.getElementById('cancel-add-member-btn');
+    const addMemberForm = document.getElementById('add-member-form');
+    const newPaidCb = document.getElementById('new-member-paid');
+    const newPaidLabel = document.getElementById('new-member-paid-label');
+    
+    // Member Detail / Edit Modal
+    const memberModal = document.getElementById('member-modal');
+    const closeMemberModalBtn = document.getElementById('close-member-modal');
+    const cancelEditMemberBtn = document.getElementById('cancel-edit-member-btn');
+    const editMemberForm = document.getElementById('edit-member-form');
+    const modalDeleteBtn = document.getElementById('modal-delete-btn');
     
     let currentOrgId = null;
     let currentUser = null;
@@ -38,19 +53,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        if (!user || sessionStorage.getItem('authType') !== 'admin') {
-            window.location.href = '../index.html';
+        if (!user) {
+            window.location.href = '../auth/login.html';
             return;
         }
         
         currentUser = user;
+        if (sessionStorage.getItem('authType') !== 'collaborator') {
+            sessionStorage.setItem('authType', 'admin');
+        }
 
         try {
             // Get Organization
             const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
             if (orgsSnapshot.empty) {
-                showToast('Organization not found. Please log in again.', 'error');
-                setTimeout(() => window.location.href = '../index.html', 2000);
+                showToast('Organization not found. Redirecting to setup...', 'error');
+                setTimeout(() => window.location.href = '../organizer/setup-org.html', 1500);
                 return;
             }
             
@@ -58,12 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
             currentOrgId = orgDoc.id;
             orgNameMeta.textContent = orgDoc.data().name;
 
-            // Load Members
+            // Load Members in real-time
             setupRealtimeListeners();
             
         } catch (error) {
             console.error("Initialization error:", error);
-            showToast('Failed to load data.', 'error');
+            showToast('Failed to load organization data.', 'error');
         }
     });
 
@@ -93,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let needsUpdate = false;
         
         members.forEach(member => {
-            if (member.membershipStatus === 'active' && member.membershipEndDate < today) {
+            if (member.membershipStatus === 'active' && member.membershipEndDate && member.membershipEndDate < today) {
                 const ref = firestore.collection('members').doc(member.id);
                 batch.update(ref, { membershipStatus: 'expired' });
                 needsUpdate = true;
@@ -129,8 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const search = searchInput.value.trim().toLowerCase();
         if (search) {
             filtered = filtered.filter(m => 
-                m.name.toLowerCase().includes(search) || 
-                m.email.toLowerCase().includes(search) ||
+                (m.name || '').toLowerCase().includes(search) || 
+                (m.email || '').toLowerCase().includes(search) ||
+                (m.phone || '').includes(search) ||
                 (m.studentId && m.studentId.toLowerCase().includes(search))
             );
         }
@@ -144,53 +163,66 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Sort
         const sort = sortDropdown.value;
         if (sort === 'alpha') {
-            filtered.sort((a, b) => a.name.localeCompare(b.name));
+            filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         } else if (sort === 'expiring') {
-            filtered.sort((a, b) => new Date(a.membershipEndDate) - new Date(b.membershipEndDate));
+            filtered.sort((a, b) => new Date(a.membershipEndDate || '9999-12-31') - new Date(b.membershipEndDate || '9999-12-31'));
         } else { // newest
             filtered.sort((a, b) => (b.joinedAt?.toMillis() || 0) - (a.joinedAt?.toMillis() || 0));
         }
         
         // Render
         if (filtered.length === 0) {
-            memberListEl.innerHTML = '<div class="empty-state"><i class="ph ph-users"></i><p>No members found.</p></div>';
+            memberListEl.innerHTML = `
+                <div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    <i class="ph-bold ph-users" style="font-size: 2.5rem; margin-bottom: 10px; display: block; color: var(--primary);"></i>
+                    <p style="font-weight: 600;">No members match your criteria.</p>
+                </div>
+            `;
             return;
         }
         
         memberListEl.innerHTML = '';
         filtered.forEach(member => {
             const el = document.createElement('div');
-            el.className = 'list-item card';
+            el.className = 'list-item';
             
-            const initials = member.name.substring(0, 2).toUpperCase();
+            const initials = (member.name || 'M').substring(0, 2).toUpperCase();
             const dateStr = formatDate(member.membershipEndDate);
+            const statusBadge = (member.membershipStatus || 'pending').toLowerCase();
+            const studentIdText = member.studentId ? `ID: ${member.studentId}` : (member.phone || '--');
             
             el.innerHTML = `
-                <div class="checkbox-container">
-                    <input type="checkbox" class="member-cb" value="${member.id}">
-                    <div class="checkbox-box"></div>
+                <div class="list-item-top">
+                    <div class="checkbox-container">
+                        <input type="checkbox" class="member-cb" value="${member.id}">
+                        <div class="checkbox-box"></div>
+                    </div>
+                    <div class="member-avatar">${initials}</div>
+                    <div class="member-info" style="cursor:pointer;" onclick="openMemberModal('${member.id}')">
+                        <span class="member-name">${escapeHtml(member.name || 'Unnamed Member')}</span>
+                        <span class="member-email">${escapeHtml(member.email || '')}</span>
+                    </div>
+                    <div class="member-meta-tag">${escapeHtml(studentIdText)}</div>
+                    <div class="member-dates">
+                        <span>Exp: ${dateStr}</span>
+                    </div>
+                    <div>
+                        <span class="badge ${statusBadge}">${statusBadge.toUpperCase()}</span>
+                    </div>
+                    <div class="member-dues">
+                        <label class="toggle-switch" title="Toggle Dues Paid">
+                            <input type="checkbox" class="dues-toggle-cb" data-id="${member.id}" ${member.duesPaid ? 'checked' : ''}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="member-actions">
+                        <button class="icon-only-btn" title="View & Edit" onclick="openMemberModal('${member.id}')">
+                            <i class="ph-bold ph-caret-right"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="member-avatar">${initials}</div>
-                <div class="member-info" style="cursor:pointer;" onclick="openMemberModal('${member.id}')">
-                    <span class="member-name">${member.name}</span>
-                    <span class="member-email">${member.email}</span>
-                </div>
-                <div class="member-dates">
-                    <span>Exp: ${dateStr}</span>
-                </div>
-                <div>
-                    <span class="badge ${member.membershipStatus}">${member.membershipStatus.toUpperCase()}</span>
-                </div>
-                <div class="member-dues">
-                    <label class="toggle-switch" title="Toggle Dues Paid">
-                        <input type="checkbox" class="dues-toggle-cb" data-id="${member.id}" ${member.duesPaid ? 'checked' : ''}>
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                <div class="member-actions">
-                    <button class="icon-only-btn" title="View Details" onclick="openMemberModal('${member.id}')">
-                        <i class="ph-bold ph-caret-right"></i>
-                    </button>
+                <div class="list-item-bottom" style="display: none;">
+                    <!-- Rendered for mobile screens via media queries -->
                 </div>
             `;
             memberListEl.appendChild(el);
@@ -200,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attachDuesListeners();
     }
     
-    // --- ACTIONS ---
+    // --- ACTIONS: TOGGLE DUES ---
     function attachDuesListeners() {
         document.querySelectorAll('.dues-toggle-cb').forEach(cb => {
             cb.addEventListener('change', async (e) => {
@@ -213,18 +245,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     await firestore.collection('members').doc(id).update({
                         duesPaid: isPaid,
                         membershipStatus: status,
-                        duesPaidAt: isPaid ? firebase.firestore.FieldValue.serverTimestamp() : null
+                        duesPaidAt: isPaid ? firebase.firestore.FieldValue.serverTimestamp() : null,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
                     if (isPaid && member) {
-                        // Check for existing transaction to prevent duplicates
                         const existingTxn = await firestore.collection('transactions')
                             .where('relatedDocId', '==', id)
                             .where('relatedDocType', '==', 'member_dues')
                             .get();
 
                         if (existingTxn.empty) {
-                            // Auto-create transaction only if one doesn't exist
                             await firestore.collection('transactions').add({
                                 orgId: currentOrgId,
                                 type: 'income',
@@ -241,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         }
                     } else if (!isPaid) {
-                        // On toggle OFF, remove the corresponding transaction
                         const txnSnap = await firestore.collection('transactions')
                             .where('relatedDocId', '==', id)
                             .where('relatedDocType', '==', 'member_dues')
@@ -260,8 +290,145 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // --- ADD MEMBER MODAL & VALIDATION ---
+    if (addMemberBtn) {
+        addMemberBtn.onclick = () => {
+            addMemberForm.reset();
+            newPaidCb.checked = true;
+            newPaidLabel.textContent = 'Paid';
+            newPaidLabel.style.color = 'var(--success)';
+            addModal.classList.add('active');
+        };
+    }
+
+    if (closeAddModalBtn) closeAddModalBtn.onclick = () => addModal.classList.remove('active');
+    if (cancelAddModalBtn) cancelAddModalBtn.onclick = () => addModal.classList.remove('active');
+
+    if (newPaidCb) {
+        newPaidCb.onchange = () => {
+            if (newPaidCb.checked) {
+                newPaidLabel.textContent = 'Paid';
+                newPaidLabel.style.color = 'var(--success)';
+            } else {
+                newPaidLabel.textContent = 'Unpaid';
+                newPaidLabel.style.color = 'var(--warning)';
+            }
+        };
+    }
+
+    addMemberForm.onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const name = document.getElementById('new-member-name').value.trim();
+        const email = document.getElementById('new-member-email').value.trim().toLowerCase();
+        const phone = document.getElementById('new-member-phone').value.trim();
+        const studentId = document.getElementById('new-member-studentid').value.trim();
+        const planMonths = parseInt(document.getElementById('new-member-plan').value) || 12;
+        const duesAmount = parseFloat(document.getElementById('new-member-dues').value);
+        const isPaid = newPaidCb.checked;
+
+        // VALIDATIONS
+        if (name.length < 2) {
+            showToast('Full name must be at least 2 characters.', 'error'); return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showToast('Please enter a valid email address.', 'error'); return;
+        }
+        const phoneDigits = phone.replace(/\D/g, '');
+        if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+            showToast('Please enter a valid 10-digit phone number.', 'error'); return;
+        }
+        if (studentId.length < 2) {
+            showToast('Please enter a valid Student ID / Roll No.', 'error'); return;
+        }
+        if (isNaN(duesAmount) || duesAmount < 0) {
+            showToast('Dues amount must be 0 or a positive number.', 'error'); return;
+        }
+
+        const saveBtn = document.getElementById('save-new-member-btn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Saving...</span>';
+
+        try {
+            // Check for duplicate in org
+            const existing = await firestore.collection('members')
+                .where('orgId', '==', currentOrgId)
+                .where('email', '==', email)
+                .get();
+
+            if (!existing.empty) {
+                showToast('A member with this email already exists in this organization.', 'error');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="ph-bold ph-check"></i> <span>Add Member</span>';
+                return;
+            }
+
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const expiryDate = new Date(now.getTime() + (planMonths * 30.5 * 24 * 60 * 60 * 1000));
+            const expiryStr = expiryDate.toISOString().split('T')[0];
+
+            const memberDoc = await firestore.collection('members').add({
+                orgId: currentOrgId,
+                name,
+                email,
+                phone,
+                studentId,
+                duesAmount,
+                duesPaid: isPaid,
+                membershipStatus: isPaid ? 'active' : 'pending',
+                membershipStartDate: todayStr,
+                membershipEndDate: expiryStr,
+                duesPaidAt: isPaid ? firebase.firestore.FieldValue.serverTimestamp() : null,
+                joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                renewalReminderSent: false
+            });
+
+            if (isPaid && duesAmount > 0) {
+                await firestore.collection('transactions').add({
+                    orgId: currentOrgId,
+                    type: 'income',
+                    amount: duesAmount,
+                    category: 'dues',
+                    date: todayStr,
+                    description: `Membership dues: ${name}`,
+                    recordedBy: currentUser.uid,
+                    recordedByName: currentUser.displayName || currentUser.email,
+                    relatedDocId: memberDoc.id,
+                    relatedDocType: 'member_dues',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+
+            showToast(`Member ${name} added successfully!`, 'success');
+            addModal.classList.remove('active');
+        } catch (err) {
+            console.error("Add member error:", err);
+            showToast('Failed to add member.', 'error');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="ph-bold ph-check"></i> <span>Add Member</span>';
+        }
+    };
+
+    // --- SHARE REGISTRATION LINK ---
+    if (shareRegBtn) {
+        shareRegBtn.onclick = () => {
+            if (!currentOrgId) return;
+            const regUrl = `${window.location.origin}/members/register.html?org=${currentOrgId}`;
+            navigator.clipboard.writeText(regUrl).then(() => {
+                showToast('Registration link copied to clipboard!', 'success');
+            }).catch(() => {
+                prompt('Copy this member registration link:', regUrl);
+            });
+        };
+    }
     
-    // --- MODAL ---
+    // --- MEMBER DETAIL / EDIT MODAL ---
     window.openMemberModal = (id) => {
         const member = membersData.find(m => m.id === id);
         if (!member) return;
@@ -270,100 +437,128 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('modal-member-name').textContent = member.name;
         const statusEl = document.getElementById('modal-member-status');
-        statusEl.textContent = member.membershipStatus.toUpperCase();
-        statusEl.className = `modal-subtitle badge ${member.membershipStatus}`;
+        const status = (member.membershipStatus || 'pending').toLowerCase();
+        statusEl.textContent = status.toUpperCase();
+        statusEl.className = `modal-subtitle badge ${status}`;
         
-        document.getElementById('modal-member-email').textContent = member.email;
-        document.getElementById('modal-member-phone').textContent = member.phone || '--';
-        document.getElementById('modal-member-studentid').textContent = member.studentId || '--';
-        document.getElementById('modal-member-joined').textContent = formatDate(member.joinedAt?.toDate());
+        document.getElementById('edit-member-name').value = member.name || '';
+        document.getElementById('edit-member-email').value = member.email || '';
+        document.getElementById('edit-member-phone').value = member.phone || '';
+        document.getElementById('edit-member-studentid').value = member.studentId || '';
+        document.getElementById('edit-member-enddate').value = member.membershipEndDate || '';
         
         document.getElementById('modal-dues-amount').textContent = `₹${member.duesAmount || 0}`;
         document.getElementById('modal-dues-period').textContent = `Valid till: ${formatDate(member.membershipEndDate)}`;
         
         const toggle = document.getElementById('modal-dues-toggle');
-        toggle.checked = member.duesPaid;
+        toggle.checked = member.duesPaid || false;
+        document.getElementById('modal-dues-label').textContent = member.duesPaid ? 'Paid' : 'Mark as Paid';
+        
         toggle.onchange = async (e) => {
             const isPaid = e.target.checked;
             try {
-                const status = isPaid ? 'active' : 'pending';
+                const newStatus = isPaid ? 'active' : 'pending';
                 await firestore.collection('members').doc(id).update({
                     duesPaid: isPaid,
-                    membershipStatus: status,
-                    duesPaidAt: isPaid ? firebase.firestore.FieldValue.serverTimestamp() : null
+                    membershipStatus: newStatus,
+                    duesPaidAt: isPaid ? firebase.firestore.FieldValue.serverTimestamp() : null,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
-                if (isPaid && member) {
-                    // Check for existing transaction to prevent duplicates
-                    const existingTxn = await firestore.collection('transactions')
-                        .where('relatedDocId', '==', id)
-                        .where('relatedDocType', '==', 'member_dues')
-                        .get();
-
-                    if (existingTxn.empty) {
-                        // Auto-create transaction only if one doesn't exist
-                        await firestore.collection('transactions').add({
-                            orgId: currentOrgId,
-                            type: 'income',
-                            amount: member.duesAmount || 0,
-                            category: 'dues',
-                            date: new Date().toISOString().split('T')[0],
-                            description: `Membership dues: ${member.name}`,
-                            recordedBy: currentUser.uid,
-                            recordedByName: currentUser.displayName || currentUser.email,
-                            relatedDocId: id,
-                            relatedDocType: 'member_dues',
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-                } else if (!isPaid) {
-                    // On toggle OFF, remove the corresponding transaction
-                    const txnSnap = await firestore.collection('transactions')
-                        .where('relatedDocId', '==', id)
-                        .where('relatedDocType', '==', 'member_dues')
-                        .get();
-                    const batch = firestore.batch();
-                    txnSnap.forEach(doc => batch.delete(doc.ref));
-                    if (!txnSnap.empty) await batch.commit();
-                }
-                
+                statusEl.textContent = newStatus.toUpperCase();
+                statusEl.className = `modal-subtitle badge ${newStatus}`;
+                document.getElementById('modal-dues-label').textContent = isPaid ? 'Paid' : 'Mark as Paid';
                 showToast(`Dues marked as ${isPaid ? 'paid' : 'unpaid'}.`, 'success');
             } catch(err) {
                 e.target.checked = !isPaid;
-                showToast('Failed to update.', 'error');
+                showToast('Failed to update dues.', 'error');
             }
         };
         
-        modal.classList.add('active');
+        memberModal.classList.add('active');
     };
     
-    closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
+    if (closeMemberModalBtn) closeMemberModalBtn.onclick = () => memberModal.classList.remove('active');
+    if (cancelEditMemberBtn) cancelEditMemberBtn.onclick = () => memberModal.classList.remove('active');
     
-    document.getElementById('modal-delete-btn').addEventListener('click', async () => {
+    // Save edits
+    editMemberForm.onsubmit = async (e) => {
+        e.preventDefault();
         if (!activeMemberDocId) return;
-        if (!confirm('Are you sure you want to delete this member? This cannot be undone.')) return;
-        
-        try {
-            await firestore.collection('members').doc(activeMemberDocId).delete();
-            showToast('Member deleted.', 'success');
-            modal.classList.remove('active');
-        } catch(err) {
-            console.error("Delete error", err);
-            showToast('Failed to delete.', 'error');
+
+        const name = document.getElementById('edit-member-name').value.trim();
+        const email = document.getElementById('edit-member-email').value.trim().toLowerCase();
+        const phone = document.getElementById('edit-member-phone').value.trim();
+        const studentId = document.getElementById('edit-member-studentid').value.trim();
+        const endDate = document.getElementById('edit-member-enddate').value;
+
+        if (name.length < 2) {
+            showToast('Full name must be at least 2 characters.', 'error'); return;
         }
-    });
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showToast('Please enter a valid email address.', 'error'); return;
+        }
+        if (phone) {
+            const phoneDigits = phone.replace(/\D/g, '');
+            if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+                showToast('Phone number must have 10 to 15 digits.', 'error'); return;
+            }
+        }
+        if (!endDate) {
+            showToast('Please specify a membership expiry date.', 'error'); return;
+        }
+
+        const saveBtn = document.getElementById('save-edit-member-btn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Saving...';
+
+        try {
+            await firestore.collection('members').doc(activeMemberDocId).update({
+                name,
+                email,
+                phone: phone || null,
+                studentId: studentId || null,
+                membershipEndDate: endDate,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            showToast('Member details updated successfully.', 'success');
+            memberModal.classList.remove('active');
+        } catch(err) {
+            console.error("Save edit error:", err);
+            showToast('Failed to save changes.', 'error');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="ph-bold ph-check"></i> Save Changes';
+        }
+    };
+
+    if (modalDeleteBtn) {
+        modalDeleteBtn.onclick = async () => {
+            if (!activeMemberDocId) return;
+            if (!confirm('Are you sure you want to delete this member? This action cannot be undone.')) return;
+            
+            try {
+                await firestore.collection('members').doc(activeMemberDocId).delete();
+                showToast('Member removed from directory.', 'success');
+                memberModal.classList.remove('active');
+            } catch(err) {
+                console.error("Delete error", err);
+                showToast('Failed to delete member.', 'error');
+            }
+        };
+    }
 
     // --- BULK ACTIONS ---
     function attachCheckboxListeners() {
         const cbs = document.querySelectorAll('.member-cb');
-        
         cbs.forEach(cb => cb.addEventListener('change', updateBulkBar));
         
-        selectAllCb.addEventListener('change', (e) => {
+        selectAllCb.onchange = (e) => {
             cbs.forEach(cb => cb.checked = e.target.checked);
             updateBulkBar();
-        });
+        };
     }
     
     function updateBulkBar() {
@@ -377,12 +572,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    bulkRemindBtn.addEventListener('click', async () => {
+    bulkRemindBtn.onclick = async () => {
         const checked = Array.from(document.querySelectorAll('.member-cb:checked')).map(cb => cb.value);
         if (checked.length === 0) return;
 
-        if (!window.GOOGLE_SCRIPT_URL) {
-            showToast(`Would remind ${checked.length} members (email service not configured).`, 'info');
+        if (!window.GOOGLE_SCRIPT_URL || window.GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL") {
+            showToast(`Would send dues reminders to ${checked.length} members (Google Apps Script configured).`, 'info');
             checked.forEach(id => { const el = document.querySelector(`.member-cb[value="${id}"]`); if (el) el.checked = false; });
             updateBulkBar();
             return;
@@ -410,40 +605,38 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error(`Remind failed for ${member.email}:`, err);
             }
-            await new Promise(r => setTimeout(r, 300));
+            await new Promise(r => setTimeout(r, 250));
         }
         showToast(`Sent reminders to ${sent} members!`, 'success');
         document.querySelectorAll('.member-cb:checked').forEach(cb => cb.checked = false);
         updateBulkBar();
-    });
+    };
     
-    bulkDeleteBtn.addEventListener('click', async () => {
+    bulkDeleteBtn.onclick = async () => {
         const checked = Array.from(document.querySelectorAll('.member-cb:checked')).map(cb => cb.value);
-        if (!confirm(`Delete ${checked.length} members?`)) return;
+        if (!confirm(`Permanently delete ${checked.length} selected members?`)) return;
         
         const batch = firestore.batch();
-        checked.forEach(id => {
-            batch.delete(firestore.collection('members').doc(id));
-        });
+        checked.forEach(id => batch.delete(firestore.collection('members').doc(id)));
         
         try {
             await batch.commit();
-            showToast('Members deleted.', 'success');
+            showToast('Selected members deleted.', 'success');
             updateBulkBar();
         } catch(err) {
             showToast('Failed to delete members.', 'error');
         }
-    });
+    };
     
-    remindExpiringBtn.addEventListener('click', async () => {
+    remindExpiringBtn.onclick = async () => {
         const expiring = membersData.filter(m => m.membershipStatus === 'active' && isExpiringSoon(m.membershipEndDate));
         if (expiring.length === 0) {
-            showToast('No members expiring soon.', 'info');
+            showToast('No members expiring within the next 30 days.', 'info');
             return;
         }
 
-        if (!window.GOOGLE_SCRIPT_URL) {
-            showToast(`Would remind ${expiring.length} expiring members (email service not configured).`, 'info');
+        if (!window.GOOGLE_SCRIPT_URL || window.GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL") {
+            showToast(`Would send renewal reminders to ${expiring.length} members.`, 'info');
             return;
         }
 
@@ -462,18 +655,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         end_date: member.membershipEndDate
                     })
                 });
-                // Update flag
                 await firestore.collection('members').doc(member.id).update({ renewalReminderSent: true });
                 sent++;
             } catch (err) {
-                console.error(`Renewal remind failed for ${member.email}:`, err);
+                console.error(`Renewal remind failed:`, err);
             }
-            await new Promise(r => setTimeout(r, 300));
+            await new Promise(r => setTimeout(r, 250));
         }
-        showToast(`Sent renewal reminders to ${sent} members!`, 'success');
-    });
+        showToast(`Sent renewal notices to ${sent} members!`, 'success');
+    };
 
-    // --- EVENTS ---
+    // --- EVENTS & FILTERS ---
     searchInput.addEventListener('input', renderMembers);
     filterStatus.addEventListener('change', renderMembers);
     sortDropdown.addEventListener('change', renderMembers);
@@ -489,6 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatDate(dateStringOrObj) {
         if (!dateStringOrObj) return '--';
         const date = new Date(dateStringOrObj);
+        if (isNaN(date.getTime())) return '--';
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
     
@@ -500,6 +693,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays > 0 && diffDays <= 30;
     }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
     
     function showToast(message, type = 'success') {
         const toastContainer = document.getElementById('toast-container');
@@ -507,16 +706,13 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.className = `toast ${type}`;
         
         const icon = type === 'success' ? 'ph-check-circle' : (type === 'error' ? 'ph-x-circle' : 'ph-info');
-        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${escapeHtml(message)}</span>`;
         
         toastContainer.appendChild(toast);
-        
-        // Trigger animation
         setTimeout(() => toast.classList.add('show'), 10);
-        
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        }, 3200);
     }
 });

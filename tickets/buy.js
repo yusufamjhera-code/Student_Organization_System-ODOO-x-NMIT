@@ -1,4 +1,4 @@
-// File: tickets/buy.js
+// File: tickets/buy.js - Production Ticket Purchase Controller
 document.addEventListener('DOMContentLoaded', async () => {
     const firestore = db; // from firebase-config.js
 
@@ -9,8 +9,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ticketCard = document.getElementById('ticket-card');
     const successCard = document.getElementById('success-state');
     
+    // My Tickets Modal Elements
+    const myTicketsBtn = document.getElementById('my-tickets-btn');
+    const myTicketsModal = document.getElementById('my-tickets-modal');
+    const closeMyTicketsModal = document.getElementById('close-my-tickets-modal');
+    const lookupTicketEmail = document.getElementById('lookup-ticket-email');
+    const lookupTicketsBtn = document.getElementById('lookup-tickets-btn');
+    const lookupTicketsResults = document.getElementById('lookup-tickets-results');
+    const successLookupBtn = document.getElementById('success-lookup-btn');
+
+    let lastBuyerEmail = '';
+
+    // Safe HTML Escaper
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
+
     if (!eventId) {
-        spinner.innerHTML = '<p>Error: Missing event ID.</p>';
+        spinner.innerHTML = '<p style="color:var(--danger); text-align:center;">Error: Missing event ID parameter.</p>';
         return;
     }
 
@@ -22,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const doc = await firestore.collection('events').doc(eventId).get();
         if (!doc.exists) {
-            spinner.innerHTML = '<p>Event not found.</p>';
+            spinner.innerHTML = '<p style="color:var(--danger); text-align:center;">Event not found.</p>';
             return;
         }
         eventData = doc.data();
@@ -44,10 +63,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (tConfig.salesOpen === false) canBuy = false;
         if (tConfig.salesStart && today < tConfig.salesStart) canBuy = false;
         if (tConfig.salesEnd && today > tConfig.salesEnd) canBuy = false;
-        if (tConfig.totalSeats && (tConfig.seatsSold || 0) >= tConfig.totalSeats) canBuy = false;
+        if (tConfig.totalSeats && (Number(tConfig.seatsSold) || 0) >= Number(tConfig.totalSeats)) canBuy = false;
 
-        document.getElementById('event-name').textContent = eventData.name;
-        document.getElementById('event-date').textContent = new Date(eventData.eventDate).toLocaleDateString();
+        document.getElementById('event-name').textContent = eventData.name || 'Event';
+        const formattedDate = eventData.eventDate ? new Date(eventData.eventDate).toLocaleDateString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+        }) : 'Date TBA';
+        document.getElementById('event-date').textContent = formattedDate;
 
         document.getElementById('price-member').textContent = `₹${tConfig.memberPrice || 0}`;
         document.getElementById('price-nonmember').textContent = `₹${tConfig.nonmemberPrice || 0}`;
@@ -64,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (err) {
         console.error("Error loading event:", err);
-        spinner.innerHTML = '<p>Failed to load event details.</p>';
+        spinner.innerHTML = '<p style="color:var(--danger); text-align:center;">Failed to load event details.</p>';
     }
 
     // --- PRICE CALCULATION & VERIFICATION ---
@@ -74,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateTotal() {
         if (!tConfig) return;
         const selected = document.querySelector('input[name="ticket-type"]:checked').value;
-        const total = selected === 'member' ? (tConfig.memberPrice || 0) : (tConfig.nonmemberPrice || 0);
+        const total = selected === 'member' ? Number(tConfig.memberPrice || 0) : Number(tConfig.nonmemberPrice || 0);
         document.getElementById('total-amount').textContent = `₹${total}`;
     }
 
@@ -90,7 +112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (!email.includes('@')) {
             verifStatus.style.display = 'none';
-            memberRadio.disabled = false;
             return;
         }
 
@@ -106,20 +127,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const member = q.docs[0].data();
                     if (member.membershipStatus === 'active') {
                         verifStatus.className = 'alert-box success';
-                        verifStatus.innerHTML = '<i class="ph-bold ph-check-circle"></i> Active member verified! Member discount applied.';
+                        verifStatus.innerHTML = '<i class="ph-bold ph-check-circle"></i> Active member verified! Member discount unlocked.';
                         verifStatus.style.display = 'flex';
                         memberRadio.checked = true;
-                        memberRadio.disabled = false;
                     } else {
                         verifStatus.className = 'alert-box warning';
-                        verifStatus.innerHTML = `<i class="ph-bold ph-warning-circle"></i> Membership status is '${member.membershipStatus}'. Please pay dues to use member pricing.`;
+                        verifStatus.innerHTML = `<i class="ph-bold ph-warning-circle"></i> Membership status is '${escapeHtml(member.membershipStatus)}'. Please pay dues to use member pricing.`;
                         verifStatus.style.display = 'flex';
                         nonmemberRadio.checked = true;
-                        memberRadio.disabled = true;
                     }
                 } else {
                     verifStatus.style.display = 'none';
-                    nonmemberRadio.checked = true;
                 }
                 updateTotal();
             } catch(err) {
@@ -128,29 +146,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 500);
     });
 
-    // --- SUBMIT ---
+    // --- SUBMIT TICKET PURCHASE ---
     document.getElementById('buy-ticket-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const name = document.getElementById('buyer-name').value.trim();
         const email = emailInput.value.trim().toLowerCase();
+        const phone = document.getElementById('buyer-phone').value.trim();
         const selectedType = document.querySelector('input[name="ticket-type"]:checked').value;
 
-        // Validation (Task 3.5)
+        // Validation: Name
         if (name.length < 2) {
-            showToast("Name must be at least 2 characters.", "danger"); return;
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            showToast("Please enter a valid email address.", "danger"); return;
+            showToast("Full name must be at least 2 characters.", "danger");
+            return;
         }
 
-        // Re-verify if they selected member manually without triggering the input check (just to be safe)
+        // Validation: Email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            showToast("Please enter a valid email address.", "danger");
+            return;
+        }
+
+        // Validation: Phone
+        const phoneRegex = /^[+]?[\d\s\-()]{10,15}$/;
+        const rawDigits = phone.replace(/\D/g, '');
+        if (!phoneRegex.test(phone) || rawDigits.length < 10) {
+            showToast("Please enter a valid 10-digit phone number.", "danger");
+            return;
+        }
+
+        // Re-verify member eligibility on submit
         if (selectedType === 'member') {
-            if (!orgId) return showToast("Cannot verify membership. Error with org.", "danger");
+            if (!orgId) {
+                showToast("Cannot verify organization membership. Please choose General Admission.", "danger");
+                nonmemberRadio.checked = true;
+                updateTotal();
+                return;
+            }
             const q = await firestore.collection('members').where('orgId', '==', orgId).where('email', '==', email).get();
             if (q.empty || q.docs[0].data().membershipStatus !== 'active') {
-                showToast("You are not an active member. Please select General Admission.", "danger");
+                showToast("Only active club members can purchase Member Tickets.", "danger");
                 nonmemberRadio.checked = true;
                 updateTotal();
                 return;
@@ -159,24 +195,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const btn = document.getElementById('checkout-btn');
         btn.disabled = true;
-        btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Processing Payment...</span>';
+        btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Processing...</span>';
 
         try {
-            // Task 2.3: Duplicate ticket check
+            // Duplicate ticket check
             const existingTicket = await firestore.collection('users')
                 .where('eventDocId', '==', eventId)
                 .where('contact', '==', email)
                 .get();
+
             const alreadyHasTicket = existingTicket.docs.some(d => d.data().ticketType);
             if (alreadyHasTicket) {
-                showToast("You've already purchased a ticket for this event.", "danger");
+                showToast("You've already purchased a ticket for this event with this email.", "danger");
                 btn.disabled = false;
                 btn.innerHTML = '<i class="ph-bold ph-credit-card"></i> <span>Proceed to Payment</span>';
                 return;
             }
+
             // Calculate price
             const evConfig = eventData.ticketConfig || {};
-            const pricePaid = selectedType === 'member' ? (evConfig.memberPrice || 0) : (evConfig.nonmemberPrice || 0);
+            const pricePaid = selectedType === 'member' ? Number(evConfig.memberPrice || 0) : Number(evConfig.nonmemberPrice || 0);
 
             // Realistic UPI Payment Gateway Simulation
             let paymentDetails = null;
@@ -192,9 +230,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Issuing Ticket...</span>';
             }
 
-            // Check seats again using transaction
+            // Run atomic transaction to claim seat
             const eventRef = firestore.collection('events').doc(eventId);
-            
             const qrToken = 'TKT_' + Math.random().toString(36).substr(2, 9).toUpperCase();
             
             // Build permissions from event stations
@@ -208,28 +245,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
 
+            let createdUserId = null;
+
             await firestore.runTransaction(async (transaction) => {
                 const evDoc = await transaction.get(eventRef);
                 const evData = evDoc.data();
                 const currentConfig = evData.ticketConfig || {};
-                const sold = currentConfig.seatsSold || 0;
+                const sold = Number(currentConfig.seatsSold) || 0;
                 
-                if (currentConfig.totalSeats && sold >= currentConfig.totalSeats) {
+                if (currentConfig.totalSeats && sold >= Number(currentConfig.totalSeats)) {
                     throw new Error("SoldOut");
                 }
                 
-                // Increment sold
+                // Increment seats sold
                 currentConfig.seatsSold = sold + 1;
                 transaction.update(eventRef, { ticketConfig: currentConfig });
                 
-                // Create user
+                // Create user/pass document
                 const userRef = firestore.collection('users').doc();
+                createdUserId = userRef.id;
+
                 transaction.set(userRef, {
                     organizerId: evData.organizerId,
                     eventDocId: eventId,
                     eventId: evData.eventId,
                     name: name,
                     contact: email,
+                    phone: phone,
                     qrToken: qrToken,
                     permissions: permissions,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -241,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 // Auto-create transaction for Treasury
-                if (pricePaid > 0) {
+                if (pricePaid > 0 && orgId) {
                     const txnRef = firestore.collection('transactions').doc();
                     transaction.set(txnRef, {
                         orgId: orgId,
@@ -250,7 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         category: 'tickets',
                         date: new Date().toISOString().split('T')[0],
                         description: `Ticket Purchase (${selectedType}): ${evData.name}${paymentDetails ? ` [UPI UTR: ${paymentDetails.utr}]` : ''}`,
-                        recordedBy: 'System',
+                        recordedBy: 'Ticket Storefront Checkout',
                         recordedByName: name,
                         paymentMethod: 'UPI',
                         paymentRef: paymentDetails ? paymentDetails.utr : null,
@@ -262,7 +304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            // Trigger Email via GAS (Optional: call GOOGLE_SCRIPT_URL here)
+            // Trigger Email via GAS (Optional)
             if (window.GOOGLE_SCRIPT_URL) {
                 const payload = {
                     security_token: "PT_SECURE_2026",
@@ -277,22 +319,47 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }).catch(console.error);
             }
 
+            lastBuyerEmail = email;
+
             // Success UI
             ticketCard.style.display = 'none';
             successCard.style.display = 'block';
             
             document.getElementById('qr-preview').innerHTML = `
-                <a href="../viewer/viewer.html?token=${qrToken}" target="_blank" style="color:var(--primary); text-decoration:none; font-weight:bold;">
-                    View Digital Pass
-                </a>
-                <br><br>
-                <a href="../index.html" style="display:inline-block; padding:10px 24px; background:var(--primary, #6a11cb); color:#fff; border-radius:10px; text-decoration:none; font-weight:600;">← Back to Home</a>
+                <div style="text-align:left; font-size:0.9rem; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--text-muted);">Event:</span>
+                        <strong style="color:#fff;">${escapeHtml(eventData.name)}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--text-muted);">Pass Holder:</span>
+                        <strong style="color:#fff;">${escapeHtml(name)}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--text-muted);">Pass Tier:</span>
+                        <strong style="color:var(--primary);">${selectedType === 'member' ? 'Member Ticket' : 'General Admission'}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="color:var(--text-muted);">Amount Paid:</span>
+                        <strong style="color:#10b981;">₹${pricePaid}</strong>
+                    </div>
+                    ${paymentDetails ? `
+                        <div style="background:rgba(56,189,248,0.1); border:1px dashed #38bdf8; border-radius:8px; padding:8px 12px; font-family:monospace; font-size:0.8rem; color:#38bdf8; margin-top:8px;">
+                            UPI UTR: ${escapeHtml(paymentDetails.utr)}
+                        </div>
+                    ` : ''}
+                </div>
+                <div style="margin-top:15px; padding-top:15px; border-top:1px dashed var(--border);">
+                    <a href="../viewer/viewer.html?token=${qrToken}" target="_blank" class="primary-btn" style="text-decoration:none; display:inline-flex; width:100%; justify-content:center; gap:8px;">
+                        <i class="ph-bold ph-qr-code"></i> <span>Open Digital QR Pass</span>
+                    </a>
+                </div>
             `;
             
         } catch (err) {
             console.error("Checkout error:", err);
             if (err.message === "SoldOut") {
-                showToast("Sorry, tickets are sold out!", "danger");
+                showToast("Sorry, tickets for this event are sold out!", "danger");
                 document.getElementById('sales-closed-msg').style.display = 'flex';
             } else if (err.message === "PAYMENT_CANCELLED") {
                 showToast("Payment process cancelled.", "warning");
@@ -306,12 +373,108 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // --- MY TICKETS MODAL LOGIC ---
+    if (myTicketsBtn && myTicketsModal) {
+        myTicketsBtn.onclick = () => {
+            if (lastBuyerEmail && !lookupTicketEmail.value) {
+                lookupTicketEmail.value = lastBuyerEmail;
+            }
+            myTicketsModal.style.display = 'flex';
+            if (lookupTicketEmail.value) {
+                performTicketLookup();
+            }
+        };
+
+        closeMyTicketsModal.onclick = () => {
+            myTicketsModal.style.display = 'none';
+        };
+    }
+
+    if (successLookupBtn) {
+        successLookupBtn.onclick = () => {
+            if (lastBuyerEmail) lookupTicketEmail.value = lastBuyerEmail;
+            myTicketsModal.style.display = 'flex';
+            performTicketLookup();
+        };
+    }
+
+    if (lookupTicketsBtn) {
+        lookupTicketsBtn.onclick = performTicketLookup;
+    }
+
+    if (lookupTicketEmail) {
+        lookupTicketEmail.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') performTicketLookup();
+        });
+    }
+
+    async function performTicketLookup() {
+        const email = lookupTicketEmail.value.trim().toLowerCase();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailRegex.test(email)) {
+            showToast("Please enter a valid email address.", "danger");
+            return;
+        }
+
+        lookupTicketsBtn.disabled = true;
+        lookupTicketsBtn.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i>';
+        lookupTicketsResults.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:15px 0;"><i class="ph-bold ph-spinner-gap spin"></i> Searching for tickets...</p>';
+
+        try {
+            const snap = await firestore.collection('users')
+                .where('contact', '==', email)
+                .where('eventDocId', '==', eventId)
+                .get();
+
+            lookupTicketsBtn.disabled = false;
+            lookupTicketsBtn.innerHTML = '<i class="ph-bold ph-magnifying-glass"></i> <span>Search</span>';
+
+            if (snap.empty) {
+                lookupTicketsResults.innerHTML = `
+                    <div style="text-align:center; padding:25px 0; color:var(--text-muted);">
+                        <i class="ph-bold ph-ticket" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:8px; display:inline-block;"></i>
+                        <p style="margin:0;">No tickets found for <strong>${escapeHtml(email)}</strong> for this event.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            lookupTicketsResults.innerHTML = snap.docs.map(doc => {
+                const data = doc.data();
+                const dateStr = data.createdAt ? new Date(data.createdAt.toMillis()).toLocaleDateString() : 'Issued';
+                return `
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; text-align:left;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <strong style="color:#fff; font-size:1.05rem;">${escapeHtml(data.name || 'Attendee')}</strong>
+                            <span style="background:rgba(106,17,203,0.15); color:var(--primary); padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:700;">
+                                ${data.ticketType === 'member' ? 'Member Ticket' : 'General Admission'}
+                            </span>
+                        </div>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+                            <div>Pass Token: <code style="color:#38bdf8;">${escapeHtml(data.qrToken)}</code></div>
+                            <div>Booked: ${dateStr}</div>
+                        </div>
+                        <a href="../viewer/viewer.html?token=${encodeURIComponent(data.qrToken)}" target="_blank" class="secondary-btn" style="text-decoration:none; display:inline-flex; width:100%; justify-content:center; padding:8px 12px; font-size:0.85rem;">
+                            <i class="ph-bold ph-qr-code"></i> <span>View Digital Pass</span>
+                        </a>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error("Ticket lookup error:", err);
+            lookupTicketsBtn.disabled = false;
+            lookupTicketsBtn.innerHTML = '<i class="ph-bold ph-magnifying-glass"></i> <span>Search</span>';
+            lookupTicketsResults.innerHTML = '<p style="text-align:center; color:var(--danger); padding:15px 0;">Error retrieving tickets.</p>';
+        }
+    }
+
     function showToast(message, type = 'success') {
         const toastContainer = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         const icon = type === 'success' ? 'ph-check-circle' : 'ph-x-circle';
-        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${escapeHtml(message)}</span>`;
         toastContainer.appendChild(toast);
         setTimeout(() => toast.classList.add('show'), 10);
         setTimeout(() => {

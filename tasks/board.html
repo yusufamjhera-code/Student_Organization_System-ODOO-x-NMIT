@@ -28,11 +28,27 @@
         </div>
     </header>
 
+    <!-- Mobile Column Switcher -->
+    <div class="kanban-mobile-tabs">
+        <button class="mobile-tab-btn active" data-col="col-todo">
+            To Do <span class="tab-badge" id="m-count-todo">0</span>
+        </button>
+        <button class="mobile-tab-btn" data-col="col-inprogress">
+            In Progress <span class="tab-badge" id="m-count-inprogress">0</span>
+        </button>
+        <button class="mobile-tab-btn" data-col="col-done">
+            Done <span class="tab-badge" id="m-count-done">0</span>
+        </button>
+    </div>
+
     <main class="container kanban-container">
         
-        <div class="kanban-column" id="col-todo">
+        <div class="kanban-column active" id="col-todo">
             <div class="column-header">
-                <h3>To Do</h3>
+                <div class="col-title-wrap">
+                    <span class="col-dot todo"></span>
+                    <h3>To Do</h3>
+                </div>
                 <span class="task-count" id="count-todo">0</span>
             </div>
             <div class="column-body" data-status="todo"></div>
@@ -40,7 +56,10 @@
 
         <div class="kanban-column" id="col-inprogress">
             <div class="column-header">
-                <h3>In Progress</h3>
+                <div class="col-title-wrap">
+                    <span class="col-dot inprogress"></span>
+                    <h3>In Progress</h3>
+                </div>
                 <span class="task-count" id="count-inprogress">0</span>
             </div>
             <div class="column-body" data-status="inprogress"></div>
@@ -48,7 +67,10 @@
 
         <div class="kanban-column" id="col-done">
             <div class="column-header">
-                <h3>Done</h3>
+                <div class="col-title-wrap">
+                    <span class="col-dot done"></span>
+                    <h3>Done</h3>
+                </div>
                 <span class="task-count" id="count-done">0</span>
             </div>
             <div class="column-body" data-status="done"></div>
@@ -58,8 +80,8 @@
 
     <!-- Task Modal -->
     <div id="task-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="close-modal" id="close-task-modal">
+        <div class="modal-content" style="max-width: 540px;">
+            <button class="close-modal" id="close-task-modal" aria-label="Close Modal">
                 <i class="ph ph-x"></i>
             </button>
             <div class="modal-header">
@@ -67,23 +89,44 @@
                     <i class="ph-fill ph-check-square"></i>
                 </div>
                 <h3 id="task-modal-title">New Task</h3>
+                <span class="modal-subtitle">Assign and track organization deliverables</span>
             </div>
             
             <form id="task-form">
                 <div class="input-group">
                     <label for="task-title">Task Title *</label>
-                    <input type="text" id="task-title" required placeholder="e.g. Order new ID cards">
+                    <input type="text" id="task-title" required placeholder="e.g. Order badges and custom lanyards" maxlength="120">
                 </div>
                 
                 <div class="input-group">
-                    <label for="task-desc">Description</label>
-                    <textarea id="task-desc" rows="3" placeholder="Additional details..."></textarea>
+                    <label for="task-desc">Description / Instructions</label>
+                    <textarea id="task-desc" rows="3" placeholder="Additional context, links, or notes..."></textarea>
                 </div>
 
                 <div class="time-inputs-row">
                     <div class="input-group">
-                        <label for="task-assignee">Assignee</label>
-                        <input type="text" id="task-assignee" placeholder="Name or Email">
+                        <label for="task-priority">Priority *</label>
+                        <select id="task-priority" class="custom-select">
+                            <option value="medium">Medium Priority</option>
+                            <option value="high">High Priority</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="low">Low Priority</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="task-status">Status *</label>
+                        <select id="task-status" class="custom-select">
+                            <option value="todo">To Do</option>
+                            <option value="inprogress">In Progress</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="time-inputs-row">
+                    <div class="input-group">
+                        <label for="task-assignee">Assignee (Name or Email)</label>
+                        <input type="text" id="task-assignee" placeholder="e.g. Yash or yash@nmit.ac.in">
                     </div>
                     <div class="input-group">
                         <label for="task-due">Due Date</label>
@@ -91,16 +134,7 @@
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label for="task-status">Status</label>
-                    <select id="task-status" class="custom-select">
-                        <option value="todo">To Do</option>
-                        <option value="inprogress">In Progress</option>
-                        <option value="done">Done</option>
-                    </select>
-                </div>
-
-                <div class="modal-actions">
+                <div class="modal-actions" style="margin-top: 20px;">
                     <button type="button" class="danger-btn" id="delete-task-btn" style="display:none; margin-right:auto;">
                         <i class="ph-bold ph-trash"></i> Delete
                     </button>

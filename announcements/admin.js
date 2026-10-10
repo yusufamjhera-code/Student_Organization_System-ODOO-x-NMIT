@@ -1,4 +1,4 @@
-// File: announcements/admin.js
+// File: announcements/admin.js - Production Announcement Management Controller
 document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     const firestore = db;
@@ -9,19 +9,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('post-form');
     const titleInput = document.getElementById('post-title');
     const contentInput = document.getElementById('post-content');
+    const categorySelect = document.getElementById('post-category');
+    const pinnedCb = document.getElementById('post-pinned');
     const notifyCb = document.getElementById('post-notify');
     const deleteBtn = document.getElementById('delete-post-btn');
     const saveBtn = document.getElementById('save-post-btn');
     
+    // Header actions
+    const viewBoardLink = document.getElementById('view-board-link');
+    const shareBoardBtn = document.getElementById('share-board-btn');
+    
+    // Controls
+    const searchInput = document.getElementById('announcement-search');
+    const filterSelect = document.getElementById('announcement-filter');
+    
+    // Markdown Tabs
+    const tabWrite = document.getElementById('tab-write');
+    const tabPreview = document.getElementById('tab-preview');
+    const previewPane = document.getElementById('post-preview-pane');
+
     let currentOrgId = null;
+    let currentUser = null;
     let announcementsData = [];
     let editDocId = null;
 
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        if (!user || sessionStorage.getItem('authType') !== 'admin') {
-            window.location.href = '../index.html';
+        if (!user) {
+            window.location.href = '../auth/login.html';
             return;
+        }
+
+        currentUser = user;
+        if (sessionStorage.getItem('authType') !== 'collaborator') {
+            sessionStorage.setItem('authType', 'admin');
         }
 
         try {
@@ -35,13 +56,55 @@ document.addEventListener('DOMContentLoaded', () => {
             currentOrgId = orgDoc.id;
             orgNameMeta.textContent = orgDoc.data().name;
 
+            // Wire up public links
+            if (viewBoardLink) {
+                viewBoardLink.href = `board.html?org=${currentOrgId}`;
+            }
+
             setupRealtimeListeners();
             
         } catch (error) {
             console.error("Initialization error:", error);
-            showToast('Failed to load data.', 'error');
+            showToast('Failed to load announcements data.', 'error');
         }
     });
+
+    if (shareBoardBtn) {
+        shareBoardBtn.onclick = () => {
+            if (!currentOrgId) return;
+            const boardUrl = `${window.location.origin}/announcements/board.html?org=${currentOrgId}`;
+            navigator.clipboard.writeText(boardUrl).then(() => {
+                showToast('Notice Board link copied to clipboard!', 'success');
+            }).catch(() => {
+                prompt('Notice Board public link:', boardUrl);
+            });
+        };
+    }
+
+    // --- MARKDOWN TABS ---
+    if (tabWrite && tabPreview && previewPane) {
+        tabWrite.onclick = () => {
+            tabWrite.classList.add('active');
+            tabPreview.classList.remove('active');
+            contentInput.style.display = 'block';
+            previewPane.style.display = 'none';
+        };
+
+        tabPreview.onclick = () => {
+            tabPreview.classList.add('active');
+            tabWrite.classList.remove('active');
+            contentInput.style.display = 'none';
+            previewPane.style.display = 'block';
+
+            const rawText = contentInput.value.trim();
+            if (!rawText) {
+                previewPane.innerHTML = '<p style="color:var(--text-muted); font-style:italic;">Nothing to preview yet.</p>';
+            } else {
+                const parsed = typeof marked !== 'undefined' ? marked.parse(rawText) : rawText;
+                previewPane.innerHTML = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(parsed) : parsed;
+            }
+        };
+    }
 
     // --- REAL-TIME DATA ---
     function setupRealtimeListeners() {
@@ -53,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderList();
             }, error => {
                 console.error("Firestore error:", error);
-                // Fallback if index is missing
                 if (error.message.includes('index')) {
                     firestore.collection('announcements').where('orgId', '==', currentOrgId).get().then(snap => {
                         announcementsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
@@ -65,30 +127,100 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderList() {
-        if (announcementsData.length === 0) {
-            listEl.innerHTML = '<div class="empty-state"><i class="ph ph-megaphone"></i><p>No announcements posted yet.</p></div>';
+        let filtered = [...announcementsData];
+
+        // Filter by Tag
+        if (filterSelect && filterSelect.value !== 'all') {
+            filtered = filtered.filter(p => (p.category || 'General') === filterSelect.value);
+        }
+
+        // Search
+        if (searchInput && searchInput.value.trim()) {
+            const query = searchInput.value.trim().toLowerCase();
+            filtered = filtered.filter(p => 
+                (p.title || '').toLowerCase().includes(query) || 
+                (p.content || '').toLowerCase().includes(query)
+            );
+        }
+
+        // Sort: Pinned posts first, then newest
+        filtered.sort((a, b) => {
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
+            return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
+        });
+
+        if (filtered.length === 0) {
+            listEl.innerHTML = `
+                <div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                    <i class="ph-bold ph-megaphone" style="font-size: 2.5rem; margin-bottom: 10px; display: block; color: var(--primary);"></i>
+                    <p style="font-weight: 600; margin-bottom: 12px;">No announcements published yet.</p>
+                    <button type="button" id="seed-sample-btn" class="secondary-btn" style="display: inline-flex; margin: 0 auto; gap: 8px;">
+                        <i class="ph-bold ph-sparkle"></i> <span>Publish Sample Hackathon Notice</span>
+                    </button>
+                </div>
+            `;
+            const seedBtn = document.getElementById('seed-sample-btn');
+            if (seedBtn) {
+                seedBtn.onclick = async () => {
+                    seedBtn.disabled = true;
+                    seedBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Publishing...</span>';
+                    try {
+                        await firestore.collection('announcements').add({
+                            orgId: currentOrgId,
+                            title: '🎉 Welcome to Hack 2026: Official Check-in & Event Briefing',
+                            content: `Welcome all participants and club members to **Hack 2026**!\n\n### Important Instructions & Event Timeline:\n1. **Check-in Timing:** Station check-ins open sharply at \`09:00 AM IST\` at the main auditorium.\n2. **Digital Pass Required:** Keep your QR pass handy on your mobile phone via the Pass Viewer.\n3. **Merchandise Desk:** Official hoodies and badges can be claimed at Booth #2 upon showing your order QR.\n4. **Food & Snacks:** Lunch coupons will be distributed to active members at 1:00 PM.\n\nGood luck, have fun, and build something epic! 🚀`,
+                            category: 'Important',
+                            pinned: true,
+                            authorName: currentUser.displayName || 'Event Organizer',
+                            authorEmail: currentUser.email || null,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        showToast('Sample announcement published to Firebase!', 'success');
+                    } catch (err) {
+                        console.error("Error creating sample:", err);
+                        showToast('Failed to publish sample announcement.', 'error');
+                        seedBtn.disabled = false;
+                    }
+                };
+            }
             return;
         }
         
         listEl.innerHTML = '';
-        announcementsData.forEach(post => {
+        filtered.forEach(post => {
             const el = document.createElement('div');
-            el.className = 'list-item card';
-            el.style.flexDirection = 'column';
-            el.style.alignItems = 'flex-start';
-            el.style.gap = '10px';
+            el.className = `announcement-card ${post.pinned ? 'pinned' : ''}`;
             
-            const dateStr = post.createdAt ? new Date(post.createdAt.toMillis()).toLocaleString() : 'Just now';
-            const htmlContent = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(marked.parse(post.content)) : marked.parse(post.content);
+            const dateStr = post.createdAt ? new Date(post.createdAt.toMillis()).toLocaleString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            }) : 'Just now';
+            
+            const category = post.category || 'General';
+            const parsed = typeof marked !== 'undefined' ? marked.parse(post.content || '') : (post.content || '');
+            const sanitized = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(parsed) : parsed;
 
             el.innerHTML = `
-                <div style="display:flex; justify-content:space-between; width:100%;">
-                    <h3 style="margin:0; font-size:1.1rem;">${post.title}</h3>
-                    <button class="icon-only-btn edit-btn" data-id="${post.id}"><i class="ph-bold ph-pencil-simple"></i></button>
+                <div class="announcement-card-header">
+                    <div style="flex: 1;">
+                        <div class="announcement-title-row">
+                            ${post.pinned ? '<span class="pinned-badge"><i class="ph-bold ph-push-pin"></i> Pinned</span>' : ''}
+                            <span class="tag-badge ${category}">${category}</span>
+                            <h3 class="announcement-title">${escapeHtml(post.title || 'Untitled')}</h3>
+                        </div>
+                        <div class="announcement-meta" style="margin-top: 6px;">
+                            <span><i class="ph-bold ph-calendar-blank"></i> ${dateStr}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="secondary-btn edit-btn" style="padding: 6px 12px; font-size: 0.85rem;" data-id="${post.id}">
+                            <i class="ph-bold ph-pencil-simple"></i> <span>Edit</span>
+                        </button>
+                    </div>
                 </div>
-                <small style="color:var(--text-muted);">${dateStr}</small>
-                <div class="markdown-preview" style="background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; width:100%; max-height:150px; overflow-y:auto;">
-                    ${htmlContent}
+                <div class="announcement-content-box">
+                    ${sanitized}
                 </div>
             `;
             listEl.appendChild(el);
@@ -97,13 +229,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- ACTIONS ---
+    if (searchInput) searchInput.addEventListener('input', renderList);
+    if (filterSelect) filterSelect.addEventListener('change', renderList);
+
+    // --- ACTIONS: MODAL ---
     document.getElementById('post-new-btn').onclick = () => {
         editDocId = null;
         form.reset();
+        if (tabWrite) tabWrite.click();
         document.getElementById('post-modal-title').textContent = 'New Announcement';
         deleteBtn.style.display = 'none';
-        saveBtn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt"></i> <span>Post</span>';
+        saveBtn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt"></i> <span>Post Announcement</span>';
         modal.classList.add('active');
     };
 
@@ -112,10 +248,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openEditModal(post) {
         editDocId = post.id;
-        titleInput.value = post.title;
-        contentInput.value = post.content;
-        notifyCb.checked = false; // Usually don't re-notify on edit
+        titleInput.value = post.title || '';
+        contentInput.value = post.content || '';
+        if (categorySelect) categorySelect.value = post.category || 'General';
+        if (pinnedCb) pinnedCb.checked = !!post.pinned;
+        notifyCb.checked = false; // Don't blast re-notifications on edit
         
+        if (tabWrite) tabWrite.click();
         document.getElementById('post-modal-title').textContent = 'Edit Announcement';
         deleteBtn.style.display = 'block';
         saveBtn.innerHTML = '<i class="ph-bold ph-check"></i> <span>Save Changes</span>';
@@ -125,34 +264,45 @@ document.addEventListener('DOMContentLoaded', () => {
     form.onsubmit = async (e) => {
         e.preventDefault();
 
+        const title = titleInput.value.trim();
+        const content = contentInput.value.trim();
+        const category = categorySelect ? categorySelect.value : 'General';
+        const pinned = pinnedCb ? pinnedCb.checked : false;
+
+        // RIGOROUS VALIDATION
+        if (title.length < 3) {
+            showToast('Announcement title must be at least 3 characters.', 'error');
+            return;
+        }
+        if (title.length > 100) {
+            showToast('Announcement title cannot exceed 100 characters.', 'error');
+            return;
+        }
+        if (content.length < 10) {
+            showToast('Announcement message must be at least 10 characters.', 'error');
+            return;
+        }
+
         const data = {
             orgId: currentOrgId,
-            title: titleInput.value.trim(),
-            content: contentInput.value.trim(),
+            title: title,
+            content: content,
+            category: category,
+            pinned: pinned,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        // Validation (Task 3.5)
-        if (data.title.length < 2) {
-            showToast('Title must be at least 2 characters.', 'error');
-            return;
-        }
-        if (data.content.length < 2) {
-            showToast('Content cannot be empty.', 'error');
-            return;
-        }
-
         saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i>';
+        saveBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Saving...';
 
         try {
             if (editDocId) {
                 await firestore.collection('announcements').doc(editDocId).update(data);
-                showToast('Announcement updated', 'success');
+                showToast('Announcement updated successfully.', 'success');
             } else {
                 data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                 await firestore.collection('announcements').add(data);
-                showToast('Announcement posted', 'success');
+                showToast('Announcement published to board!', 'success');
                 
                 if (notifyCb.checked) {
                     await notifyMembers(data.title);
@@ -161,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.classList.remove('active');
         } catch (err) {
             console.error(err);
-            showToast('Failed to save announcement', 'error');
+            showToast('Failed to save announcement.', 'error');
         } finally {
             saveBtn.disabled = false;
         }
@@ -169,14 +319,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     deleteBtn.onclick = async () => {
         if (!editDocId) return;
-        if (!confirm('Delete this announcement?')) return;
+        if (!confirm('Are you sure you want to delete this announcement?')) return;
         
         try {
             await firestore.collection('announcements').doc(editDocId).delete();
-            showToast('Announcement deleted', 'success');
+            showToast('Announcement deleted from board.', 'success');
             modal.classList.remove('active');
         } catch(err) {
-            showToast('Failed to delete', 'error');
+            showToast('Failed to delete announcement.', 'error');
         }
     };
 
@@ -192,8 +342,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (!window.GOOGLE_SCRIPT_URL) {
-                showToast(`Would notify ${membersSnap.size} members (email service not configured).`, 'info');
+            if (!window.GOOGLE_SCRIPT_URL || window.GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL") {
+                showToast(`Would notify ${membersSnap.size} active members.`, 'info');
                 return;
             }
 
@@ -217,30 +367,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (emailErr) {
                     console.error(`Failed to notify ${member.email}:`, emailErr);
                 }
-                await new Promise(r => setTimeout(r, 300)); // Rate limit
+                await new Promise(r => setTimeout(r, 250));
             }
-            showToast(`Notifications sent to ${sent} members!`, 'success');
+            showToast(`Broadcast sent to ${sent} active members!`, 'success');
         } catch (err) {
             console.error("Notify error:", err);
-            showToast('Failed to send notifications.', 'error');
+            showToast('Failed to send broadcast.', 'error');
         }
     }
 
-    // --- UTILS ---
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     function showToast(message, type = 'success') {
         const toastContainer = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         
         const icon = type === 'success' ? 'ph-check-circle' : (type === 'error' ? 'ph-x-circle' : 'ph-info');
-        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${message}</span>`;
+        toast.innerHTML = `<i class="ph-bold ${icon}"></i> <span>${escapeHtml(message)}</span>`;
         
         toastContainer.appendChild(toast);
         setTimeout(() => toast.classList.add('show'), 10);
-        
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        }, 3200);
     }
 });
