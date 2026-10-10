@@ -24,10 +24,10 @@
                         Pass<em>Track</em>
                     </span>
                 </a>
-                <a href="#auth-card-box" class="btn btn--accent btn--sm mobile-quick-auth-btn" id="mobile-auth-jump-btn" aria-label="Quick jump to Login or Register">
+                <button type="button" class="btn btn--accent btn--sm mobile-quick-auth-btn" id="mobile-auth-jump-btn" aria-label="Open Login or Register dialog">
                     <i class="ph-bold ph-sign-in"></i>
                     <span>Login / Register</span>
-                </a>
+                </button>
             </div>
 
             <!-- Hero Headline -->
@@ -111,6 +111,11 @@
              ================================================================ -->
         <main class="auth-panel" id="auth-panel">
             <div class="auth-card-box" id="auth-card-box">
+                <!-- Mobile Modal Close Button -->
+                <button type="button" class="mobile-modal-close-btn" id="mobile-auth-close-btn" aria-label="Close login popup">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+
                 <!-- Header -->
                 <div class="auth-card-header">
                     <h2>Welcome to <em>PassTrack</em></h2>

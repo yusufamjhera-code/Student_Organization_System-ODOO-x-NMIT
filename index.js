@@ -364,29 +364,98 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // --- MOBILE QUICK JUMP BUTTON HANDLER ---
+    // =========================================================================
+    // MOBILE AUTH POPUP MODAL CONTROLLER
+    // =========================================================================
+    const authPanel = document.getElementById('auth-panel');
+    const authCardBox = document.getElementById('auth-card-box');
+    const mobileAuthCloseBtn = document.getElementById('mobile-auth-close-btn');
+
+    function openMobileAuthModal() {
+        if (!authPanel) return;
+        authPanel.classList.add('mobile-modal-active');
+        document.body.classList.add('mobile-auth-open');
+        setTimeout(() => {
+            const emailInput = document.getElementById('delegated-email');
+            if (emailInput) {
+                emailInput.focus();
+                emailInput.classList.add('pulse-focus');
+                setTimeout(() => emailInput.classList.remove('pulse-focus'), 1000);
+            }
+        }, 120);
+    }
+
+    function closeMobileAuthModal() {
+        if (!authPanel) return;
+        authPanel.classList.remove('mobile-modal-active');
+        document.body.classList.remove('mobile-auth-open');
+    }
+
+    // Expose helpers globally
+    window.openMobileAuthModal = openMobileAuthModal;
+    window.closeMobileAuthModal = closeMobileAuthModal;
+
+    // Mobile trigger button handler
     if (mobileAuthJumpBtn) {
         mobileAuthJumpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // If already signed in with active session, jump straight to workspace
             if (auth && auth.currentUser && !auth.currentUser.isAnonymous) {
-                e.preventDefault();
                 window.location.href = destinationUrl;
                 return;
             }
+            // Otherwise, open the login popup modal
+            openMobileAuthModal();
+        });
+    }
+
+    // Mobile modal close button handler
+    if (mobileAuthCloseBtn) {
+        mobileAuthCloseBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            const authCard = document.getElementById('auth-card-box');
-            if (authCard) {
-                authCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => {
-                    const emailInput = document.getElementById('delegated-email');
-                    if (emailInput) {
-                        emailInput.focus();
-                        emailInput.classList.add('pulse-focus');
-                        setTimeout(() => emailInput.classList.remove('pulse-focus'), 1000);
-                    }
-                }, 350);
+            e.stopPropagation();
+            closeMobileAuthModal();
+        });
+    }
+
+    // Backdrop click handler: close when clicking on the dimmed backdrop overlay
+    if (authPanel) {
+        authPanel.addEventListener('click', (e) => {
+            if (window.innerWidth <= 992 && authPanel.classList.contains('mobile-modal-active')) {
+                // If click is directly on the outer backdrop container (not inside the card box)
+                if (e.target === authPanel) {
+                    closeMobileAuthModal();
+                }
             }
         });
     }
+
+    // Escape key closes modal on responsive screen
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (authPanel && authPanel.classList.contains('mobile-modal-active')) {
+                closeMobileAuthModal();
+            }
+        }
+    });
+
+    // Cleanup modal classes if user expands screen to desktop width
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 992) {
+            closeMobileAuthModal();
+        }
+    });
+
+    // Automatically open modal if requested via hash or query param (?login=1 or #login)
+    const checkLoginUrlTrigger = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('login') === '1' || window.location.hash === '#login' || window.location.hash === '#auth') {
+            if (window.innerWidth <= 992) {
+                setTimeout(openMobileAuthModal, 200);
+            }
+        }
+    };
+    checkLoginUrlTrigger();
 });
 
 // =========================================================================

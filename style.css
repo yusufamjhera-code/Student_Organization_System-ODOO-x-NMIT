@@ -227,8 +227,9 @@ body.sonnet-home {
     flex-wrap: wrap;
 }
 
-/* Mobile Quick Auth Button: strictly hidden on desktop */
-.mobile-quick-auth-btn {
+/* Mobile Quick Auth & Close Buttons: strictly hidden on desktop */
+.mobile-quick-auth-btn,
+.mobile-modal-close-btn {
     display: none !important;
 }
 
@@ -599,21 +600,32 @@ body.sonnet-home {
         -webkit-overflow-scrolling: touch;
     }
 
+    body.mobile-auth-open {
+        overflow: hidden !important;
+        touch-action: none;
+    }
+
     .sonnet-layout {
         height: auto;
         min-height: 100vh;
         min-height: 100dvh;
         grid-template-columns: 1fr;
         overflow: visible;
+        display: block;
     }
 
     .editorial-panel {
         height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
         overflow: visible;
         border-right: none;
-        border-bottom: 1px solid var(--line);
+        border-bottom: none;
         padding: clamp(24px, 4vw, 36px) clamp(18px, 4vw, 32px);
         gap: clamp(20px, 3.5vw, 28px);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
     .editorial-brand-row {
@@ -622,6 +634,11 @@ body.sonnet-home {
         align-items: center;
         justify-content: space-between;
         gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: var(--surface);
+        padding: 14px 0 10px;
     }
 
     /* Mobile Quick Access Sign-In Button */
@@ -677,18 +694,80 @@ body.sonnet-home {
         gap: 12px;
     }
 
+    /* Mobile Responsive Auth Panel: Elevated Backdrop Modal */
     .auth-panel {
-        height: auto;
-        overflow: visible;
-        padding: clamp(32px, 5vw, 48px) clamp(16px, 4vw, 28px);
-        background-color: var(--bg);
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        z-index: 10000 !important;
+        background: rgba(23, 19, 15, 0.58) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 16px !important;
+        box-sizing: border-box !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transition: opacity 0.26s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.26s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .auth-panel.mobile-modal-active {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
     }
 
     .auth-card-box {
+        position: relative;
         max-width: 440px;
-        margin: 0 auto;
         width: 100%;
-        box-shadow: var(--shadow-lg);
+        max-height: min(92dvh, 660px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: auto;
+        border-radius: var(--r);
+        box-shadow: 0 24px 60px -12px rgba(23, 19, 15, 0.4), 0 0 1px 1px rgba(23, 19, 15, 0.08);
+        transform: translateY(18px) scale(0.98);
+        transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .auth-panel.mobile-modal-active .auth-card-box {
+        transform: translateY(0) scale(1);
+    }
+
+    .mobile-modal-close-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 18px;
+        z-index: 20;
+        transition: all var(--transition-fast);
+        padding: 0;
+    }
+
+    .mobile-modal-close-btn:hover {
+        background: var(--line);
+        color: var(--ink);
+        transform: scale(1.08);
+    }
+
+    .mobile-modal-close-btn:active {
+        transform: scale(0.92);
     }
 }
 
@@ -773,11 +852,12 @@ body.sonnet-home {
     }
 
     .auth-panel {
-        padding: 24px 14px 44px;
+        padding: 12px !important;
     }
 
     .auth-card-box {
         padding: 22px 18px;
+        max-height: 94dvh;
     }
 
     .auth-card-header h2 {
