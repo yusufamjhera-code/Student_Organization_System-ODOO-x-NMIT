@@ -104,8 +104,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         await loadDynamicEvents();
+        await updateSidebarTreasuryBalance();
         loadClaims();
     });
+
+    // Dynamic Live Treasury Balance updater from Firestore
+    async function updateSidebarTreasuryBalance() {
+        const balEl = document.getElementById('sidebar-treasury-balance');
+        if (!balEl) return;
+        try {
+            let totalInc = 0;
+            let totalExp = 0;
+            if (currentOrgId && firestore) {
+                const txnsSnap = await firestore.collection('transactions').where('orgId', '==', currentOrgId).get();
+                txnsSnap.forEach(doc => {
+                    const t = doc.data();
+                    const amt = Number(t.amount || 0);
+                    if (t.type === 'income') totalInc += amt;
+                    else totalExp += amt;
+                });
+            }
+            const bal = totalInc - totalExp;
+            balEl.textContent = `₹${bal.toLocaleString()}`;
+        } catch (e) {
+            balEl.textContent = '₹0';
+        }
+    }
 
     // Helper: Generate realistic Canvas Receipt DataURL for testing
     function generateReceiptCanvasUrl(merchantName, amount, dateStr, items = ['Item 1', 'Item 2']) {
@@ -341,8 +365,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- FORM SUBMISSION ---
+    let isSubmittingClaim = false;
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (isSubmittingClaim) return;
 
         const name = nameInput.value.trim();
         const email = emailInput.value.trim();
@@ -369,6 +396,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        isSubmittingClaim = true;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Submitting Claim...';
+
         const claimPayload = {
             id: 'claim-' + Date.now(),
             orgId: currentOrgId,
@@ -387,30 +418,27 @@ document.addEventListener('DOMContentLoaded', () => {
             createdAt: new Date().toISOString()
         };
 
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Submitting Claim...';
-
         try {
             // Save to Firestore if available
             let savedToFirestore = false;
             if (firestore && !isDemoMode) {
                 try {
-                    const savePromise = firestore.collection('reimbursements').add({
+                    const docRef = await firestore.collection('reimbursements').add({
                         ...claimPayload,
                         createdAtServer: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000));
-                    const docRef = await Promise.race([savePromise, timeoutPromise]);
                     claimPayload.id = docRef.id;
                     savedToFirestore = true;
                 } catch(err) {
-                    console.warn("Firestore save skipped/timed out, falling back to local sync:", err);
+                    console.warn("Firestore save error, falling back to local sync:", err);
                 }
             }
 
-            // Always sync to local list for seamless tracking and demo mode
-            userClaims.unshift(claimPayload);
-            saveLocalClaims(userClaims);
+            // Sync to local list only if not already present
+            if (!userClaims.some(c => c.id === claimPayload.id)) {
+                userClaims.unshift(claimPayload);
+                saveLocalClaims(userClaims);
+            }
 
             showToast('Claim submitted! Forwarded to Treasurer approval queue.', 'success');
             
@@ -431,6 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(error);
             showToast('Failed to submit reimbursement claim.', 'error');
         } finally {
+            isSubmittingClaim = false;
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt"></i> <span>Submit Claim for Treasury Approval</span>';
         }
@@ -438,7 +467,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LOAD AND RENDER CLAIMS ---
     function loadClaims() {
-        userClaims = loadLocalClaims();
+        const raw = loadLocalClaims();
+        // Deduplicate claims by ID and content signature
+        const seen = new Set();
+        userClaims = raw.filter(c => {
+            const sig = c.id || `${c.claimantEmail}-${c.amount}-${c.merchant}-${c.date}`;
+            if (seen.has(sig)) return false;
+            seen.add(sig);
+            return true;
+        });
+        saveLocalClaims(userClaims);
         userClaimsCountEl.textContent = userClaims.length;
 
         // In Firestore mode, listen for updates

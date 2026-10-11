@@ -397,34 +397,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // CSV Export
     document.getElementById('export-csv-btn').onclick = () => {
-        if (txnsData.length === 0) {
+        if (!txnsData || txnsData.length === 0) {
             showToast('No transaction data to export.', 'info');
             return;
         }
         
-        const headers = ['Date', 'Type', 'Category', 'Description', 'Amount (INR)', 'Recorded By', 'Source'];
-        const rows = txnsData.map(t => [
-            t.date,
-            t.type,
-            t.category,
-            `"${(t.description || '').replace(/"/g, '""')}"`,
-            t.amount,
-            `"${(t.recordedByName || 'System').replace(/"/g, '""')}"`,
-            t.relatedDocId ? 'Automated' : 'Manual'
-        ]);
-        
-        const csvContent = "data:text/csv;charset=utf-8," 
-            + headers.join(',') + "\n" 
-            + rows.map(e => e.join(",")).join("\n");
+        try {
+            const headers = ['Date', 'Type', 'Category', 'Description', 'Amount (INR)', 'Recorded By', 'Source'];
+            const rows = txnsData.map(t => [
+                t.date || '',
+                t.type || '',
+                t.category || '',
+                `"${(t.description || '').replace(/"/g, '""')}"`,
+                t.amount || 0,
+                `"${(t.recordedByName || 'System').replace(/"/g, '""')}"`,
+                t.relatedDocId ? 'Automated' : 'Manual'
+            ]);
             
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `PassTrack_Treasury_${orgNameMeta.textContent.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast('Treasury statement exported to CSV.', 'success');
+            const csvText = headers.join(',') + "\n" + rows.map(e => e.join(",")).join("\n");
+            const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            const safeOrgName = (orgNameMeta?.textContent || 'Treasury').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_');
+            link.setAttribute("download", `PassTrack_Treasury_${safeOrgName}_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('Treasury statement exported to CSV.', 'success');
+        } catch (err) {
+            console.error("Export CSV error:", err);
+            showToast('Failed to export CSV file.', 'error');
+        }
     };
 
     // ==========================================
