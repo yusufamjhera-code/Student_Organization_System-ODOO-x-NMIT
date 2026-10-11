@@ -333,10 +333,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchOrganizerDetails = async (uid) => {
         // Read org name from the organizations collection (user-provided name)
-        const orgSnap = await firestore.collection('organizations')
+        let orgSnap = await firestore.collection('organizations')
             .where('ownerId', '==', uid)
             .limit(1)
             .get();
+        if (orgSnap.empty) {
+            orgSnap = await firestore.collection('organizations').limit(1).get();
+        }
         if (!orgSnap.empty) {
             orgNameHeader.textContent = orgSnap.docs[0].data().name;
             currentOrgId = orgSnap.docs[0].id;
@@ -370,6 +373,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }, () => {});
     };
 
+    let unsubscribeUserPasses = null;
+    const eventStatsListeners = new Map();
+    const eventPassCounts = {};
+
+    const updateTotalPassesKpi = (directSize = null) => {
+        const kpiPassesCountEl = document.getElementById('kpi-passes-count');
+        if (!kpiPassesCountEl) return;
+        const sumEvents = Object.values(eventPassCounts).reduce((a, b) => a + b, 0);
+        const finalVal = directSize !== null ? Math.max(directSize, sumEvents) : sumEvents;
+        kpiPassesCountEl.textContent = finalVal;
+    };
+
     // --- EVENT LISTING (Admin) ---
     const listenForEvents = (uid) => {
         firestore.collection('events')
@@ -381,21 +396,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 const kpiEventsCountEl = document.getElementById('kpi-events-count');
                 if (kpiEventsCountEl) kpiEventsCountEl.textContent = totalEvents;
 
-                let totalSold = 0;
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    totalSold += Number(data.ticketConfig?.seatsSold || 0);
-                });
-                const kpiPassesCountEl = document.getElementById('kpi-passes-count');
-                if (kpiPassesCountEl) kpiPassesCountEl.textContent = totalSold;
-
                 if (snapshot.empty) {
                     eventListEl.innerHTML = '<div class="empty-state"><i class="ph ph-stack"></i><p>No events yet. Create your first one!</p></div>';
+                    updateTotalPassesKpi(0);
                     return;
                 }
 
                 eventListEl.innerHTML = '';
                 snapshot.forEach(doc => renderEventCard(doc, true));
+            });
+
+        // Real-time listener for ALL passes/tokens issued under this organizer
+        if (unsubscribeUserPasses) unsubscribeUserPasses();
+        unsubscribeUserPasses = firestore.collection('users')
+            .where('organizerId', '==', uid)
+            .onSnapshot((userSnap) => {
+                updateTotalPassesKpi(userSnap.size);
+            }, (err) => {
+                console.warn("Could not attach real-time user pass listener:", err);
             });
     };
 
@@ -414,8 +432,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 eventCountEl.textContent = accessibleEvents.length;
+                const kpiEventsCountEl = document.getElementById('kpi-events-count');
+                if (kpiEventsCountEl) kpiEventsCountEl.textContent = accessibleEvents.length;
+
                 if (accessibleEvents.length === 0) {
                     eventListEl.innerHTML = '<div class="empty-state"><i class="ph ph-lock"></i><p>No events assigned to you yet.</p></div>';
+                    updateTotalPassesKpi(0);
                     return;
                 }
 
@@ -473,27 +495,34 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchStatsForEvent(eventId);
     };
 
-    const fetchStatsForEvent = async (docId) => {
-        try {
-            const snap = await firestore.collection('users').where('eventDocId', '==', docId).get();
-            const total = snap.size;
-            let scanned = 0;
-
-            snap.forEach(pDoc => {
-                const data = pDoc.data();
-                const perms = Object.values(data.permissions || {});
-                // Count only if ALL access points are used (fully scanned)
-                const fullyUsed = perms.length > 0 && perms.every(v => v.status === 'used');
-                if (fullyUsed) scanned++;
-            });
-
-            const statsBox = document.getElementById(`stats-${docId}`);
-            if (statsBox) {
-                statsBox.innerHTML = `<span class="count">${scanned}/${total}</span><span class="label">Fully Scanned</span>`;
-            }
-        } catch (e) {
-            console.error("Stats Error:", e);
+    const fetchStatsForEvent = (docId) => {
+        if (eventStatsListeners.has(docId)) {
+            eventStatsListeners.get(docId)();
         }
+        const unsub = firestore.collection('users')
+            .where('eventDocId', '==', docId)
+            .onSnapshot((snap) => {
+                const total = snap.size;
+                eventPassCounts[docId] = total;
+                updateTotalPassesKpi();
+
+                let scanned = 0;
+                snap.forEach(pDoc => {
+                    const data = pDoc.data();
+                    const perms = Object.values(data.permissions || {});
+                    // Count only if ALL access points are used (fully scanned)
+                    const fullyUsed = perms.length > 0 && perms.every(v => v.status === 'used');
+                    if (fullyUsed) scanned++;
+                });
+
+                const statsBox = document.getElementById(`stats-${docId}`);
+                if (statsBox) {
+                    statsBox.innerHTML = `<span class="count">${scanned}/${total}</span><span class="label">Fully Scanned</span>`;
+                }
+            }, (e) => {
+                console.error("Stats Error:", e);
+            });
+        eventStatsListeners.set(docId, unsub);
     };
 
     // --- EVENT CREATION ---

@@ -881,8 +881,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            if (existing.empty) await firestore.collection('users').add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            else await existing.docs[0].ref.update(data);
+            if (existing.empty) {
+                await firestore.collection('users').add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                firestore.collection('events').doc(eventDocId).update({
+                    "ticketConfig.seatsSold": firebase.firestore.FieldValue.increment(1)
+                }).catch(() => {});
+            } else {
+                await existing.docs[0].ref.update(data);
+            }
 
             showToast(`${name} registered!`, "success");
             addForm.reset();
@@ -1004,6 +1010,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const batch = firestore.batch();
                 const existingMap = new Map(allParticipants.map(p => [p.contact.trim().toLowerCase(), p.id]));
 
+                let newImportCount = 0;
                 for (const row of json) {
                     const name = (row.Name || row.name || "").trim();
                     const contact = String(row.Contact || row.contact || "").trim().toLowerCase();
@@ -1011,12 +1018,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (existingMap.has(contact)) {
                             batch.update(firestore.collection('users').doc(existingMap.get(contact)), { name, permissions: batchPerms, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
                         } else {
+                            newImportCount++;
                             const effectiveOrgId = currentOrganizer ? currentOrganizer.uid : eventOwnerId;
                             batch.set(firestore.collection('users').doc(), { organizerId: effectiveOrgId, eventDocId, eventId: displayEventId.textContent, name, contact, permissions: batchPerms, qrToken: `p-${crypto.randomUUID()}`, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                         }
                     }
                 }
                 await batch.commit();
+                if (newImportCount > 0) {
+                    firestore.collection('events').doc(eventDocId).update({
+                        "ticketConfig.seatsSold": firebase.firestore.FieldValue.increment(newImportCount)
+                    }).catch(() => {});
+                }
                 showToast(`Sync complete!`, "success");
             } catch (err) { showToast("File error.", "danger"); }
             finally {
@@ -1030,9 +1043,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('bulk-delete-btn').onclick = async () => {
         if (!confirm(`Delete ${selectedParticipantIds.size} records?`)) return;
+        const countToDelete = selectedParticipantIds.size;
         const batch = firestore.batch();
         selectedParticipantIds.forEach(id => batch.delete(firestore.collection('users').doc(id)));
         await batch.commit();
+        if (countToDelete > 0) {
+            firestore.collection('events').doc(eventDocId).update({
+                "ticketConfig.seatsSold": firebase.firestore.FieldValue.increment(-countToDelete)
+            }).catch(() => {});
+        }
         selectedParticipantIds.clear();
         selectAllCheckbox.checked = false;
         updateBulkActionsUI();
@@ -1760,12 +1779,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- COLLAPSIBLE CARDS TOGGLE ---
-    // Only the collapse icon triggers collapse, not the whole header
-    document.querySelectorAll('.collapsible-card .collapse-icon').forEach(icon => {
-        icon.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const card = icon.closest('.collapsible-card');
-            card.classList.toggle('collapsed');
+    document.querySelectorAll('.collapsible-card .collapsible-header').forEach(header => {
+        header.addEventListener('click', (e) => {
+            if (e.target.closest('button') || e.target.closest('.badge') || e.target.closest('input') || e.target.closest('a')) return;
+            const card = header.closest('.collapsible-card');
+            if (card) {
+                card.classList.toggle('collapsed');
+            }
         });
     });
 
