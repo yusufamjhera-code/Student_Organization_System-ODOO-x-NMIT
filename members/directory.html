@@ -27,6 +27,9 @@
             <button id="add-member-btn" class="primary-btn">
                 <i class="ph-bold ph-user-plus"></i> <span>Add Member</span>
             </button>
+            <a href="wallet-pass.html" class="secondary-btn" title="View 3D Digital Wallet Passes" style="text-decoration:none;">
+                <i class="ph-bold ph-wallet"></i> <span>Wallet Passes</span>
+            </a>
             <button id="share-reg-btn" class="secondary-btn" title="Copy public registration link">
                 <i class="ph-bold ph-share-network"></i> <span>Share Link</span>
             </button>
@@ -279,10 +282,13 @@
                     </div>
                 </div>
                 
-                <div class="modal-actions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: space-between;">
+                <div class="modal-actions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap;">
                     <button type="button" class="danger-btn" id="modal-delete-btn" style="margin-right: auto;">
                         <i class="ph-bold ph-trash"></i> Delete
                     </button>
+                    <a id="modal-view-pass-btn" href="wallet-pass.html" target="_blank" class="secondary-btn" style="text-decoration:none;">
+                        <i class="ph-bold ph-wallet"></i> <span>View Pass</span>
+                    </a>
                     <button type="button" class="secondary-btn" id="cancel-edit-member-btn">Cancel</button>
                     <button type="submit" class="primary-btn" id="save-edit-member-btn">
                         <i class="ph-bold ph-check"></i> Save Changes

@@ -564,6 +564,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit-member-studentid').value = member.studentId || '';
         document.getElementById('edit-member-enddate').value = member.membershipEndDate || '';
         
+        const viewPassBtn = document.getElementById('modal-view-pass-btn');
+        if (viewPassBtn) {
+            viewPassBtn.href = `wallet-pass.html?email=${encodeURIComponent(member.email || '')}&id=${member.id || ''}`;
+        }
+        
         document.getElementById('modal-dues-amount').textContent = `₹${member.duesAmount || 0}`;
         document.getElementById('modal-dues-period').textContent = `Valid till: ${formatDate(member.membershipEndDate)}`;
         

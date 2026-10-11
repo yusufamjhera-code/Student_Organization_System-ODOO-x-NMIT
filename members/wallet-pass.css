@@ -1,0 +1,630 @@
+/* File: members/wallet-pass.css - 3D Digital Membership Wallet Pass Styling */
+
+:root {
+    --card-width: 500px;
+    --card-height: 310px;
+    --gold-primary: #f59e0b;
+    --gold-light: #fef3c7;
+    --emerald-primary: #10b981;
+    --violet-primary: #8b5cf6;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at 50% 20%, #1a162b 0%, #0c0a14 70%, #05040a 100%);
+    color: #f8fafc;
+    font-family: 'Inter', -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.pass-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(12, 10, 20, 0.7);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.pass-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.back-link, .home-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover, .home-link:hover {
+    color: #ffffff;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #ffffff;
+}
+
+.header-brand i {
+    color: var(--gold-primary);
+    font-size: 1.4rem;
+}
+
+/* Main Container */
+.wallet-main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+/* 3D Scene */
+.card-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.wallet-card-scene {
+    width: var(--card-width);
+    height: var(--card-height);
+    perspective: 1200px;
+    margin: 10px auto;
+}
+
+.wallet-card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    border-radius: 20px;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7),
+                0 0 35px rgba(245, 158, 11, 0.12);
+}
+
+.wallet-card:focus {
+    outline: none;
+}
+
+.wallet-card.is-flipped {
+    transform: rotateY(180deg);
+}
+
+/* Card Faces */
+.wallet-card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 20px;
+    box-sizing: border-box;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    user-select: none;
+}
+
+/* Front Face Styling */
+.wallet-card-front {
+    background: linear-gradient(135deg, #1e1b2e 0%, #110e1c 50%, #171226 100%);
+    border: 1.5px solid rgba(245, 158, 11, 0.35);
+}
+
+.foil-glimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.05) 30%, rgba(245, 158, 11, 0.15) 50%, transparent 70%);
+    pointer-events: none;
+    border-radius: 20px;
+}
+
+.card-front-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.club-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.club-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--gold-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+.club-name {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.2px;
+}
+
+.club-sub {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.tier-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    background: rgba(245, 158, 11, 0.18);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #fbbf24;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+.tier-badge.tier-core {
+    background: rgba(245, 158, 11, 0.18);
+    border-color: rgba(245, 158, 11, 0.5);
+    color: #fbbf24;
+}
+
+.tier-badge.tier-active {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #34d399;
+}
+
+.tier-badge.tier-alumni {
+    background: rgba(139, 92, 246, 0.18);
+    border-color: rgba(139, 92, 246, 0.5);
+    color: #a78bfa;
+}
+
+/* Chip & Contactless Row */
+.chip-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 4px 0;
+}
+
+.smart-chip {
+    width: 44px;
+    height: 32px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #d97706 0%, #fbbf24 50%, #b45309 100%);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 2px 5px rgba(0, 0, 0, 0.3);
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.smart-chip::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+}
+
+.nfc-icon {
+    font-size: 1.4rem;
+    color: #cbd5e1;
+    opacity: 0.7;
+}
+
+/* Middle info */
+.card-front-middle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.member-primary-info .label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.member-name {
+    margin: 0 0 6px 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+}
+
+.meta-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pill-role {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+.pill-dept {
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+}
+
+/* QR Code Dock */
+.qr-dock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.qr-box {
+    background: #ffffff;
+    padding: 6px;
+    border-radius: 8px;
+    width: 78px;
+    height: 78px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.qr-box img {
+    display: block;
+    width: 66px !important;
+    height: 66px !important;
+}
+
+.qr-scan-label {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    color: #94a3b8;
+}
+
+/* Bottom Row */
+.card-front-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.info-block .label {
+    display: block;
+    font-size: 0.62rem;
+    color: #94a3b8;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    margin-bottom: 2px;
+}
+
+.info-block .val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.mono {
+    font-family: 'Space Mono', monospace;
+}
+
+.status-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #34d399;
+    letter-spacing: 0.6px;
+}
+
+/* BACK FACE */
+.wallet-card-back {
+    background: linear-gradient(135deg, #13101d 0%, #0d0b16 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    transform: rotateY(180deg);
+    padding: 0;
+}
+
+.mag-stripe {
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(90deg, #09070f 0%, #1e1b29 50%, #09070f 100%);
+    margin-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card-back-body {
+    padding: 16px 28px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: calc(100% - 72px);
+    box-sizing: border-box;
+}
+
+.perks-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--gold-primary);
+    letter-spacing: 0.8px;
+}
+
+.perks-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0;
+    font-size: 0.76rem;
+    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.perks-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.perks-list li i {
+    color: var(--emerald-primary);
+    font-size: 0.85rem;
+}
+
+.back-meta-grid {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.small {
+    font-size: 0.8rem !important;
+}
+
+.back-contact-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.65rem;
+    color: #64748b;
+}
+
+.flip-hint {
+    color: var(--gold-primary);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Scene Hint */
+.scene-hint {
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Actions Card */
+.pass-actions-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 28px;
+    width: 100%;
+    max-width: var(--card-width);
+    box-sizing: border-box;
+    backdrop-filter: blur(10px);
+}
+
+.actions-header h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.15rem;
+    color: #ffffff;
+}
+
+.actions-header p {
+    margin: 0 0 20px 0;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.button-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.button-group .btn-primary {
+    grid-column: 1 / -1;
+}
+
+.btn {
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #17130f;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+/* Lookup Box */
+.lookup-box {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 20px;
+}
+
+.lookup-box label {
+    display: block;
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.lookup-input-wrap {
+    display: flex;
+    gap: 10px;
+}
+
+.lookup-input-wrap input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #ffffff;
+    font-size: 0.88rem;
+}
+
+.lookup-input-wrap input:focus {
+    outline: none;
+    border-color: var(--gold-primary);
+}
+
+.btn-lookup {
+    background: var(--gold-primary);
+    color: #0f0c1b;
+    border: none;
+    border-radius: 10px;
+    padding: 0 18px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.demo-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+
+.pill-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 4px 10px;
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pill-btn:hover {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: var(--gold-primary);
+    color: #ffffff;
+}
+
+/* Mobile Responsive */
+@media (max-width: 580px) {
+    :root {
+        --card-width: 340px;
+        --card-height: 220px;
+    }
+    
+    .wallet-card-face {
+        padding: 16px 18px;
+    }
+    .club-name { font-size: 0.85rem; }
+    .tier-badge { font-size: 0.65rem; padding: 4px 8px; }
+    .smart-chip { width: 34px; height: 24px; }
+    .member-name { font-size: 1.05rem; }
+    .qr-box { width: 56px; height: 56px; padding: 4px; }
+    .qr-box img { width: 48px !important; height: 48px !important; }
+    .info-block .val { font-size: 0.8rem; }
+    .button-group { grid-template-columns: 1fr; }
+}

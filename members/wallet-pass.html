@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Membership Wallet Pass | PassTrack</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- Core Themes -->
+    <link rel="stylesheet" href="../lib/theme.css">
+    <link rel="stylesheet" href="../lib/components.css">
+    <link rel="stylesheet" href="wallet-pass.css">
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="pass-header">
+        <div class="pass-header-inner">
+            <a href="directory.html" class="back-link">
+                <i class="ph-bold ph-arrow-left"></i>
+                <span>Directory</span>
+            </a>
+            <div class="header-brand">
+                <i class="ph-fill ph-wallet"></i>
+                <span>PassTrack Wallet</span>
+            </div>
+            <a href="../index.html" class="home-link">
+                <i class="ph-bold ph-house"></i>
+            </a>
+        </div>
+    </header>
+
+    <main class="wallet-main">
+        <!-- Interactive 3D Card Scene -->
+        <section class="card-stage">
+            <div class="wallet-card-scene" id="card-scene">
+                <div class="wallet-card" id="wallet-card" tabindex="0" role="button" aria-label="3D Membership Card. Press Space or Click to Flip.">
+                    
+                    <!-- FRONT FACE -->
+                    <div class="wallet-card-face wallet-card-front">
+                        <div class="foil-glimmer"></div>
+                        
+                        <!-- Top Bar -->
+                        <div class="card-front-top">
+                            <div class="club-brand">
+                                <div class="club-icon"><i class="ph-fill ph-shield-star"></i></div>
+                                <div>
+                                    <h3 class="club-name" id="card-org-name">ACM Student Chapter</h3>
+                                    <span class="club-sub">NMIT Autonomous Institute</span>
+                                </div>
+                            </div>
+                            <div class="tier-badge" id="card-tier-badge">
+                                <i class="ph-fill ph-sparkle"></i>
+                                <span id="card-tier-text">CORE TEAM</span>
+                            </div>
+                        </div>
+
+                        <!-- Chip & Wave -->
+                        <div class="chip-row">
+                            <div class="smart-chip">
+                                <div class="chip-line"></div>
+                                <div class="chip-line"></div>
+                            </div>
+                            <div class="nfc-icon"><i class="ph-bold ph-wave-sine"></i></div>
+                        </div>
+
+                        <!-- Member Info & QR Code Grid -->
+                        <div class="card-front-middle">
+                            <div class="member-primary-info">
+                                <span class="label">MEMBER NAME</span>
+                                <h2 class="member-name" id="card-member-name">Arjun Nambiar</h2>
+                                <div class="meta-pills">
+                                    <span class="pill-role" id="card-member-role">President</span>
+                                    <span class="pill-dept" id="card-member-dept">Computer Science</span>
+                                </div>
+                            </div>
+
+                            <div class="qr-dock">
+                                <div class="qr-box" id="pass-qrcode"></div>
+                                <span class="qr-scan-label">NFC / SCAN PASS</span>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Security Footer -->
+                        <div class="card-front-bottom">
+                            <div class="info-block">
+                                <span class="label">STUDENT ID / USN</span>
+                                <span class="val mono" id="card-member-usn">1NT23CS042</span>
+                            </div>
+                            <div class="info-block">
+                                <span class="label">VALID THRU</span>
+                                <span class="val mono" id="card-valid-date">07/2026</span>
+                            </div>
+                            <div class="info-block align-right">
+                                <span class="label">STATUS</span>
+                                <span class="status-verified"><i class="ph-bold ph-check-circle"></i> VERIFIED</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BACK FACE -->
+                    <div class="wallet-card-face wallet-card-back">
+                        <div class="mag-stripe"></div>
+
+                        <div class="card-back-body">
+                            <div class="perks-header">
+                                <i class="ph-fill ph-crown"></i>
+                                <span>VERIFIED MEMBERSHIP BENEFITS</span>
+                            </div>
+
+                            <ul class="perks-list">
+                                <li><i class="ph-bold ph-check"></i> Priority Door Admission at all NMIT Hackathons</li>
+                                <li><i class="ph-bold ph-check"></i> 25% Auto-Discount on Official Club Merchandise</li>
+                                <li><i class="ph-bold ph-check"></i> Voting Rights in Annual Executive Elections</li>
+                                <li><i class="ph-bold ph-check"></i> Verifiable Cryptographic Access Credentials</li>
+                            </ul>
+
+                            <div class="back-meta-grid">
+                                <div>
+                                    <span class="label">PASS SERIAL NO.</span>
+                                    <span class="val mono small" id="card-serial-no">PT-MEM-2026-9481</span>
+                                </div>
+                                <div>
+                                    <span class="label">ISSUED DATE</span>
+                                    <span class="val mono small" id="card-issued-date">AUG 2025</span>
+                                </div>
+                            </div>
+
+                            <div class="back-contact-footer">
+                                <span>For security assistance or lost credentials, email: <strong>treasury@nmit.ac.in</strong></span>
+                                <span class="flip-hint"><i class="ph-bold ph-arrow-counter-clockwise"></i> Tap to flip back</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <p class="scene-hint">
+                <i class="ph-bold ph-arrows-clockwise"></i> Click the card or press <strong>Space</strong> to inspect 3D security strip
+            </p>
+        </section>
+
+        <!-- Actions & Export Toolbar -->
+        <section class="pass-actions-card">
+            <div class="actions-header">
+                <h3>Pass Actions & Export</h3>
+                <p>Add this pass to your digital wallet or export high-res card graphics.</p>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn btn-primary" id="flip-card-btn">
+                    <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                    <span>Flip Card</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="download-pass-btn">
+                    <i class="ph-bold ph-download-simple"></i>
+                    <span>Download Card (PNG)</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="print-pass-btn">
+                    <i class="ph-bold ph-printer"></i>
+                    <span>Print Card</span>
+                </button>
+            </div>
+
+            <!-- Member Lookup Box -->
+            <div class="lookup-box">
+                <label for="lookup-member-input"><i class="ph-bold ph-magnifying-glass"></i> View Another Member's Wallet Pass</label>
+                <div class="lookup-input-wrap">
+                    <input type="text" id="lookup-member-input" placeholder="Enter student email or USN (e.g. 1NT23IS019)" />
+                    <button type="button" class="btn-lookup" id="lookup-member-btn">Lookup</button>
+                </div>
+                <div class="demo-pills" id="demo-quick-pills">
+                    <span>Quick Demo:</span>
+                    <button type="button" class="pill-btn" data-email="arjun.nambiar@nmit.ac.in">Arjun (President)</button>
+                    <button type="button" class="pill-btn" data-email="ananya.s@nmit.ac.in">Ananya (Vice Pres)</button>
+                    <button type="button" class="pill-btn" data-email="karthik.hegde@nmit.ac.in">Karthik (Treasurer)</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Hidden Canvas For PNG Export -->
+    <canvas id="export-canvas" width="1050" height="650" style="display:none;"></canvas>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="../lib/contracts/passtrack-core.js"></script>
+    <script src="../lib/validator.js"></script>
+    <script src="wallet-pass.js"></script>
+</body>
+</html>
