@@ -268,36 +268,44 @@ document.addEventListener('DOMContentLoaded', () => {
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
-                    if (isPaid && member) {
-                        const existingTxn = await firestore.collection('transactions')
-                            .where('relatedDocId', '==', id)
-                            .where('relatedDocType', '==', 'member_dues')
-                            .get();
+                    // Auto-sync transaction if possible, without breaking member dues update
+                    try {
+                        if (isPaid && member) {
+                            const existingTxn = await firestore.collection('transactions')
+                                .where('relatedDocId', '==', id)
+                                .where('relatedDocType', '==', 'member_dues')
+                                .get();
 
-                        if (existingTxn.empty) {
-                            await firestore.collection('transactions').add({
-                                orgId: currentOrgId,
-                                type: 'income',
-                                amount: member.duesAmount || 0,
-                                category: 'dues',
-                                date: new Date().toISOString().split('T')[0],
-                                description: `Membership dues: ${member.name}`,
-                                recordedBy: currentUser.uid,
-                                recordedByName: currentUser.displayName || currentUser.email,
-                                relatedDocId: id,
-                                relatedDocType: 'member_dues',
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
+                            if (existingTxn.empty) {
+                                const duesAmt = Number(member.duesAmount) || 500;
+                                const recUid = (currentUser && currentUser.uid) || (auth.currentUser && auth.currentUser.uid) || 'admin';
+                                const recName = (currentUser && (currentUser.displayName || currentUser.email)) || 'Organization Admin';
+                                await firestore.collection('transactions').add({
+                                    orgId: currentOrgId,
+                                    type: 'income',
+                                    amount: duesAmt,
+                                    category: 'dues',
+                                    date: new Date().toISOString().split('T')[0],
+                                    description: `Membership dues: ${member.name}`,
+                                    recordedBy: recUid,
+                                    recordedByName: recName,
+                                    relatedDocId: id,
+                                    relatedDocType: 'member_dues',
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        } else if (!isPaid) {
+                            const txnSnap = await firestore.collection('transactions')
+                                .where('relatedDocId', '==', id)
+                                .where('relatedDocType', '==', 'member_dues')
+                                .get();
+                            const batch = firestore.batch();
+                            txnSnap.forEach(doc => batch.delete(doc.ref));
+                            if (!txnSnap.empty) await batch.commit();
                         }
-                    } else if (!isPaid) {
-                        const txnSnap = await firestore.collection('transactions')
-                            .where('relatedDocId', '==', id)
-                            .where('relatedDocType', '==', 'member_dues')
-                            .get();
-                        const batch = firestore.batch();
-                        txnSnap.forEach(doc => batch.delete(doc.ref));
-                        if (!txnSnap.empty) await batch.commit();
+                    } catch (txnErr) {
+                        console.warn("Ledger auto-sync warning (non-fatal):", txnErr);
                     }
                     
                     showToast(`Dues marked as ${isPaid ? 'paid' : 'unpaid'}.`, 'success');
