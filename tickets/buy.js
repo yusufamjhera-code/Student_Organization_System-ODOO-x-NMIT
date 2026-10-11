@@ -343,7 +343,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            // Trigger Email via GAS (Optional)
+            // Zero-Touch Treasury Sync (Multi-tab & Local fallback)
+            if (pricePaid > 0 && window.PassTrack && window.PassTrack.Payments) {
+                window.PassTrack.Payments.recordTreasuryIncome({
+                    orgId: orgId || 'demo-org-acm',
+                    amount: pricePaid,
+                    category: 'tickets',
+                    referenceId: createdUserId,
+                    utr: paymentDetails ? paymentDetails.utr : null,
+                    description: `Ticket Purchase (${selectedType}): ${eventData.name || 'Event Pass'}`,
+                    customerName: name
+                }).catch(console.warn);
+            }
+
             if (window.GOOGLE_SCRIPT_URL) {
                 const payload = {
                     security_token: "PT_SECURE_2026",

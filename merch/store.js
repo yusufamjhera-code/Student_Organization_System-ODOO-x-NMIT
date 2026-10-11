@@ -456,6 +456,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                 }
             });
+
+            // Zero-Touch Treasury Sync (Multi-tab & Local fallback)
+            if (totalPrice > 0 && window.PassTrack && window.PassTrack.Payments) {
+                window.PassTrack.Payments.recordTreasuryIncome({
+                    orgId: activeOrgId || 'demo-org-acm',
+                    amount: totalPrice,
+                    category: 'merchandise',
+                    referenceId: createdOrderId,
+                    utr: paymentDetails ? paymentDetails.utr : null,
+                    description: `Merch Order: ${currentProduct.name} (${size} x${qty})`,
+                    customerName: name
+                }).catch(console.warn);
+            }
+
             
             // Optional Email trigger
             if (window.GOOGLE_SCRIPT_URL) {

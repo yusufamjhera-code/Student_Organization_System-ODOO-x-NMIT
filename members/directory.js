@@ -581,11 +581,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     duesPaidAt: isPaid ? firebase.firestore.FieldValue.serverTimestamp() : null,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
+
+                if (isPaid) {
+                    const duesAmt = Number(member.duesAmount || 500);
+                    if (window.PassTrack && window.PassTrack.Payments) {
+                        await window.PassTrack.Payments.recordTreasuryIncome({
+                            orgId: currentOrgId,
+                            amount: duesAmt,
+                            category: 'dues',
+                            referenceId: id,
+                            description: `Membership dues: ${member.name}`,
+                            customerName: member.name
+                        });
+                    }
+                }
                 
                 statusEl.textContent = newStatus.toUpperCase();
                 statusEl.className = `modal-subtitle badge ${newStatus}`;
                 document.getElementById('modal-dues-label').textContent = isPaid ? 'Paid' : 'Mark as Paid';
-                showToast(`Dues marked as ${isPaid ? 'paid' : 'unpaid'}.`, 'success');
+                showToast(`Dues marked as ${isPaid ? 'paid' : 'unpaid'}${isPaid ? ' & auto-recorded to Treasury ledger' : ''}.`, 'success');
             } catch(err) {
                 e.target.checked = !isPaid;
                 showToast('Failed to update dues.', 'error');

@@ -36,16 +36,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadDemoTreasury() {
         currentOrgId = 'demo-org-acm';
         if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
-        txnsData = [
+        
+        let localDynamicTxns = [];
+        try {
+            localDynamicTxns = JSON.parse(localStorage.getItem('passtrack_treasury_txns') || '[]');
+        } catch(e) {}
+
+        const seedTxns = [
             { id: 'txn-1', description: 'HackNMIT 2026 Ticket Sales', type: 'income', amount: 84000, category: 'tickets', date: '2026-03-28' },
             { id: 'txn-2', description: 'Annual Club Membership Dues', type: 'income', amount: 32000, category: 'dues', date: '2026-03-15' },
             { id: 'txn-3', description: 'Official Hoodies Pre-orders', type: 'income', amount: 24500, category: 'merchandise', date: '2026-03-10' },
             { id: 'txn-4', description: 'Auditorium Booking & AV Setup', type: 'expense', amount: 18000, category: 'events', date: '2026-03-25' },
             { id: 'txn-5', description: 'Catering & Participant Refreshments', type: 'expense', amount: 12500, category: 'hospitality', date: '2026-03-29' }
         ];
+
+        txnsData = [...localDynamicTxns, ...seedTxns];
         updateDashboard();
         loadReimbursements();
     }
+
+    // Live Zero-Touch Treasury Sync Listener
+    window.addEventListener('passtrack:treasury:synced', (e) => {
+        const newTxn = e.detail;
+        if (newTxn && !txnsData.some(t => t.id === newTxn.id)) {
+            txnsData.unshift(newTxn);
+            updateDashboard();
+            showToast(`Auto-recorded ${newTxn.category} income: ₹${newTxn.amount}`, 'success');
+        }
+    });
 
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
