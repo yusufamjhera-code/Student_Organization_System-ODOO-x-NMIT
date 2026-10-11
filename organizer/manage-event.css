@@ -3039,6 +3039,34 @@ tbody tr:hover {
     transform: translateX(20px);
 }
 
+/* Responsive Time & Number Inputs Grid */
+.time-inputs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+#ticketing-body input[type="number"],
+#ticketing-body input[type="date"],
+#ticketing-body input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+#ticketing-body input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(226, 91, 46, 0.15);
+    outline: none;
+}
+
 /* Date Range Block for access point modal */
 .date-range-block {
     margin-bottom: 1rem;

@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedParticipantIds = new Set();
     let eventStations = [];
     let currentEventName = "";
+    let currentOrgName = "";
     let sortMode = 'date';
 
     // Credentials editing state
@@ -205,6 +206,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentEventEndDate = data.eventEndDate;
                 originalEventId = data.eventId;
                 eventCollaborators = data.collaborators || [];
+
+                // Resolve organization name dynamically
+                try {
+                    const orgSnap = await firestore.collection('organizations')
+                        .where('ownerId', '==', data.organizerId || user.uid)
+                        .limit(1)
+                        .get();
+                    if (!orgSnap.empty) {
+                        currentOrgName = orgSnap.docs[0].data().name || "";
+                    }
+                } catch (orgErr) {
+                    console.warn("Could not load organization name:", orgErr);
+                }
 
                 eventNameHeader.textContent = data.name;
                 displayEventId.textContent = data.eventId;
@@ -926,29 +940,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const certBadge = document.getElementById('modal-cert-status-badge');
         const certDownloadBtn = document.getElementById('modal-download-cert-btn');
         const certVerifyLink = document.getElementById('modal-verify-cert-link');
+        const certLockedMsg = document.getElementById('modal-cert-locked-msg');
 
         if (certBadge) {
-            certBadge.textContent = isCheckedIn ? '✓ Eligible (Checked In)' : 'Locked (Unchecked)';
+            certBadge.textContent = isCheckedIn ? '✓ Verified (Attended)' : 'Locked (Check-in Required)';
             certBadge.className = isCheckedIn ? 'badge' : 'badge danger';
             certBadge.style.background = isCheckedIn ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)';
             certBadge.style.color = isCheckedIn ? '#22c55e' : '#ef4444';
         }
 
+        // Only show verification and certificate actions if participant has attended
         if (certVerifyLink) {
-            certVerifyLink.href = `../certificates/verify.html?id=${encodeURIComponent(certId)}&name=${encodeURIComponent(p.name)}&event=${encodeURIComponent(currentEventName || 'Campus Event')}`;
+            certVerifyLink.style.display = isCheckedIn ? 'inline-flex' : 'none';
+            if (isCheckedIn) {
+                certVerifyLink.href = `../certificates/verify.html?id=${encodeURIComponent(certId)}&name=${encodeURIComponent(p.name)}&event=${encodeURIComponent(currentEventName || 'Campus Event')}`;
+            }
         }
 
         if (certDownloadBtn) {
+            certDownloadBtn.style.display = isCheckedIn ? 'inline-flex' : 'none';
             certDownloadBtn.disabled = !isCheckedIn;
-            certDownloadBtn.style.opacity = isCheckedIn ? '1' : '0.5';
-            certDownloadBtn.title = isCheckedIn ? 'Download official certificate' : 'Attendee must be checked in at an entrance first';
+        }
+
+        if (certLockedMsg) {
+            certLockedMsg.style.display = isCheckedIn ? 'none' : 'block';
+        }
+
+        if (certDownloadBtn && isCheckedIn) {
             certDownloadBtn.onclick = async () => {
-                if (!isCheckedIn) {
-                    showToast('Participant must be checked in at the door first to issue certificate.', 'warning');
-                    return;
-                }
-                const sig1 = document.getElementById('cert-signatory1-name')?.value || 'Dr. K. Srinivas';
-                const sig2 = document.getElementById('cert-signatory2-name')?.value || 'Ananya Iyer';
+                const sig1 = document.getElementById('cert-signatory1-name')?.value || 'Faculty Advisor';
+                const sig2 = document.getElementById('cert-signatory2-name')?.value || 'Club Lead';
                 if (window.PassTrackCertificate) {
                     certDownloadBtn.disabled = true;
                     certDownloadBtn.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i> Generating...';
@@ -956,8 +977,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         await window.PassTrackCertificate.downloadCertificatePNG({
                             participantName: p.name,
                             eventName: currentEventName || 'Campus Event',
-                            orgName: 'Skyline Student Association • ACM Chapter',
-                            eventDate: eventDateRangeEl.textContent || 'March 28, 2026',
+                            orgName: currentOrgName || currentEventName || 'Student Organization',
+                            eventDate: eventDateRangeEl ? (eventDateRangeEl.textContent || '') : '',
                             certificateId: certId,
                             signatory1Name: sig1,
                             signatory2Name: sig2
@@ -1635,14 +1656,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
-        // Collapsible toggle
-        if (collabToggle && collabCard) {
-            collabToggle.onclick = (e) => {
-                if (!e.target.closest('.badge')) {
-                    collabCard.classList.toggle('collapsed');
-                }
-            };
-        }
+        // Note: Collapsible toggle is handled uniformly by the .collapsible-header listener below
 
         // Select All
         if (selectAllCheckbox) {
@@ -1803,7 +1817,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     await window.PassTrackCertificate.downloadCertificatePNG({
                         participantName: auth.currentUser?.displayName || 'Attendee Preview',
                         eventName: currentEventName || 'Event Certificate',
-                        orgName: orgNameHeader?.textContent || 'Student Organization',
+                        orgName: currentOrgName || currentEventName || 'Student Organization',
                         eventDate: eventDateRangeEl ? (eventDateRangeEl.textContent || '') : '',
                         certificateId: window.PassTrackCertificate.generateCertificateId(originalEventId || 'EVENT', 'PREVIEW'),
                         signatory1Name: sig1,

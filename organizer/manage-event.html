@@ -164,7 +164,7 @@
                         </button>
                     </form>
                     <div style="margin-top: 15px; display:flex; justify-content:space-between; font-size:0.9rem; color:var(--text-muted);">
-                        <span>Seats Sold: <strong id="ticket-seats-sold" style="color:#fff;">0</strong></span>
+                        <span>Seats Sold: <strong id="ticket-seats-sold" style="color: var(--primary); font-weight: 700;">0</strong></span>
                         <a href="#" id="view-tickets-link" style="color:var(--primary); text-decoration:none;">View All Tickets &rarr;</a>
                     </div>
                 </div>
@@ -489,6 +489,9 @@
                             <i class="ph-bold ph-seal-check"></i> Verify Credential
                         </a>
                     </div>
+                    <p id="modal-cert-locked-msg" style="display:none; color: var(--text-muted); font-size: 0.82rem; margin-top: 8px; line-height: 1.4;">
+                        <i class="ph-bold ph-lock"></i> Check-in required: Credentials & certificate unlock automatically once attendee checks in at an access station.
+                    </p>
                 </div>
             </div>
         </div>

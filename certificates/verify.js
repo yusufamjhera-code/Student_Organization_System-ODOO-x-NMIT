@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         foundData = {
                             name: docData.name,
                             eventName: docData.eventName || 'Campus Event',
-                            orgName: docData.orgName || 'Skyline Student Association • ACM Chapter',
+                            orgName: docData.orgName || docData.eventName || 'Student Organization',
                             date: docData.eventDate || 'March 28, 2026',
                             certId: certificateId,
                             status: docData.status === 'used' ? 'Verified In-Person Attendance' : 'Registered'

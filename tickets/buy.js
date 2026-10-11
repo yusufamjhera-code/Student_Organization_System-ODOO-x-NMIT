@@ -532,7 +532,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             await window.PassTrackCertificate.downloadCertificatePNG({
                                 participantName: name,
                                 eventName: event,
-                                orgName: 'Skyline Student Association • ACM Chapter',
+                                orgName: eventData.orgName || event || 'Student Organization',
                                 eventDate: eventData.eventDate ? new Date(eventData.eventDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'March 28, 2026',
                                 certificateId: certId
                             });
