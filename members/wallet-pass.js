@@ -61,7 +61,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         memberNameEl.textContent = member.name || member.fullName || 'Student Member';
         memberRoleEl.textContent = member.clubRole || 'Active Member';
         memberDeptEl.textContent = member.department || 'Engineering';
-        memberUsnEl.textContent = member.usn || member.studentId || 'N/A';
+
+        const usn = (member.usn || member.studentId || '').trim();
+        if (usn && usn !== 'N/A') {
+            memberUsnEl.textContent = usn;
+        } else {
+            memberUsnEl.innerHTML = '<button type="button" class="btn-add-id-pill" id="btn-add-usn-quick">+ Add ID</button>';
+            const quickBtn = document.getElementById('btn-add-usn-quick');
+            if (quickBtn) {
+                quickBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openUpdateIdModal();
+                };
+            }
+        }
 
         // Calculate Tier
         const roleLower = (member.clubRole || '').toLowerCase();
@@ -389,5 +402,80 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    // --- UPDATE STUDENT ID MODAL LOGIC ---
+    const updateIdModal = document.getElementById('update-id-modal');
+    const updateIdBtn = document.getElementById('update-student-id-btn');
+    const closeUpdateIdModal = document.getElementById('close-update-id-modal');
+    const cancelUpdateIdBtn = document.getElementById('cancel-update-id-btn');
+    const updateIdForm = document.getElementById('update-id-form');
+    const newStudentIdInput = document.getElementById('new-student-id-input');
+
+    function openUpdateIdModal() {
+        if (!updateIdModal) return;
+        if (currentMember) {
+            newStudentIdInput.value = (currentMember.usn || currentMember.studentId || '').replace(/^N\/A$/i, '');
+        }
+        updateIdModal.style.display = 'flex';
+        newStudentIdInput.focus();
+    }
+
+    function closeUpdateIdModalHandler() {
+        if (updateIdModal) updateIdModal.style.display = 'none';
+    }
+
+    if (updateIdBtn) updateIdBtn.addEventListener('click', openUpdateIdModal);
+    if (closeUpdateIdModal) closeUpdateIdModal.addEventListener('click', closeUpdateIdModalHandler);
+    if (cancelUpdateIdBtn) cancelUpdateIdBtn.addEventListener('click', closeUpdateIdModalHandler);
+
+    if (updateIdForm) {
+        updateIdForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newId = newStudentIdInput.value.trim().toUpperCase();
+            if (!newId) return;
+
+            const saveBtn = document.getElementById('save-update-id-btn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+            }
+
+            try {
+                if (currentMember) {
+                    currentMember.usn = newId;
+                    currentMember.studentId = newId;
+
+                    // Update member in Firestore if document ID exists
+                    if (currentMember.id && firestore) {
+                        await firestore.collection('members').doc(currentMember.id).update({
+                            usn: newId,
+                            studentId: newId,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }).catch(err => console.warn('Could not update member doc:', err));
+                    }
+
+                    // Also sync with auth user profile if logged in
+                    if (auth.currentUser && firestore) {
+                        await firestore.collection('userProfiles').doc(auth.currentUser.uid).set({
+                            studentId: newId,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true }).catch(err => console.warn('Could not sync user profile:', err));
+                    }
+
+                    renderMemberPass(currentMember, orgNameEl.textContent);
+                    if (window.PassTrackToast) window.PassTrackToast.success('Student ID updated successfully!');
+                    closeUpdateIdModalHandler();
+                }
+            } catch (err) {
+                console.error('Error saving student ID:', err);
+                if (window.PassTrackToast) window.PassTrackToast.error('Failed to update Student ID.');
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save ID';
+                }
+            }
+        });
     }
 });

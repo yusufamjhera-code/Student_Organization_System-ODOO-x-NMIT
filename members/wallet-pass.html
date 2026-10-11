@@ -164,6 +164,10 @@
                     <i class="ph-bold ph-printer"></i>
                     <span>Print Card</span>
                 </button>
+                <button type="button" class="btn btn-secondary" id="update-student-id-btn">
+                    <i class="ph-bold ph-identification-card"></i>
+                    <span id="update-id-btn-label">Update Student ID</span>
+                </button>
             </div>
 
             <!-- Member Lookup Box -->
@@ -176,6 +180,25 @@
             </div>
         </section>
     </main>
+
+    <!-- Update Student ID Modal -->
+    <div id="update-id-modal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1rem;">
+        <div class="modal-content" style="background:var(--bg-card); max-width:400px; width:100%; border-radius:18px; padding:24px; border:1px solid var(--border); box-shadow:var(--shadow-lg, 0 20px 40px rgba(0,0,0,0.2)); position:relative;">
+            <button type="button" class="close-modal" id="close-update-id-modal" aria-label="Close" style="position:absolute; top:16px; right:16px; border:none; background:transparent; font-size:1.4rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+            <h3 style="font-family:var(--serif); margin-bottom:8px; color:var(--text-main);">Update Student ID</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Link your verified University Seat Number (USN) or Roll Number to your Digital Pass.</p>
+            <form id="update-id-form">
+                <div class="input-group" style="margin-bottom:16px;">
+                    <label for="new-student-id-input" style="display:block; font-size:0.8rem; font-weight:700; margin-bottom:6px; color:var(--text-main);">STUDENT ID / USN *</label>
+                    <input type="text" id="new-student-id-input" placeholder="e.g. 1NT23CS042" required style="width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text-main); font-family:var(--mono); text-transform:uppercase;">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn btn-secondary" id="cancel-update-id-btn" style="padding:8px 16px; border-radius:10px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="save-update-id-btn" style="padding:8px 18px; border-radius:10px;">Save ID</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Hidden Canvas For PNG Export -->
     <canvas id="export-canvas" width="1050" height="650" style="display:none;"></canvas>

@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:0.85rem; padding-top:10px; border-top:1px dashed var(--border);">
                         <div>
                             <span style="color:var(--text-muted);">Student ID:</span><br>
-                            <strong style="color:var(--text-main);">${escapeHtml(member.studentId || 'N/A')}</strong>
+                            ${member.studentId ? `<strong style="color:var(--text-main);">${escapeHtml(member.studentId)}</strong>` : `<span style="color:var(--text-muted); font-style:italic;">Not specified</span>`}
                         </div>
                         <div>
                             <span style="color:var(--text-muted);">Member Since:</span><br>

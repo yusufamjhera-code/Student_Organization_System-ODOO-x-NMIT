@@ -628,3 +628,27 @@ body {
     .info-block .val { font-size: 0.8rem; }
     .button-group { grid-template-columns: 1fr; }
 }
+
+/* Dynamic Add USN Pill */
+.btn-add-id-pill {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(226, 91, 46, 0.15);
+    color: var(--accent, #e25b2e);
+    border: 1px dashed var(--accent, #e25b2e);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: none;
+    letter-spacing: normal;
+    font-family: var(--ui);
+}
+
+.btn-add-id-pill:hover {
+    background: var(--accent, #e25b2e);
+    color: #ffffff;
+    transform: scale(1.05);
+}
