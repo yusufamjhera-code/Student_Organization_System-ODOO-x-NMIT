@@ -807,11 +807,14 @@ header, .app-header {
     min-width: 0;
 }
 
-.back-link {
+.header-left .back-link,
+.event-header .back-link,
+.app-header .back-link,
+.icon-back-btn {
     color: var(--ink);
     font-size: 1.35rem;
     text-decoration: none;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     background: var(--bg);
@@ -823,9 +826,39 @@ header, .app-header {
     flex-shrink: 0;
 }
 
-.back-link:hover {
+.header-left .back-link:hover,
+.event-header .back-link:hover,
+.app-header .back-link:hover,
+.icon-back-btn:hover {
     background: var(--line-soft);
     transform: scale(1.05);
+}
+
+/* General text-bearing back link (e.g. auth footer, wallet pass) */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 24px;
+    border: 1px solid var(--line);
+    background: var(--bg-card);
+    transition: all 0.2s ease;
+    width: auto;
+    height: auto;
+    margin: 8px auto 0;
+}
+
+.back-link:hover {
+    color: var(--ink);
+    background: var(--line-soft);
+    border-color: var(--line-strong);
+    transform: translateY(-1px);
 }
 
 .event-title-meta {

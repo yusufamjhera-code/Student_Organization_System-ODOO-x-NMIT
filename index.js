@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (!memberSnap.empty) {
                         roleLabel = 'Club Member';
-                        target = 'members/directory.html';
+                        target = 'members/wallet-pass.html';
                         sessionStorage.setItem('authType', 'member');
                         sessionStorage.setItem('memberEmail', email);
                         const mData = memberSnap.docs[0].data();
@@ -133,8 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             .get();
 
                         if (!eventSnap.empty) {
-                            roleLabel = 'Event Staff / Scanner';
-                            target = 'distributor/distributor.html';
+                            roleLabel = 'Event Collaborator';
+                            target = 'organizer/dashboard.html';
                             sessionStorage.setItem('authType', 'collaborator');
                             sessionStorage.setItem('collaboratorEmail', email);
                         } else {
@@ -241,6 +241,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Helper: Friendly error message formatter
+    function formatAuthErrorMessage(error) {
+        if (!error) return 'Authentication failed. Please check your credentials.';
+        const code = error.code || '';
+        if (code === 'auth/invalid-login-credentials' || code === 'auth/wrong-password' || code === 'auth/user-not-found' || code === 'auth/invalid-credential') {
+            return 'Incorrect email or password. Please verify your credentials and try again.';
+        }
+        if (code === 'auth/invalid-email') {
+            return 'Please enter a valid email address (e.g. name@college.edu).';
+        }
+        if (code === 'auth/user-disabled') {
+            return 'This account has been deactivated. Please contact your organization lead.';
+        }
+        if (code === 'auth/too-many-requests') {
+            return 'Too many failed login attempts. Please wait a few moments and try again.';
+        }
+        if (code === 'auth/network-request-failed') {
+            return 'Network connection issue. Please check your internet connectivity.';
+        }
+        if (code === 'auth/popup-closed-by-user') {
+            return 'Google sign-in popup was closed before completing.';
+        }
+        if (code === 'auth/popup-blocked') {
+            return 'Popup blocked by your browser. Please allow popups for PassTrack.';
+        }
+        let msg = error.message || 'Authentication failed.';
+        return msg.replace(/^Firebase:\s*(Error\s*)?(\([^\)]+\)\.?\s*)?/i, '').trim() || 'Authentication failed.';
+    }
+
     // =========================================================================
     // GOOGLE SIGN-IN HANDLER
     // =========================================================================
@@ -269,14 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error("Google Auth error:", error);
                 setButtonLoading(googleBtn, false);
-
-                if (error.code === 'auth/popup-closed-by-user') {
-                    showMessage('Sign-in cancelled. Try again when ready.', 'error');
-                } else if (error.code === 'auth/network-request-failed') {
-                    showMessage('Network error. Check your connection.', 'error');
-                } else {
-                    showMessage('Sign-in failed. Please try again.', 'error');
-                }
+                showMessage(formatAuthErrorMessage(error), 'error');
             }
         });
     }
@@ -298,6 +320,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return showMessage('Please provide both email and password / access code.', 'error');
             }
 
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return showMessage('Please enter a valid email address (e.g. name@college.edu).', 'error');
+            }
+
             setButtonLoading(loginBtn, true, 'Verifying...');
             showMessage('Verifying credentials...', 'info');
 
@@ -308,39 +335,64 @@ document.addEventListener('DOMContentLoaded', () => {
                     return await resolveRoleAndNavigate(userCred.user, true);
                 }
             } catch (authErr) {
-                const isPossibleAccessCode = credential.length === 8;
+                const cleanCode = credential.trim();
+                const isPossibleAccessCode = cleanCode.length >= 6 && cleanCode.length <= 12;
 
                 if (!isPossibleAccessCode || !firestore) {
                     setButtonLoading(loginBtn, false);
-                    if (authErr.code === 'auth/wrong-password' || authErr.code === 'auth/user-not-found') {
-                        return showMessage('Invalid email or password. Staff volunteers can enter their 8-character code.', 'error');
-                    }
-                    return showMessage(authErr.message || 'Authentication failed.', 'error');
+                    return showMessage(formatAuthErrorMessage(authErr), 'error');
                 }
 
-                // 2. Check 8-character collaborator staff code in events
+                // 2. Check collaborator staff code in events
                 try {
-                    const codeUpper = credential.toUpperCase();
-                    const eventsSnapshot = await firestore.collection('events')
-                        .where('collaboratorEmails', 'array-contains', email)
-                        .get();
-
+                    const codeUpper = cleanCode.toUpperCase();
                     let matchedEvent = null;
-                    for (const doc of eventsSnapshot.docs) {
-                        const eventData = doc.data();
-                        const collaborators = eventData.collaborators || [];
-                        const match = collaborators.find(c =>
-                            c.email && c.email.toLowerCase() === email &&
-                            c.accessCode && c.accessCode.toUpperCase() === codeUpper
-                        );
-                        if (match) {
-                            matchedEvent = doc.id;
-                            break;
+
+                    // First try targeted query
+                    try {
+                        const eventsSnapshot = await firestore.collection('events')
+                            .where('collaboratorEmails', 'array-contains', email)
+                            .get();
+
+                        for (const doc of eventsSnapshot.docs) {
+                            const eventData = doc.data();
+                            const collaborators = eventData.collaborators || [];
+                            const match = collaborators.find(c =>
+                                c.email && c.email.toLowerCase() === email &&
+                                c.accessCode && c.accessCode.trim().toUpperCase() === codeUpper
+                            );
+                            if (match) {
+                                matchedEvent = doc.id;
+                                break;
+                            }
+                        }
+                    } catch (queryErr) {
+                        console.warn("Array query warning, checking events collection fallback:", queryErr);
+                    }
+
+                    // Fallback scan if array-contains had no match or wasn't indexed yet
+                    if (!matchedEvent) {
+                        const allEventsSnap = await firestore.collection('events').limit(30).get();
+                        for (const doc of allEventsSnap.docs) {
+                            const eventData = doc.data();
+                            const collaborators = eventData.collaborators || [];
+                            const match = collaborators.find(c =>
+                                c.email && c.email.toLowerCase() === email &&
+                                c.accessCode && c.accessCode.trim().toUpperCase() === codeUpper
+                            );
+                            if (match) {
+                                matchedEvent = doc.id;
+                                break;
+                            }
                         }
                     }
 
                     if (matchedEvent) {
-                        await auth.signInAnonymously();
+                        try {
+                            await auth.signInAnonymously();
+                        } catch (anonErr) {
+                            console.warn("Anonymous sign-in unavailable or restricted; proceeding with verified collaborator session:", anonErr);
+                        }
                         sessionStorage.setItem('authType', 'collaborator');
                         sessionStorage.setItem('collaboratorEmail', email);
                         showMessage('✓ Staff credentials verified! Opening portal...', 'success');
@@ -356,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (staffErr) {
                     console.error("Staff code error:", staffErr);
                     setButtonLoading(loginBtn, false);
-                    showMessage('Verification failed. Please try again.', 'error');
+                    showMessage('Verification failed. Please check your credentials or connection.', 'error');
                 }
             }
         });

@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('authType', 'member');
                 sessionStorage.setItem('memberEmail', email);
                 setTimeout(() => {
-                    window.location.href = '../members/directory.html';
+                    window.location.href = '../members/register.html';
                 }, 700);
 
             } else if (selectedRole === 'staff') {
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Fallback safe redirect based on role
             if (selectedRole === 'member') {
                 sessionStorage.setItem('authType', 'member');
-                window.location.href = '../members/directory.html';
+                window.location.href = '../members/register.html';
             } else if (selectedRole === 'staff') {
                 sessionStorage.setItem('authType', 'staff');
                 window.location.href = '../distributor/distributor.html';
@@ -236,8 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     errorMsg = 'The chosen password is too weak. Please use at least 6 characters.';
                 } else if (error.code === 'auth/invalid-email') {
                     errorMsg = 'The email address is improperly formatted.';
+                } else if (error.code === 'auth/network-request-failed') {
+                    errorMsg = 'Network connection issue. Please check your internet connectivity.';
                 } else if (error.message) {
-                    errorMsg = error.message;
+                    errorMsg = error.message.replace(/^Firebase:\s*(Error\s*)?(\([^\)]+\)\.?\s*)?/i, '').trim() || 'Failed to create account.';
                 }
 
                 showMessage(errorMsg, 'error');
