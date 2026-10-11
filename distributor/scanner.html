@@ -18,6 +18,11 @@
                 <small id="active-station-name">Station: Not Selected</small>
             </div>
             <div class="header-buttons">
+                <!-- Voice Soundbox Toggle Button -->
+                <button id="soundbox-toggle-btn" class="header-btn soundbox-btn" aria-label="Toggle Voice Soundbox" title="Toggle Hardware Voice Soundbox">
+                    <i class="ph-bold ph-speaker-high" id="soundbox-icon"></i>
+                    <span id="soundbox-status-label">Voice: ON</span>
+                </button>
                 <!-- Camera Switch Button -->
                 <button id="change-camera-btn" class="header-btn camera-btn" aria-label="Switch Camera">
                     <i class="ph-bold ph-camera-rotate"></i>
@@ -68,6 +73,25 @@
                 </div>
             </div>
             
+            <!-- Voice Soundbox Hardware Simulator Bar -->
+            <div class="soundbox-demo-panel" id="soundbox-demo-panel">
+                <div class="soundbox-panel-header">
+                    <i class="ph-fill ph-broadcast"></i>
+                    <span>Hardware Event Soundbox Simulator</span>
+                </div>
+                <div class="soundbox-quick-triggers">
+                    <button type="button" class="btn-soundbox-trigger grant" id="test-grant-btn">
+                        <i class="ph-bold ph-speaker-high"></i> <span>"Access Granted"</span>
+                    </button>
+                    <button type="button" class="btn-soundbox-trigger warn" id="test-warning-btn">
+                        <i class="ph-bold ph-warning"></i> <span>"Already Used"</span>
+                    </button>
+                    <button type="button" class="btn-soundbox-trigger deny" id="test-denied-btn">
+                        <i class="ph-bold ph-x-circle"></i> <span>"Invalid Pass"</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Change Station Trigger: Synchronized with switchStationBtn in Canvas -->
             <button id="switch-station-btn" class="secondary-action-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256">

@@ -116,6 +116,150 @@ document.addEventListener('DOMContentLoaded', () => {
         stationOverlay.style.display = 'grid';
     };
 
+    // ==========================================
+    // VOICE SOUNDBOX HARDWARE SIMULATOR ENGINE
+    // ==========================================
+    const VoiceSoundbox = {
+        isEnabled: localStorage.getItem('passtrack_soundbox_enabled') !== 'false',
+        audioCtx: null,
+
+        initAudio: function() {
+            if (!this.audioCtx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) this.audioCtx = new AudioCtx();
+            }
+        },
+
+        playTone: function(frequency, type, duration) {
+            try {
+                this.initAudio();
+                if (!this.audioCtx) return;
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(frequency, this.audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, this.audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+                osc.start();
+                osc.stop(this.audioCtx.currentTime + duration);
+            } catch(e) {}
+        },
+
+        playSuccessChime: function() {
+            this.playTone(880, 'sine', 0.15); // A5
+            setTimeout(() => this.playTone(1318.51, 'sine', 0.25), 120); // E6
+        },
+
+        playAlertBuzz: function() {
+            this.playTone(280, 'sawtooth', 0.2);
+            setTimeout(() => this.playTone(220, 'sawtooth', 0.35), 180);
+        },
+
+        speak: function(text, isPositive = true) {
+            if (!this.isEnabled) return;
+
+            // Play hardware soundbox tone first
+            if (isPositive) this.playSuccessChime();
+            else this.playAlertBuzz();
+
+            if (!('speechSynthesis' in window)) return;
+
+            try {
+                window.speechSynthesis.cancel(); // Cancel any lingering utterance
+
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = 1.05;
+                    utterance.pitch = isPositive ? 1.05 : 0.95;
+                    utterance.volume = 1.0;
+                    utterance.lang = 'en-US';
+
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        const naturalVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Samantha')));
+                        if (naturalVoice) utterance.voice = naturalVoice;
+                    }
+
+                    window.speechSynthesis.speak(utterance);
+                }, 180);
+            } catch(e) {
+                console.warn("Speech synthesis error:", e);
+            }
+        },
+
+        announceSuccess: function(name, ticketType) {
+            const tierStr = ticketType ? `${ticketType} Pass. ` : '';
+            this.speak(`Access Granted! ${tierStr}Welcome, ${name}!`, true);
+        },
+
+        announceWarning: function(name, time) {
+            this.speak(`Warning! Pass already used for ${name} at ${time}. Entry Denied.`, false);
+        },
+
+        announceDenied: function(reason) {
+            this.speak(`Access Denied! ${reason}`, false);
+        },
+
+        toggle: function() {
+            this.isEnabled = !this.isEnabled;
+            localStorage.setItem('passtrack_soundbox_enabled', this.isEnabled ? 'true' : 'false');
+            this.updateUI();
+            if (this.isEnabled) {
+                this.speak("Voice Soundbox Activated.", true);
+            }
+        },
+
+        updateUI: function() {
+            const toggleBtn = document.getElementById('soundbox-toggle-btn');
+            const label = document.getElementById('soundbox-status-label');
+            const icon = document.getElementById('soundbox-icon');
+            if (!toggleBtn) return;
+
+            if (this.isEnabled) {
+                toggleBtn.classList.remove('muted');
+                if (label) label.textContent = 'Voice: ON';
+                if (icon) icon.className = 'ph-bold ph-speaker-high';
+            } else {
+                toggleBtn.classList.add('muted');
+                if (label) label.textContent = 'Voice: OFF';
+                if (icon) icon.className = 'ph-bold ph-speaker-slash';
+            }
+        }
+    };
+
+    // Attach Soundbox Toggle Listener
+    const soundboxToggleBtn = document.getElementById('soundbox-toggle-btn');
+    if (soundboxToggleBtn) {
+        soundboxToggleBtn.addEventListener('click', () => VoiceSoundbox.toggle());
+        VoiceSoundbox.updateUI();
+    }
+
+    // Attach Soundbox Demo Triggers
+    const testGrantBtn = document.getElementById('test-grant-btn');
+    const testWarningBtn = document.getElementById('test-warning-btn');
+    const testDeniedBtn = document.getElementById('test-denied-btn');
+
+    if (testGrantBtn) {
+        testGrantBtn.addEventListener('click', () => {
+            VoiceSoundbox.announceSuccess('Rahul Sharma', 'VIP Admission');
+            showResult(true, 'Access Granted', 'Welcome, Rahul Sharma!');
+        });
+    }
+    if (testWarningBtn) {
+        testWarningBtn.addEventListener('click', () => {
+            VoiceSoundbox.announceWarning('Priya Singh', '10:14 AM');
+            showResult(false, 'Already Used', 'Pass already used at 10:14 AM.');
+        });
+    }
+    if (testDeniedBtn) {
+        testDeniedBtn.addEventListener('click', () => {
+            VoiceSoundbox.announceDenied('Invalid security token.');
+            showResult(false, 'Invalid Token', 'This pass does not belong to this event.');
+        });
+    }
+
     // --- 3. SCAN SUCCESS LOGIC ---
     async function onScanSuccess(decodedText) {
         if (isProcessing || !currentStation) return;
@@ -123,7 +267,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // A. TIMELINE ENFORCEMENT
         if (!isStationActive(currentStation.start, currentStation.end)) {
-            showResult(false, 'Station Closed', `Hours for ${currentStation.name}: ${currentStation.start} to ${currentStation.end}`);
+            const msg = `Hours for ${currentStation.name}: ${currentStation.start} to ${currentStation.end}`;
+            showResult(false, 'Station Closed', msg);
+            VoiceSoundbox.announceDenied('Station is currently closed.');
             setTimeout(() => { isProcessing = false; }, 3000);
             return;
         }
@@ -139,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (querySnapshot.empty) {
                 showResult(false, 'Invalid Token', 'This QR does not belong to this event.');
+                VoiceSoundbox.announceDenied('Invalid token. Pass does not belong to this event.');
             } else {
                 const userDoc = querySnapshot.docs[0];
                 const userData = userDoc.data();
@@ -147,12 +294,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 // B. PERMISSION CHECK
                 if (!perms[currentStation.name]) {
                     showResult(false, 'No Access', `${userData.name} is not authorized for this specific station.`);
+                    VoiceSoundbox.announceDenied(`${userData.name} is not authorized for ${currentStation.name}.`);
                 }
                 // C. DUPLICATE CHECK
                 else if (perms[currentStation.name].status === 'used') {
                     const time = perms[currentStation.name].scannedAt ?
-                        new Date(perms[currentStation.name].scannedAt.seconds * 1000).toLocaleTimeString() : 'Previously';
+                        new Date(perms[currentStation.name].scannedAt.seconds * 1000).toLocaleTimeString() : 'Earlier Today';
                     showResult(false, 'Already Used', `${userData.name} checked in at ${time}.`);
+                    VoiceSoundbox.announceWarning(userData.name, time);
                 }
                 // D. SUCCESS
                 else {
@@ -170,11 +319,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     showResult(true, 'Access Granted', `Welcome, ${userData.name}!`);
+                    VoiceSoundbox.announceSuccess(userData.name, userData.ticketType || '');
                 }
             }
         } catch (error) {
             console.error("Scan Error:", error);
             showResult(false, 'Database Error', 'Check connection or index status.');
+            VoiceSoundbox.announceDenied('Database connection error.');
         }
 
         setTimeout(() => { isProcessing = false; }, 2500);
