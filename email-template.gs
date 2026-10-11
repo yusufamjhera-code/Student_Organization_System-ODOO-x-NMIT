@@ -356,7 +356,7 @@ function doPost(e) {
     }
 
     // ================= PARTICIPANT TEMPLATE =================
-    else {
+    else if (data.type === "participant" || data.type === "voucher") {
       subject = `Your Access Voucher | ${data.event_name}`;
 
       htmlBody = `
@@ -447,6 +447,8 @@ function doPost(e) {
         </div>
       </div>
       `;
+    }
+
     // ================= REIMBURSEMENT STATUS TEMPLATE =================
     else if (data.type === "reimbursement") {
       const isApproved = data.status === "approved";
@@ -543,6 +545,33 @@ function doPost(e) {
         </div>
         <div style="background:#f8fafc; padding:14px 20px; text-align:center; border-top:1px solid #e2e8f0; border-radius:0 0 18px 18px;">
           <p style="margin:0; font-size:10px; color:#94a3b8; letter-spacing:0.5px;">SECURE DIGITAL PASS &bull; ${BRAND_NAME.toUpperCase()}</p>
+        </div>
+      </div>
+      `;
+    }
+
+    // ================= FALLBACK DEFAULT (UNCLASSIFIED REQUESTS) =================
+    else {
+      subject = `Your Access Voucher | ${data.event_name || BRAND_NAME}`;
+
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box;">
+        <div style="background:linear-gradient(135deg,#6a11cb,#2575fc); padding:30px 20px 26px; text-align:center; border-radius:18px 18px 0 0;">
+          <h1 style="margin:0; color:#ffffff; font-size:21px; font-weight:700;">Authorization Issued</h1>
+          <p style="margin:6px 0 0; color:rgba(255,255,255,0.9); font-size:14px;">${data.event_name || 'PassTrack Access'}</p>
+        </div>
+        <div style="padding:24px 20px; color:#1e293b; line-height:1.65;">
+          <p style="font-size:15px; margin:0 0 16px;">Hi <strong>${data.to_name || 'Attendee'}</strong>,</p>
+          <p style="font-size:14px; color:#475569; margin:0 0 20px;">Your digital access token has been generated successfully.</p>
+          ${data.qr_link ? `
+          <div style="text-align:center; margin:26px 0;">
+            <a href="${data.qr_link}" style="display:inline-block; background:#6a11cb; color:#ffffff; text-decoration:none; padding:14px 28px; border-radius:12px; font-weight:700; font-size:15px;">
+              View Digital Token
+            </a>
+          </div>` : ''}
+        </div>
+        <div style="background:#f8fafc; padding:14px 20px; text-align:center; border-top:1px solid #e2e8f0; border-radius:0 0 18px 18px;">
+          <p style="margin:0; font-size:10px; color:#94a3b8; letter-spacing:0.5px;">DIGITALLY SECURED BY ${BRAND_NAME.toUpperCase()}</p>
         </div>
       </div>
       `;
