@@ -17,10 +17,10 @@ if (fs.existsSync(envPath)) {
 }
 
 const API_KEY = env.FIREBASE_API_KEY || process.env.FIREBASE_API_KEY;
-const PROJECT_ID = env.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'passtrack-nmit';
+const PROJECT_ID = env.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
 
-if (!API_KEY) {
-    console.error('Missing FIREBASE_API_KEY in .env');
+if (!API_KEY || !PROJECT_ID) {
+    console.error('Missing FIREBASE_API_KEY or FIREBASE_PROJECT_ID in environment or .env');
     process.exit(1);
 }
 
