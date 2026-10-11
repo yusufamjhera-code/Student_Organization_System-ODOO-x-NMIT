@@ -171,97 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 1. AUTH & INITIALIZATION ---
-    const isDemoMode = () => sessionStorage.getItem('demoUser') === 'true' || 
-                             sessionStorage.getItem('authType') === 'admin' ||
-                             (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
-
-    const loadDemoEvent = () => {
-        const isHackathon = !eventDocId || eventDocId.includes('hacknmit');
-        currentEventName = isHackathon ? 'HackNMIT 2026 Annual Hackathon' : 'Open Source Developer Summit';
-        currentEventStartDate = isHackathon ? '2026-03-28' : '2026-04-15';
-        currentEventEndDate = isHackathon ? '2026-03-29' : '2026-04-15';
-        originalEventId = isHackathon ? 'hacknmit-2026' : 'os-summit-2026';
-        eventCollaborators = [{ email: 'coordinator@nmit.ac.in', role: 'Track Lead' }];
-
-        if (eventNameHeader) eventNameHeader.textContent = currentEventName;
-        if (displayEventId) displayEventId.textContent = originalEventId;
-        if (displayDistributorCode) displayDistributorCode.textContent = isHackathon ? 'staff123' : 'staff456';
-        if (eventDateRangeEl) eventDateRangeEl.textContent = isHackathon ? '28th Mar 2026 — 29th Mar 2026' : '15th Apr 2026';
-
-        eventStations = isHackathon ? [
-            { name: "Entrance", start: "00:00", end: "23:59", dateFrom: "all", dateTo: "all" },
-            { name: "Lab 3", start: "09:00", end: "18:00", dateFrom: "all", dateTo: "all" }
-        ] : [
-            { name: "Seminar Hall A", start: "09:30", end: "17:30", dateFrom: "all", dateTo: "all" }
-        ];
-
-        renderStationCheckboxes();
-        renderAccessPointsList();
-
-        // Ticketing config
-        const memberPriceEl = document.getElementById('ticket-member-price');
-        const nonmemberPriceEl = document.getElementById('ticket-nonmember-price');
-        const totalSeatsEl = document.getElementById('ticket-total-seats');
-        const seatsSoldEl = document.getElementById('ticket-seats-sold');
-        const salesOpenEl = document.getElementById('ticket-sales-open');
-        const viewTicketsLink = document.getElementById('view-tickets-link');
-
-        if (memberPriceEl) memberPriceEl.value = isHackathon ? '250' : '0';
-        if (nonmemberPriceEl) nonmemberPriceEl.value = isHackathon ? '350' : '0';
-        if (totalSeatsEl) totalSeatsEl.value = isHackathon ? '300' : '150';
-        if (seatsSoldEl) seatsSoldEl.textContent = isHackathon ? '240' : '110';
-        if (salesOpenEl) salesOpenEl.checked = true;
-        if (viewTicketsLink) viewTicketsLink.href = `../tickets/buy.html?event=${originalEventId}`;
-
-        allParticipants = [
-            {
-                id: 'part-1',
-                name: 'Aarav Sharma',
-                contact: 'aarav.sharma@nmit.ac.in',
-                token: 'TKN-ACM-8821',
-                createdAt: { toMillis: () => Date.now() - 3600000 * 24 },
-                permissions: {
-                    "Entrance": { status: "used", scannedAt: "2026-03-28 09:15" },
-                    "Lab 3": { status: "pending" }
-                }
-            },
-            {
-                id: 'part-2',
-                name: 'Priya Patel',
-                contact: 'priya.p@nmit.ac.in',
-                token: 'TKN-ACM-9104',
-                createdAt: { toMillis: () => Date.now() - 3600000 * 12 },
-                permissions: {
-                    "Entrance": { status: "used", scannedAt: "2026-03-28 09:40" },
-                    "Lab 3": { status: "used", scannedAt: "2026-03-28 11:20" }
-                }
-            },
-            {
-                id: 'part-3',
-                name: 'Rohan Deshmukh',
-                contact: 'rohan.d@nmit.ac.in',
-                token: 'TKN-ACM-5532',
-                createdAt: { toMillis: () => Date.now() - 3600000 * 6 },
-                permissions: {
-                    "Entrance": { status: "pending" },
-                    "Lab 3": { status: "pending" }
-                }
-            }
-        ];
-        renderParticipantList();
-        calculateStats();
-        renderCollaboratorsList();
-        setupCollaboratorHandlers();
-    };
-
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentOrganizer = user;
             await fetchEventDetails();
         } else if (isCollaboratorUser && collaboratorEmail) {
-            await fetchEventDetails();
-        } else if (isDemoMode()) {
-            currentOrganizer = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in' };
             await fetchEventDetails();
         } else {
             window.location.href = '../index.html';
@@ -270,6 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchEventDetails = async () => {
         try {
+            if (!eventDocId) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
             const doc = await firestore.collection('events').doc(eventDocId).get();
             const data = doc.data();
 
@@ -315,17 +234,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Both admin and collaborators have full access (including managing collaborators)
                 renderCollaboratorsList();
                 setupCollaboratorHandlers();
-            } else if (isDemoMode()) {
-                loadDemoEvent();
             } else {
-                window.location.href = 'dashboard.html';
+                showToast("Event not found or access denied.", "danger");
+                setTimeout(() => window.location.href = 'dashboard.html', 1500);
             }
         } catch (e) {
-            if (isDemoMode()) {
-                loadDemoEvent();
-            } else {
-                showToast("Error loading event details.", "danger");
-            }
+            console.error("Fetch event error:", e);
+            showToast("Error loading event details from Firestore.", "danger");
         }
     };
 
@@ -1858,19 +1773,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewCertBtn = document.getElementById('preview-cert-btn');
     if (previewCertBtn) {
         previewCertBtn.addEventListener('click', async () => {
-            const sig1 = document.getElementById('cert-signatory1-name')?.value || 'Dr. K. Srinivas';
-            const sig2 = document.getElementById('cert-signatory2-name')?.value || 'Ananya Iyer';
+            const sig1 = document.getElementById('cert-signatory1-name')?.value || 'Faculty Advisor';
+            const sig2 = document.getElementById('cert-signatory2-name')?.value || 'Club Lead';
 
             if (window.PassTrackCertificate) {
                 previewCertBtn.disabled = true;
                 previewCertBtn.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i> Generating...';
                 try {
                     await window.PassTrackCertificate.downloadCertificatePNG({
-                        participantName: 'Rahul Sharma (Sample Preview)',
-                        eventName: currentEventName || 'HackNMIT 2026 Annual Hackathon',
-                        orgName: 'Skyline Student Association • ACM Chapter',
-                        eventDate: eventDateRangeEl ? (eventDateRangeEl.textContent || 'March 28, 2026') : 'March 28, 2026',
-                        certificateId: 'PT-CERT-2026-HACK-8F2A',
+                        participantName: auth.currentUser?.displayName || 'Attendee Preview',
+                        eventName: currentEventName || 'Event Certificate',
+                        orgName: orgNameHeader?.textContent || 'Student Organization',
+                        eventDate: eventDateRangeEl ? (eventDateRangeEl.textContent || '') : '',
+                        certificateId: window.PassTrackCertificate.generateCertificateId(originalEventId || 'EVENT', 'PREVIEW'),
                         signatory1Name: sig1,
                         signatory2Name: sig2
                     });

@@ -85,67 +85,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function loadDemoStoreProducts() {
-        productsData = [
-            {
-                id: 'prod-1',
-                name: 'ACM Official Heavyweight Hoodie',
-                description: '380 GSM brushed fleece with embroidered ACM crest on chest and HackNMIT sleeve badge.',
-                category: 'apparel',
-                memberPrice: 850,
-                nonMemberPrice: 1100,
-                stock: 45,
-                sizes: ['S', 'M', 'L', 'XL'],
-                imageUrl: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80'
-            },
-            {
-                id: 'prod-2',
-                name: 'HackNMIT 2026 Minimalist Tee',
-                description: '100% bio-washed combed cotton with glow-in-the-dark terminal matrix graphic.',
-                category: 'apparel',
-                memberPrice: 350,
-                nonMemberPrice: 450,
-                stock: 120,
-                sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-                imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80'
-            },
-            {
-                id: 'prod-3',
-                name: 'Developer Ceramic Thermal Tumbler',
-                description: 'Double-walled vacuum insulated mug with spill-resistant lid and laser-etched binary logo.',
-                category: 'accessories',
-                memberPrice: 400,
-                nonMemberPrice: 550,
-                stock: 28,
-                sizes: ['Standard 450ml'],
-                imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop&q=80'
-            },
-            {
-                id: 'prod-4',
-                name: 'Die-Cut Holographic Sticker Pack',
-                description: 'Set of 8 waterproof vinyl laptop stickers featuring Git, Linux, Vim, Rust, and ACM stickers.',
-                category: 'stickers',
-                memberPrice: 80,
-                nonMemberPrice: 120,
-                stock: 200,
-                sizes: ['Pack of 8'],
-                imageUrl: 'https://images.unsplash.com/photo-1589384267710-7a25be15f793?w=600&auto=format&fit=crop&q=80'
-            }
-        ];
-        renderProducts();
-    }
-
     // --- LOAD STORE DATA ---
     try {
         let orgDoc = null;
         try {
             orgDoc = await firestore.collection('organizations').doc(activeOrgId).get();
         } catch(e) {}
-
-        const isDemo = activeOrgId === 'demo-org-acm' ||
-                       sessionStorage.getItem('demoUser') === 'true' ||
-                       sessionStorage.getItem('authType') === 'admin' ||
-                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
 
         if (orgDoc && orgDoc.exists) {
             orgNameEl.textContent = orgDoc.data().name || 'Store';
@@ -157,19 +102,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     productsData = snap.docs.map(d => ({id: d.id, ...d.data()}));
                     renderProducts();
                 }, err => {
-                    if (isDemo) loadDemoStoreProducts();
-                    else spinner.innerHTML = '<p style="color:var(--danger);">Failed to load products.</p>';
+                    console.error("Products listener error:", err);
+                    spinner.innerHTML = '<p style="color:var(--danger);">Failed to load products from database.</p>';
                 });
-        } else if (isDemo) {
-            orgNameEl.textContent = 'ACM Student Chapter • NMIT';
-            loadDemoStoreProducts();
         } else {
             spinner.innerHTML = '<p style="color:var(--danger); text-align:center;">Organization not found.</p>';
             return;
         }
     } catch (err) {
         console.error("Error loading store:", err);
-        loadDemoStoreProducts();
+        spinner.innerHTML = '<p style="color:var(--danger);">Error loading products.</p>';
     }
 
     function renderProducts() {
@@ -386,7 +328,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 checkoutBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Placing Order...</span>';
             } else if (totalPrice > 0) {
-                paymentDetails = { utr: "MOCK_UPI_" + Date.now() };
+                paymentDetails = { utr: "UPI_" + Date.now().toString(36).toUpperCase() };
             }
 
             let createdOrderId = null;

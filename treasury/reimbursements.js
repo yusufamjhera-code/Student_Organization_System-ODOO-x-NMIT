@@ -50,85 +50,45 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set today's date default
     dateInput.value = new Date().toISOString().split('T')[0];
 
-    // Seed Demo Claims
+    // Claims Storage
     const DEMO_CLAIMS_KEY = 'passtrack_volunteer_claims';
     function loadLocalClaims() {
         try {
             const raw = localStorage.getItem(DEMO_CLAIMS_KEY);
             if (raw) return JSON.parse(raw);
         } catch (e) {}
-        
-        // Initial Realistic Demo Claims
-        const seed = [
-            {
-                id: 'claim-101',
-                claimantName: 'Aarav Patel',
-                claimantEmail: 'aarav.patel@nmit.ac.in',
-                upiId: 'aarav@okaxis',
-                event: 'HackNMIT 2026',
-                amount: 1450,
-                category: 'catering',
-                date: '2026-03-27',
-                merchant: 'Campus Cafeteria & Snacks',
-                description: 'Midnight snacks, extra mineral water cartons & black coffee for volunteer night shift during HackNMIT hackathon.',
-                receiptUrl: generateReceiptCanvasUrl('Campus Cafeteria & Snacks', 1450, '2026-03-27', ['Mineral Water 20L x 3', 'Espresso Premix x 2', 'Glucose Biscuits x 12']),
-                receiptFileName: 'canteen_cash_bill_2703.jpg',
-                status: 'pending',
-                createdAt: '2026-03-27T23:15:00.000Z'
-            },
-            {
-                id: 'claim-102',
-                claimantName: 'Priya Sundaram',
-                claimantEmail: 'priya.s@nmit.ac.in',
-                upiId: 'priya.s@paytm',
-                event: 'HackNMIT 2026',
-                amount: 2800,
-                category: 'hardware',
-                date: '2026-03-26',
-                merchant: 'Sri Balaji Electronics & Hardware',
-                description: 'Two 15-meter surge-protected extension cord boards and HDMI adapters for projector lab.',
-                receiptUrl: generateReceiptCanvasUrl('Sri Balaji Electronics', 2800, '2026-03-26', ['Power Extension 15m x 2', 'HDMI to Type-C Adaptor x 3']),
-                receiptFileName: 'hardware_invoice_904.png',
-                status: 'pending',
-                createdAt: '2026-03-26T14:30:00.000Z'
-            },
-            {
-                id: 'claim-103',
-                claimantName: 'Rohit Kulkarni',
-                claimantEmail: 'rohit.k@nmit.ac.in',
-                upiId: 'rohit@icici',
-                event: 'Club Orientation 2026',
-                amount: 950,
-                category: 'stationery',
-                date: '2026-03-20',
-                merchant: 'Venkateshwara Xerox & Print',
-                description: '250 color induction handouts, lanyard ribbons and safety clips for door registration.',
-                receiptUrl: generateReceiptCanvasUrl('Venkateshwara Print', 950, '2026-03-20', ['Glossy Orientation Flyers x 250', 'Lanyard Ribbons x 100']),
-                receiptFileName: 'print_shop_bill.jpg',
-                status: 'approved',
-                reviewedBy: 'treasurer@nmit.ac.in',
-                transactionId: 'txn-demo-reimb-1',
-                createdAt: '2026-03-20T11:00:00.000Z'
-            }
-        ];
-        localStorage.setItem(DEMO_CLAIMS_KEY, JSON.stringify(seed));
-        return seed;
+        return [];
     }
 
     function saveLocalClaims(claims) {
         localStorage.setItem(DEMO_CLAIMS_KEY, JSON.stringify(claims));
     }
 
+    // Dynamic Events Populator from Firestore
+    async function loadDynamicEvents() {
+        try {
+            const eventsSnap = await firestore.collection('events').orderBy('createdAt', 'desc').limit(20).get();
+            if (!eventsSnap.empty) {
+                eventSelect.innerHTML = '<option value="" disabled selected>Choose Event...</option>';
+                eventsSnap.forEach(doc => {
+                    const evt = doc.data();
+                    const opt = document.createElement('option');
+                    opt.value = evt.name || doc.id;
+                    opt.textContent = `${evt.name || doc.id} (${evt.eventDate || 'Upcoming'})`;
+                    eventSelect.appendChild(opt);
+                });
+                const generalOpt = document.createElement('option');
+                generalOpt.value = 'General Operations & Logistics';
+                generalOpt.textContent = 'General Operations & Logistics';
+                eventSelect.appendChild(generalOpt);
+            }
+        } catch(err) {
+            console.warn("Could not load dynamic events:", err);
+        }
+    }
+
     // --- AUTH INITIALIZATION ---
     auth.onAuthStateChanged(async (user) => {
-        isDemoMode = sessionStorage.getItem('demoUser') === 'true' || 
-                     sessionStorage.getItem('authType') === 'staff' ||
-                     sessionStorage.getItem('authType') === 'member' ||
-                     sessionStorage.getItem('authType') === 'admin' ||
-                     window.location.search.includes('demo=true') ||
-                     (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY") ||
-                     !user;
-
         if (user) {
             currentUser = user;
             if (nameInput && !nameInput.value) nameInput.value = user.displayName || '';
@@ -141,17 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentOrgId = orgsSnapshot.docs[0].id;
                 }
             } catch(e) {}
-        } else if (isDemoMode) {
-            currentUser = {
-                uid: 'demo-volunteer-1',
-                displayName: 'Rahul Sharma',
-                email: 'rahul@nmit.ac.in'
-            };
-            if (nameInput) nameInput.value = 'Rahul Sharma';
-            if (emailInput) emailInput.value = 'rahul@nmit.ac.in';
-            if (upiInput) upiInput.value = 'rahul@oksbi';
         }
 
+        await loadDynamicEvents();
         loadClaims();
     });
 

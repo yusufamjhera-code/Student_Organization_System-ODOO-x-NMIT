@@ -37,11 +37,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let tConfig = null;
     let orgId = null;
 
-    const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
-                   sessionStorage.getItem('authType') === 'admin' ||
-                   (eventId && (eventId.includes('hacknmit') || eventId.includes('summit'))) ||
-                   (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
-    
     // --- LOAD EVENT DATA ---
     try {
         let doc = null;
@@ -62,24 +57,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     orgId = orgQuery.docs[0].id;
                 }
             } catch(e) {}
-        } else if (isDemo) {
-            const isHackathon = eventId.includes('hacknmit');
-            eventData = {
-                name: isHackathon ? 'HackNMIT 2026 Annual Hackathon' : 'Open Source Developer Summit',
-                eventDate: isHackathon ? '2026-03-28' : '2026-04-15',
-                eventEndDate: isHackathon ? '2026-03-29' : '2026-04-15',
-                ticketConfig: {
-                    memberPrice: isHackathon ? 250 : 0,
-                    nonmemberPrice: isHackathon ? 350 : 0,
-                    totalSeats: isHackathon ? 300 : 150,
-                    seatsSold: isHackathon ? 240 : 110,
-                    salesOpen: true
-                }
-            };
-            tConfig = eventData.ticketConfig;
-            orgId = 'demo-org-acm';
         } else {
-            spinner.innerHTML = '<p style="color:var(--danger); text-align:center;">Event not found.</p>';
+            spinner.innerHTML = '<p style="color:var(--danger); text-align:center;">Event not found or has been removed.</p>';
             return;
         }
 
@@ -265,8 +244,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Issuing Ticket...</span>';
             } else if (pricePaid > 0) {
-                // Fallback if payments not initialized
-                paymentDetails = { utr: "MOCK_UPI_" + Date.now() };
+                // Direct reference if payment modal pending
+                paymentDetails = { utr: "UPI_" + Date.now().toString(36).toUpperCase() };
             }
 
             // Run atomic transaction to claim seat
@@ -482,40 +461,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let ticketDocs = snap.docs;
             if (snap.empty) {
-                // Demo fallback if testing or demo user
-                if (isDemo || email.includes('demo') || email.includes('test') || email.includes('rahul') || email.includes('nmit')) {
-                    ticketDocs = [
-                        {
-                            id: 'demo-pass-1',
-                            data: () => ({
-                                name: 'Rahul Sharma',
-                                ticketType: 'member',
-                                qrToken: 'PT-DEMO-CHECKEDIN-889',
-                                status: 'used',
-                                createdAt: { toMillis: () => Date.now() - 86400000 },
-                                certificateId: 'PT-CERT-2026-HACK-8F2A'
-                            })
-                        },
-                        {
-                            id: 'demo-pass-2',
-                            data: () => ({
-                                name: 'Priya Patel',
-                                ticketType: 'nonmember',
-                                qrToken: 'PT-DEMO-UNCHECKED-102',
-                                status: 'issued',
-                                createdAt: { toMillis: () => Date.now() - 43200000 }
-                            })
-                        }
-                    ];
-                } else {
-                    lookupTicketsResults.innerHTML = `
-                        <div style="text-align:center; padding:25px 0; color:var(--text-muted);">
-                            <i class="ph-bold ph-ticket" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:8px; display:inline-block;"></i>
-                            <p style="margin:0;">No tickets found for <strong>${escapeHtml(email)}</strong> for this event.</p>
-                        </div>
-                    `;
-                    return;
-                }
+                lookupTicketsResults.innerHTML = `
+                    <div style="text-align:center; padding:25px 0; color:var(--text-muted);">
+                        <i class="ph-bold ph-ticket" style="font-size:2.5rem; color:var(--text-muted); margin-bottom:8px; display:inline-block;"></i>
+                        <p style="margin:0;">No tickets found for <strong>${escapeHtml(email)}</strong> for this event.</p>
+                    </div>
+                `;
+                return;
             }
 
             lookupTicketsResults.innerHTML = ticketDocs.map(doc => {

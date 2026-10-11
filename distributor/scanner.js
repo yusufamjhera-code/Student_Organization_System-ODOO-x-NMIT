@@ -15,16 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('distributorEventDocId', paramId);
         sessionStorage.setItem('distributorEventId', paramId);
     } else if (!eventDocId) {
-        const isDemo = sessionStorage.getItem('demoUser') === 'true' || sessionStorage.getItem('authType') === 'admin' || (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
-        if (isDemo) {
-            eventDocId = 'hacknmit-2026';
-            eventId = 'hacknmit-2026';
-            sessionStorage.setItem('distributorEventDocId', 'hacknmit-2026');
-            sessionStorage.setItem('distributorEventId', 'hacknmit-2026');
-        } else {
-            window.location.href = 'distributor.html';
-            return;
-        }
+        window.location.href = 'distributor.html';
+        return;
     }
 
     // DOM Elements
@@ -243,14 +235,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (testGrantBtn) {
         testGrantBtn.addEventListener('click', () => {
-            VoiceSoundbox.announceSuccess('Rahul Sharma', 'VIP Admission');
-            showResult(true, 'Access Granted', 'Welcome, Rahul Sharma!');
+            VoiceSoundbox.announceSuccess('Verified Attendee', 'Pass Verified');
+            showResult(true, 'Access Granted', 'Welcome, Verified Attendee!');
         });
     }
     if (testWarningBtn) {
         testWarningBtn.addEventListener('click', () => {
-            VoiceSoundbox.announceWarning('Priya Singh', '10:14 AM');
-            showResult(false, 'Already Used', 'Pass already used at 10:14 AM.');
+            VoiceSoundbox.announceWarning('Attendee', 'Prior Scan');
+            showResult(false, 'Already Used', 'Pass was already scanned.');
         });
     }
     if (testDeniedBtn) {

@@ -33,28 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let trendChart = null;
     let categoryChart = null;
 
-    function loadDemoTreasury() {
-        currentOrgId = 'demo-org-acm';
-        if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
-        
-        let localDynamicTxns = [];
-        try {
-            localDynamicTxns = JSON.parse(localStorage.getItem('passtrack_treasury_txns') || '[]');
-        } catch(e) {}
-
-        const seedTxns = [
-            { id: 'txn-1', description: 'HackNMIT 2026 Ticket Sales', type: 'income', amount: 84000, category: 'tickets', date: '2026-03-28' },
-            { id: 'txn-2', description: 'Annual Club Membership Dues', type: 'income', amount: 32000, category: 'dues', date: '2026-03-15' },
-            { id: 'txn-3', description: 'Official Hoodies Pre-orders', type: 'income', amount: 24500, category: 'merchandise', date: '2026-03-10' },
-            { id: 'txn-4', description: 'Auditorium Booking & AV Setup', type: 'expense', amount: 18000, category: 'events', date: '2026-03-25' },
-            { id: 'txn-5', description: 'Catering & Participant Refreshments', type: 'expense', amount: 12500, category: 'hospitality', date: '2026-03-29' }
-        ];
-
-        txnsData = [...localDynamicTxns, ...seedTxns];
-        updateDashboard();
-        loadReimbursements();
-    }
-
     // Live Zero-Touch Treasury Sync Listener
     window.addEventListener('passtrack:treasury:synced', (e) => {
         const newTxn = e.detail;
@@ -65,13 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- AUTH GUARD ---
+    // --- AUTH GUARD & DYNAMIC INITIALIZATION ---
     auth.onAuthStateChanged(async (user) => {
-        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
-                       sessionStorage.getItem('authType') === 'admin' ||
-                       window.location.search.includes('demo=true') ||
-                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
-
         if (user) {
             currentUser = user;
             if (sessionStorage.getItem('authType') !== 'collaborator') {
@@ -82,22 +55,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!orgsSnapshot.empty) {
                     const orgDoc = orgsSnapshot.docs[0];
                     currentOrgId = orgDoc.id;
-                    orgNameMeta.textContent = orgDoc.data().name;
+                    if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Organization Treasury';
                     setupRealtimeListeners();
-                } else if (isDemo) {
-                    loadDemoTreasury();
+                    loadReimbursements();
                 } else {
-                    showToast('Organization not found.', 'error');
+                    // Fallback to first available organization if user is contributor
+                    const anyOrg = await firestore.collection('organizations').limit(1).get();
+                    if (!anyOrg.empty) {
+                        const orgDoc = anyOrg.docs[0];
+                        currentOrgId = orgDoc.id;
+                        if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Organization Treasury';
+                        setupRealtimeListeners();
+                        loadReimbursements();
+                    } else {
+                        if (orgNameMeta) orgNameMeta.textContent = 'Organization Treasury';
+                        txnsData = [];
+                        updateDashboard();
+                        loadReimbursements();
+                    }
                 }
             } catch (error) {
-                if (isDemo) loadDemoTreasury();
-                else showToast('Failed to load organization data.', 'error');
+                console.error("Treasury init error:", error);
+                txnsData = [];
+                updateDashboard();
+                loadReimbursements();
             }
-        } else if (isDemo || !user) {
-            currentUser = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in', displayName: 'Treasurer Admin' };
-            loadDemoTreasury();
         } else {
-            window.location.href = '../index.html';
+            // For public / non-logged-in view, attempt to resolve active organization
+            try {
+                const anyOrg = await firestore.collection('organizations').limit(1).get();
+                if (!anyOrg.empty) {
+                    const orgDoc = anyOrg.docs[0];
+                    currentOrgId = orgDoc.id;
+                    if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Organization Treasury';
+                    setupRealtimeListeners();
+                    loadReimbursements();
+                } else {
+                    txnsData = [];
+                    updateDashboard();
+                }
+            } catch(e) {
+                txnsData = [];
+                updateDashboard();
+            }
         }
     });
 
@@ -437,44 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const raw = localStorage.getItem(DEMO_CLAIMS_KEY);
             if (raw) return JSON.parse(raw);
         } catch (e) {}
-        
-        // Initial Seed
-        const seed = [
-            {
-                id: 'claim-101',
-                claimantName: 'Aarav Patel',
-                claimantEmail: 'aarav.patel@nmit.ac.in',
-                upiId: 'aarav@okaxis',
-                event: 'HackNMIT 2026',
-                amount: 1450,
-                category: 'catering',
-                date: '2026-03-27',
-                merchant: 'Campus Cafeteria & Snacks',
-                description: 'Midnight snacks, extra mineral water cartons & black coffee for volunteer night shift during HackNMIT hackathon.',
-                receiptUrl: '../lib/placeholder-receipt.png',
-                receiptFileName: 'canteen_cash_bill_2703.jpg',
-                status: 'pending',
-                createdAt: '2026-03-27T23:15:00.000Z'
-            },
-            {
-                id: 'claim-102',
-                claimantName: 'Priya Sundaram',
-                claimantEmail: 'priya.s@nmit.ac.in',
-                upiId: 'priya.s@paytm',
-                event: 'HackNMIT 2026',
-                amount: 2800,
-                category: 'hardware',
-                date: '2026-03-26',
-                merchant: 'Sri Balaji Electronics & Hardware',
-                description: 'Two 15-meter surge-protected extension cord boards and HDMI adapters for projector lab.',
-                receiptUrl: '../lib/placeholder-receipt.png',
-                receiptFileName: 'hardware_invoice_904.png',
-                status: 'pending',
-                createdAt: '2026-03-26T14:30:00.000Z'
-            }
-        ];
-        localStorage.setItem(DEMO_CLAIMS_KEY, JSON.stringify(seed));
-        return seed;
+        return [];
     }
 
     function saveLocalClaims(claims) {
@@ -483,20 +446,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadReimbursements() {
         if (!queueListEl) return;
-        
-        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
-                       sessionStorage.getItem('authType') === 'admin' ||
-                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
 
-        if (firestore && !isDemo && currentOrgId) {
+        if (firestore && currentOrgId) {
             firestore.collection('reimbursements')
                 .where('orgId', '==', currentOrgId)
                 .onSnapshot(snap => {
-                    if (!snap.empty) {
-                        reimbursementsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    } else {
-                        reimbursementsData = getLocalClaims();
-                    }
+                    reimbursementsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     renderReimbursementsQueue();
                 }, err => {
                     console.warn("Reimbursements listener warning:", err);

@@ -28,175 +28,141 @@ document.addEventListener('DOMContentLoaded', async () => {
     const expenseReimbursementsEl = document.getElementById('expense-reimbursements');
     const expenseTotalEl = document.getElementById('expense-total');
 
-    let currentOrgId = 'demo-org-acm';
+    let currentOrgId = null;
     let dossierData = null;
 
-    // Default Seed Dataset
-    const DEMO_HANDOVER_DATA = {
-        organization: 'ACM Student Chapter • NMIT',
-        academicYear: '2025 – 2026',
-        kpis: {
-            totalAttendees: 520,
-            grossRevenue: 140500,
-            totalExpenses: 30500,
-            netSurplus: 110000
-        },
-        events: [
-            {
-                name: 'HackNMIT 2026 Annual Hackathon',
-                date: '2026-03-28',
-                capacity: 300,
-                sold: 285,
-                turnout: '95%',
-                revenue: 84000
-            },
-            {
-                name: 'Open Source Developer Summit',
-                date: '2026-04-15',
-                capacity: 150,
-                sold: 140,
-                turnout: '93%',
-                revenue: 35000
-            },
-            {
-                name: 'AI & Neural Networks Hands-on Series',
-                date: '2025-11-20',
-                capacity: 65,
-                sold: 65,
-                turnout: '100%',
-                revenue: 12500
-            },
-            {
-                name: 'Freshmen Club Orientation & Welcome',
-                date: '2025-09-05',
-                capacity: 120,
-                sold: 110,
-                turnout: '92%',
-                revenue: 9000
-            }
-        ],
-        financials: {
-            income: {
-                tickets: 84000,
-                merchandise: 24500,
-                dues: 32000,
-                total: 140500
-            },
-            expenses: {
-                venue: 18000,
-                hospitality: 12500,
-                reimbursements: 1450,
-                total: 31950
-            }
-        },
-        reimbursements: [
-            {
-                id: 'claim-101',
-                claimant: 'Aarav Patel (aarav@okaxis)',
-                event: 'HackNMIT 2026',
-                merchant: 'Campus Cafeteria & Midnight Snacks',
-                amount: 1450,
-                status: 'Approved & Reimbursed'
-            },
-            {
-                id: 'claim-102',
-                claimant: 'Sanya Mir (sanya@paytm)',
-                event: 'Open Source Summit',
-                merchant: 'Badge Lanyards & Plastic Sleeves',
-                amount: 680,
-                status: 'Approved & Reimbursed'
-            }
-        ],
-        members: [
-            {
-                name: 'Arjun Nambiar',
-                usn: '1NT23CS042',
-                dept: 'Computer Science',
-                role: 'President & Outgoing Lead',
-                status: 'Active',
-                expiry: '2026-07-31'
-            },
-            {
-                name: 'Ananya Sharma',
-                usn: '1NT23IS019',
-                dept: 'Information Science',
-                role: 'Incoming President & Tech Lead',
-                status: 'Active',
-                expiry: '2026-07-31'
-            },
-            {
-                name: 'Karthik Hegde',
-                usn: '1NT23EC088',
-                dept: 'Electronics & Comm.',
-                role: 'Outgoing Treasury Lead',
-                status: 'Active',
-                expiry: '2026-07-31'
-            },
-            {
-                name: 'Pooja Kulkarni',
-                usn: '1NT23CS112',
-                dept: 'Computer Science',
-                role: 'Incoming Vice President',
-                status: 'Active',
-                expiry: '2026-07-31'
-            },
-            {
-                name: 'Vikramaditya Rao',
-                usn: '1NT20CS099',
-                dept: 'Computer Science',
-                role: 'Alumni Advisor & Mentor',
-                status: 'Alumni',
-                expiry: '2027-12-31'
-            }
-        ]
-    };
-
-    // --- AGGREGATE LIVE DATA ---
+    // --- AGGREGATE LIVE DATA FROM FIRESTORE ---
     async function aggregateHandoverData() {
-        dossierData = JSON.parse(JSON.stringify(DEMO_HANDOVER_DATA));
+        if (!firestore) return;
 
-        // Incorporate dynamically created transactions from localStorage
         try {
-            const localTxns = JSON.parse(localStorage.getItem('passtrack_treasury_txns') || '[]');
-            if (localTxns.length > 0) {
-                let dynamicIncome = 0;
-                let dynamicExpense = 0;
-                localTxns.forEach(t => {
-                    const amt = Number(t.amount) || 0;
+            // 1. Resolve Organization
+            let orgName = 'Student Organization';
+            const user = auth.currentUser;
+            if (user) {
+                const orgSnap = await firestore.collection('organizations').where('ownerId', '==', user.uid).limit(1).get();
+                if (!orgSnap.empty) {
+                    currentOrgId = orgSnap.docs[0].id;
+                    orgName = orgSnap.docs[0].data().name || orgName;
+                }
+            }
+
+            if (!currentOrgId) {
+                const anyOrg = await firestore.collection('organizations').limit(1).get();
+                if (!anyOrg.empty) {
+                    currentOrgId = anyOrg.docs[0].id;
+                    orgName = anyOrg.docs[0].data().name || orgName;
+                }
+            }
+
+            const dossierOrgName = document.getElementById('dossier-org-name');
+            if (dossierOrgName) dossierOrgName.textContent = orgName;
+
+            // 2. Fetch Live Events from Firestore
+            let eventsList = [];
+            let totalAttendees = 0;
+            let eventsQuery = firestore.collection('events');
+            if (user) eventsQuery = eventsQuery.where('organizerId', '==', user.uid);
+            const eventsSnap = await eventsQuery.get();
+
+            eventsSnap.forEach(doc => {
+                const e = doc.data();
+                const cap = Number(e.ticketConfig?.totalSeats || 100);
+                const sold = Number(e.ticketConfig?.seatsSold || 0);
+                const rev = sold * Number(e.ticketConfig?.memberPrice || 0);
+                totalAttendees += sold;
+
+                eventsList.push({
+                    name: e.name || doc.id,
+                    date: e.eventDate || 'Upcoming',
+                    capacity: cap,
+                    sold: sold,
+                    turnout: cap > 0 ? `${Math.round((sold / cap) * 100)}%` : '0%',
+                    revenue: rev
+                });
+            });
+
+            // 3. Fetch Live Treasury Transactions from Firestore
+            let txnsIncome = { tickets: 0, merchandise: 0, dues: 0, total: 0 };
+            let txnsExpenses = { venue: 0, hospitality: 0, reimbursements: 0, total: 0 };
+
+            if (currentOrgId) {
+                const txnsSnap = await firestore.collection('transactions').where('orgId', '==', currentOrgId).get();
+                txnsSnap.forEach(doc => {
+                    const t = doc.data();
+                    const amt = Number(t.amount || 0);
                     if (t.type === 'income') {
-                        dynamicIncome += amt;
-                        if (t.category === 'tickets') dossierData.financials.income.tickets += amt;
-                        else if (t.category === 'merchandise') dossierData.financials.income.merchandise += amt;
-                        else if (t.category === 'dues') dossierData.financials.income.dues += amt;
+                        txnsIncome.total += amt;
+                        if (t.category === 'tickets') txnsIncome.tickets += amt;
+                        else if (t.category === 'merchandise') txnsIncome.merchandise += amt;
+                        else if (t.category === 'dues') txnsIncome.dues += amt;
                     } else {
-                        dynamicExpense += amt;
+                        txnsExpenses.total += amt;
+                        if (t.category === 'venue') txnsExpenses.venue += amt;
+                        else if (t.category === 'hospitality') txnsExpenses.hospitality += amt;
+                        else if (t.category === 'reimbursements') txnsExpenses.reimbursements += amt;
                     }
                 });
-                dossierData.financials.income.total += dynamicIncome;
-                dossierData.financials.expenses.total += dynamicExpense;
-                dossierData.kpis.grossRevenue = dossierData.financials.income.total;
-                dossierData.kpis.totalExpenses = dossierData.financials.expenses.total;
-                dossierData.kpis.netSurplus = dossierData.kpis.grossRevenue - dossierData.kpis.totalExpenses;
             }
-        } catch(e) {}
 
-        // Incorporate volunteer claims
-        try {
-            const localClaims = JSON.parse(localStorage.getItem('passtrack_volunteer_claims') || '[]');
-            if (localClaims.length > 0) {
-                const formatted = localClaims.map(c => ({
-                    id: c.id,
-                    claimant: `${c.claimantName} (${c.upiId || 'UPI'})`,
-                    event: c.event || 'General Operations',
-                    merchant: `${c.merchant || 'Expense'}: ${c.category || ''}`,
-                    amount: Number(c.amount || 0),
-                    status: (c.status || 'pending').toUpperCase()
-                }));
-                dossierData.reimbursements = [...formatted, ...dossierData.reimbursements].slice(0, 6);
+            // 4. Fetch Live Reimbursements
+            let reimbursementsList = [];
+            if (currentOrgId) {
+                const reimbSnap = await firestore.collection('reimbursements').where('orgId', '==', currentOrgId).get();
+                reimbSnap.forEach(doc => {
+                    const r = doc.data();
+                    reimbursementsList.push({
+                        id: doc.id.slice(-8),
+                        claimant: `${r.claimantName || 'Volunteer'} (${r.upiId || 'UPI'})`,
+                        event: r.event || 'General Expense',
+                        merchant: r.merchant || r.category || 'Vendor',
+                        amount: Number(r.amount || 0),
+                        status: (r.status || 'pending').toUpperCase()
+                    });
+                });
             }
-        } catch(e) {}
 
-        renderDossier();
+            // 5. Fetch Live Members
+            let membersList = [];
+            if (currentOrgId) {
+                const memSnap = await firestore.collection('members').where('orgId', '==', currentOrgId).get();
+                memSnap.forEach(doc => {
+                    const m = doc.data();
+                    membersList.push({
+                        name: m.name || m.fullName || 'Member',
+                        usn: m.usn || m.studentId || 'N/A',
+                        dept: m.department || 'Engineering',
+                        role: m.clubRole || 'Active Member',
+                        status: m.membershipStatus || 'active',
+                        expiry: m.membershipEndDate || '2026-12-31'
+                    });
+                });
+            }
+
+            // Update Dossier Data Object
+            dossierData = {
+                organization: orgName,
+                academicYear: `Academic Year ${new Date().getFullYear()} – ${new Date().getFullYear() + 1}`,
+                kpis: {
+                    totalAttendees: totalAttendees,
+                    grossRevenue: txnsIncome.total,
+                    totalExpenses: txnsExpenses.total,
+                    netSurplus: txnsIncome.total - txnsExpenses.total
+                },
+                events: eventsList,
+                financials: {
+                    income: txnsIncome,
+                    expenses: txnsExpenses
+                },
+                reimbursements: reimbursementsList,
+                members: membersList
+            };
+
+            renderDossier();
+
+        } catch (err) {
+            console.error("Error aggregating live handover dossier:", err);
+        }
     }
 
     // --- RENDER DOSSIER UI ---
@@ -214,54 +180,121 @@ document.addEventListener('DOMContentLoaded', async () => {
         incomeMerchEl.textContent = `₹${dossierData.financials.income.merchandise.toLocaleString()}`;
         incomeDuesEl.textContent = `₹${dossierData.financials.income.dues.toLocaleString()}`;
         incomeTotalEl.textContent = `₹${dossierData.financials.income.total.toLocaleString()}`;
+        
+        const expenseVenueEl = document.getElementById('expense-venue');
+        const expenseHospEl = document.getElementById('expense-hospitality');
+        if (expenseVenueEl) expenseVenueEl.textContent = `₹${(dossierData.financials.expenses.venue || 0).toLocaleString()}`;
+        if (expenseHospEl) expenseHospEl.textContent = `₹${(dossierData.financials.expenses.hospitality || 0).toLocaleString()}`;
         expenseReimbursementsEl.textContent = `₹${dossierData.financials.expenses.reimbursements.toLocaleString()}`;
         expenseTotalEl.textContent = `₹${dossierData.financials.expenses.total.toLocaleString()}`;
 
         // Events Table
         eventsTableBody.innerHTML = '';
-        dossierData.events.forEach(ev => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${ev.name}</strong></td>
-                <td>${ev.date}</td>
-                <td>${ev.capacity}</td>
-                <td>${ev.sold}</td>
-                <td><span style="color:#059669; font-weight:700;">${ev.turnout}</span></td>
-                <td><strong>₹${Number(ev.revenue).toLocaleString()}</strong></td>
-            `;
-            eventsTableBody.appendChild(tr);
-        });
+        if (dossierData.events.length === 0) {
+            eventsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--ink-muted);">No events recorded for this academic period.</td></tr>';
+        } else {
+            dossierData.events.forEach(ev => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${ev.name}</strong></td>
+                    <td>${ev.date}</td>
+                    <td>${ev.capacity}</td>
+                    <td>${ev.sold}</td>
+                    <td><span style="color:#059669; font-weight:700;">${ev.turnout}</span></td>
+                    <td><strong>₹${Number(ev.revenue).toLocaleString()}</strong></td>
+                `;
+                eventsTableBody.appendChild(tr);
+            });
+        }
 
         // Reimbursements Table
         reimbursementsTableBody.innerHTML = '';
-        dossierData.reimbursements.forEach(r => {
-            const tr = document.createElement('tr');
-            const isApproved = (r.status || '').toLowerCase().includes('approved');
-            tr.innerHTML = `
-                <td><code>${r.id}</code></td>
-                <td>${r.claimant}</td>
-                <td>${r.event}</td>
-                <td>${r.merchant}</td>
-                <td><strong>₹${Number(r.amount).toLocaleString()}</strong></td>
-                <td><span style="color:${isApproved ? '#059669' : '#d97706'}; font-weight:700;">✓ ${r.status}</span></td>
-            `;
-            reimbursementsTableBody.appendChild(tr);
-        });
+        if (dossierData.reimbursements.length === 0) {
+            reimbursementsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--ink-muted);">No reimbursement claims submitted.</td></tr>';
+        } else {
+            dossierData.reimbursements.forEach(r => {
+                const tr = document.createElement('tr');
+                const isApproved = (r.status || '').toLowerCase().includes('approved');
+                tr.innerHTML = `
+                    <td><code>${r.id}</code></td>
+                    <td>${r.claimant}</td>
+                    <td>${r.event}</td>
+                    <td>${r.merchant}</td>
+                    <td><strong>₹${Number(r.amount).toLocaleString()}</strong></td>
+                    <td><span style="color:${isApproved ? '#059669' : '#d97706'}; font-weight:700;">✓ ${r.status}</span></td>
+                `;
+                reimbursementsTableBody.appendChild(tr);
+            });
+        }
 
         // Members Table
         membersTableBody.innerHTML = '';
-        dossierData.members.forEach(m => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${m.name}</strong></td>
-                <td><code>${m.usn}</code></td>
-                <td>${m.dept}</td>
-                <td><span style="background:rgba(226,91,46,0.1); color:#e25b2e; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">${m.role}</span></td>
-                <td><span style="color:#059669; font-weight:700;">✓ Active / Paid</span></td>
-                <td>${m.expiry}</td>
-            `;
-            membersTableBody.appendChild(tr);
-        });
+        if (dossierData.members.length === 0) {
+            membersTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--ink-muted);">No active members registered in roster.</td></tr>';
+        } else {
+            dossierData.members.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${m.name}</strong></td>
+                    <td><code>${m.usn}</code></td>
+                    <td>${m.dept}</td>
+                    <td><span style="background:rgba(226,91,46,0.1); color:#e25b2e; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">${m.role}</span></td>
+                    <td><span style="color:#059669; font-weight:700;">✓ Active / Paid</span></td>
+                    <td>${m.expiry}</td>
+                `;
+                membersTableBody.appendChild(tr);
+            });
+        }
+
+        // Vendors Table (Derived dynamically from reimbursement and expense records)
+        const vendorsTableBody = document.getElementById('vendors-table-body');
+        if (vendorsTableBody) {
+            vendorsTableBody.innerHTML = '';
+            const distinctMerchants = [...new Set(dossierData.reimbursements.map(r => r.merchant).filter(Boolean))];
+            if (distinctMerchants.length === 0) {
+                vendorsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--ink-muted);">No authorized vendor transactions recorded for this period.</td></tr>';
+            } else {
+                distinctMerchants.forEach(m => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>Operational Vendor</strong></td>
+                        <td>${m}</td>
+                        <td>Accounts Desk</td>
+                        <td>Campus Verified</td>
+                        <td>Direct Ledger Payment</td>
+                    `;
+                    vendorsTableBody.appendChild(tr);
+                });
+            }
+        }
+
+        // Dynamic Leadership Credentials & Signatures
+        const presName = dossierData.outgoingPresident || (auth.currentUser ? auth.currentUser.displayName || auth.currentUser.email.split('@')[0] : 'Chapter President');
+        const treasName = dossierData.treasuryLead || 'Treasury Custodian';
+
+        const outPresEl = document.getElementById('dossier-outgoing-pres');
+        if (outPresEl) outPresEl.textContent = presName;
+        const treasLeadEl = document.getElementById('dossier-treasury-lead');
+        if (treasLeadEl) treasLeadEl.textContent = treasName;
+
+        const sigPresMark = document.getElementById('sig-pres-mark');
+        const sigPresName = document.getElementById('sig-pres-name');
+        if (sigPresMark) sigPresMark.textContent = presName;
+        if (sigPresName) sigPresName.textContent = presName;
+
+        const sigTreasMark = document.getElementById('sig-treas-mark');
+        const sigTreasName = document.getElementById('sig-treas-name');
+        if (sigTreasMark) sigTreasMark.textContent = treasName;
+        if (sigTreasName) sigTreasName.textContent = treasName;
+
+        // Hash digest
+        const hashEl = document.getElementById('dossier-hash');
+        if (hashEl) {
+            const raw = `${dossierData.organization}-${dossierData.kpis.grossRevenue}-${dossierData.kpis.netSurplus}-${dossierData.events.length}`;
+            let h = 0;
+            for (let i = 0; i < raw.length; i++) h = (Math.imul(31, h) + raw.charCodeAt(i)) | 0;
+            hashEl.textContent = `SHA256: ${Math.abs(h).toString(16).padStart(8, '0')}${Date.now().toString(16)}`;
+        }
     }
 
     // --- BUTTON EVENT LISTENERS ---

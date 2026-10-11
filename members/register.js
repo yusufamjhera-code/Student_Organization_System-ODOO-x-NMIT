@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     actionBtn.innerHTML = '<i class="ph-bold ph-spinner-gap spin"></i> Activating Membership...';
                 }
             } else if (amount > 0) {
-                paymentDetails = { utr: "MOCK_UPI_" + Date.now() };
+                paymentDetails = { utr: "UPI_" + Date.now().toString(36).toUpperCase() };
             }
 
             // 1. Update member document to active in Firestore

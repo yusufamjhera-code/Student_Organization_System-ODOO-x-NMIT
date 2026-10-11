@@ -20,56 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let tasksData = [];
     let editDocId = null;
 
-    function loadDemoTasks() {
-        currentOrgId = 'demo-org-acm';
-        if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
-        tasksData = [
-            {
-                id: 'task-1',
-                title: 'Review HackNMIT Sponsor Banners & Swag Bag Setup',
-                description: 'Verify dimensions and banner stands for main auditorium and entrance booths.',
-                assignee: 'Tanvi Sen',
-                priority: 'urgent',
-                status: 'todo',
-                dueDate: '2026-03-27'
-            },
-            {
-                id: 'task-2',
-                title: 'Coordinate Door Scanner Staff & QR Access Test',
-                description: 'Brief the 12 volunteer distributors on checking access passes at Entrance and Lab 3.',
-                assignee: 'Aditya Rao',
-                priority: 'high',
-                status: 'inprogress',
-                dueDate: '2026-03-28'
-            },
-            {
-                id: 'task-3',
-                title: 'Deploy Official ACM Hoodie Merch Pickup Desk',
-                description: 'Pre-sort hoodie orders by size (S/M/L/XL) and arrange pickup verification sheets.',
-                assignee: 'Sneha Roy',
-                priority: 'medium',
-                status: 'inprogress',
-                dueDate: '2026-03-28'
-            },
-            {
-                id: 'task-4',
-                title: 'Send WhatsApp & Push Alert to Registered Participants',
-                description: 'Broadcast hackathon problem statement schedule and dinner timings.',
-                assignee: 'Kabir Mehta',
-                priority: 'low',
-                status: 'done',
-                dueDate: '2026-03-25'
-            }
-        ];
-        renderKanban();
-    }
-
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
-                       sessionStorage.getItem('authType') === 'admin' ||
-                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
-
         if (user) {
             currentUser = user;
             if (sessionStorage.getItem('authType') !== 'collaborator') {
@@ -77,26 +29,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
-                if (orgsSnapshot.empty) {
-                    if (isDemo) loadDemoTasks();
-                    else showToast('Organization not found.', 'error');
+                let orgSnap = await firestore.collection('organizations').where('ownerId', '==', user.uid).limit(1).get();
+                if (orgSnap.empty) {
+                    orgSnap = await firestore.collection('organizations').limit(1).get();
+                }
+                
+                if (orgSnap.empty) {
+                    if (orgNameMeta) orgNameMeta.textContent = 'Student Organization';
+                    tasksData = [];
+                    renderKanban();
                     return;
                 }
-                const orgDoc = orgsSnapshot.docs[0];
+
+                const orgDoc = orgSnap.docs[0];
                 currentOrgId = orgDoc.id;
-                orgNameMeta.textContent = orgDoc.data().name;
+                if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Student Organization';
                 setupRealtimeListeners();
             } catch (error) {
-                if (isDemo) loadDemoTasks();
-                else {
-                    console.error("Auth init error:", error);
-                    showToast('Failed to load board.', 'error');
-                }
+                console.error("Auth init error:", error);
+                showToast('Failed to load board tasks from Firestore.', 'error');
             }
-        } else if (isDemo) {
-            currentUser = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in' };
-            loadDemoTasks();
         } else {
             window.location.href = '../index.html';
         }

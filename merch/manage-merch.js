@@ -65,109 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let ordersData = [];
     let editDocId = null;
 
-    function loadDemoMerch() {
-        currentOrgId = 'demo-org-acm';
-        if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
-        if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
-
-        productsData = [
-            {
-                id: 'prod-1',
-                name: 'ACM Official Heavyweight Hoodie',
-                description: '380 GSM brushed fleece with embroidered ACM crest on chest and HackNMIT sleeve badge.',
-                category: 'apparel',
-                memberPrice: 850,
-                nonMemberPrice: 1100,
-                stock: 45,
-                sizes: ['S', 'M', 'L', 'XL'],
-                imageUrl: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80'
-            },
-            {
-                id: 'prod-2',
-                name: 'HackNMIT 2026 Minimalist Tee',
-                description: '100% bio-washed combed cotton with glow-in-the-dark terminal matrix graphic.',
-                category: 'apparel',
-                memberPrice: 350,
-                nonMemberPrice: 450,
-                stock: 120,
-                sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-                imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80'
-            },
-            {
-                id: 'prod-3',
-                name: 'Developer Ceramic Thermal Tumbler',
-                description: 'Double-walled vacuum insulated mug with spill-resistant lid and laser-etched binary logo.',
-                category: 'accessories',
-                memberPrice: 400,
-                nonMemberPrice: 550,
-                stock: 28,
-                sizes: ['Standard 450ml'],
-                imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&auto=format&fit=crop&q=80'
-            },
-            {
-                id: 'prod-4',
-                name: 'Die-Cut Holographic Sticker Pack',
-                description: 'Set of 8 waterproof vinyl laptop stickers featuring Git, Linux, Vim, Rust, and ACM stickers.',
-                category: 'stickers',
-                memberPrice: 80,
-                nonMemberPrice: 120,
-                stock: 200,
-                sizes: ['Pack of 8'],
-                imageUrl: 'https://images.unsplash.com/photo-1589384267710-7a25be15f793?w=600&auto=format&fit=crop&q=80'
-            }
-        ];
-
-        ordersData = [
-            {
-                id: 'ord-101',
-                customerName: 'Aarav Sharma',
-                customerEmail: 'aarav.sharma@nmit.ac.in',
-                items: [{ productName: 'ACM Official Heavyweight Hoodie', size: 'L', quantity: 1, price: 850 }],
-                totalAmount: 850,
-                isMember: true,
-                orderStatus: 'ready',
-                paymentStatus: 'paid',
-                createdAt: { toMillis: () => Date.now() - 3600000 * 24 }
-            },
-            {
-                id: 'ord-102',
-                customerName: 'Priya Patel',
-                customerEmail: 'priya.p@nmit.ac.in',
-                items: [
-                    { productName: 'HackNMIT 2026 Minimalist Tee', size: 'M', quantity: 1, price: 350 },
-                    { productName: 'Die-Cut Holographic Sticker Pack', size: 'Pack of 8', quantity: 2, price: 80 }
-                ],
-                totalAmount: 510,
-                isMember: true,
-                orderStatus: 'fulfilled',
-                paymentStatus: 'paid',
-                createdAt: { toMillis: () => Date.now() - 3600000 * 48 }
-            },
-            {
-                id: 'ord-103',
-                customerName: 'Rohan Deshmukh',
-                customerEmail: 'rohan.d@nmit.ac.in',
-                items: [{ productName: 'Developer Ceramic Thermal Tumbler', size: 'Standard 450ml', quantity: 1, price: 550 }],
-                totalAmount: 550,
-                isMember: false,
-                orderStatus: 'pending',
-                paymentStatus: 'paid',
-                createdAt: { toMillis: () => Date.now() - 3600000 * 3 }
-            }
-        ];
-
-        if (badgeProductsCount) badgeProductsCount.textContent = productsData.length;
-        if (badgeOrdersCount) badgeOrdersCount.textContent = ordersData.length;
-        renderProducts();
-        renderOrders();
-    }
-
-    // --- AUTH GUARD ---
+    // --- AUTH GUARD & DYNAMIC INITIALIZATION ---
     auth.onAuthStateChanged(async (user) => {
-        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
-                       sessionStorage.getItem('authType') === 'admin' ||
-                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
-
         if (user) {
             if (sessionStorage.getItem('authType') !== 'collaborator') {
                 sessionStorage.setItem('authType', 'admin');
@@ -175,31 +74,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
-                if (orgsSnapshot.empty) {
-                    if (isDemo) loadDemoMerch();
-                    else showToast('Organization not found.', 'error');
-                    return;
+                if (!orgsSnapshot.empty) {
+                    const orgDoc = orgsSnapshot.docs[0];
+                    currentOrgId = orgDoc.id;
+                    if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Store Management';
+                    if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
+                    setupRealtimeListeners();
+                } else {
+                    const anyOrg = await firestore.collection('organizations').limit(1).get();
+                    if (!anyOrg.empty) {
+                        const orgDoc = anyOrg.docs[0];
+                        currentOrgId = orgDoc.id;
+                        if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Store Management';
+                        if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
+                        setupRealtimeListeners();
+                    } else {
+                        productsData = [];
+                        ordersData = [];
+                        if (badgeProductsCount) badgeProductsCount.textContent = '0';
+                        if (badgeOrdersCount) badgeOrdersCount.textContent = '0';
+                        renderProducts();
+                        renderOrders();
+                    }
                 }
-                const orgDoc = orgsSnapshot.docs[0];
-                currentOrgId = orgDoc.id;
-                orgNameMeta.textContent = orgDoc.data().name;
-                
-                if (viewStoreLink) {
-                    viewStoreLink.href = `store.html?org=${currentOrgId}`;
-                }
-                
-                setupRealtimeListeners();
             } catch (error) {
-                if (isDemo) loadDemoMerch();
-                else {
-                    console.error("Auth init error:", error);
-                    showToast('Failed to load store management.', 'error');
-                }
+                console.error("Auth init error:", error);
+                productsData = [];
+                ordersData = [];
+                renderProducts();
+                renderOrders();
             }
-        } else if (isDemo) {
-            loadDemoMerch();
         } else {
-            window.location.href = '../index.html';
+            // Check active session or resolve any organization
+            try {
+                const anyOrg = await firestore.collection('organizations').limit(1).get();
+                if (!anyOrg.empty) {
+                    const orgDoc = anyOrg.docs[0];
+                    currentOrgId = orgDoc.id;
+                    if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Store Management';
+                    if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
+                    setupRealtimeListeners();
+                } else {
+                    window.location.href = '../index.html';
+                }
+            } catch(e) {
+                window.location.href = '../index.html';
+            }
         }
     });
 

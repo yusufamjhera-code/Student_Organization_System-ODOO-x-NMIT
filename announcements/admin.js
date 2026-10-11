@@ -33,49 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let announcementsData = [];
     let editDocId = null;
 
-    function loadDemoAnnouncements() {
-        currentOrgId = 'demo-org-acm';
-        if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
-        if (viewBoardLink) viewBoardLink.href = `board.html?org=${currentOrgId}`;
-
-        announcementsData = [
-            {
-                id: 'ann-1',
-                title: 'HackNMIT 2026: Problem Statements & Evaluation Rubrics Released',
-                content: 'We are thrilled to announce that the **HackNMIT 2026** problem statements are now live across all 4 tracks:\n\n1. AI & Autonomous Systems\n2. Web3 & Distributed Ledgers\n3. FinTech & Next-Gen Banking\n4. Open Innovation\n\nMentors will be available at Lab 3 starting at 10:00 AM on Saturday.',
-                category: 'urgent',
-                isPinned: true,
-                authorName: 'ACM Executive Committee',
-                createdAt: { toMillis: () => Date.now() - 3600000 * 5 }
-            },
-            {
-                id: 'ann-2',
-                title: 'Official Club Merchandise & Hoodie Collection Desk Timings',
-                content: 'Pre-ordered **ACM Heavyweight Hoodies** and minimal tees can be collected from the Ground Floor Student Lounge desk between 1:00 PM and 4:30 PM. Please have your Order ID ready upon arrival.',
-                category: 'events',
-                isPinned: false,
-                authorName: 'Treasury & Logistics Desk',
-                createdAt: { toMillis: () => Date.now() - 3600000 * 28 }
-            },
-            {
-                id: 'ann-3',
-                title: 'General Body Meeting & Annual Executive Board Elections',
-                content: 'Nominations for the 2026-2027 Executive Core Committee are now open for all active student members in good standing. Interested members must submit their candidacy statement by Friday.',
-                category: 'general',
-                isPinned: false,
-                authorName: 'Faculty Coordinator',
-                createdAt: { toMillis: () => Date.now() - 3600000 * 72 }
-            }
-        ];
-        renderList();
-    }
-
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        const isDemo = sessionStorage.getItem('demoUser') === 'true' || 
-                       sessionStorage.getItem('authType') === 'admin' ||
-                       (window.firebaseConfig && firebaseConfig.apiKey === "YOUR_API_KEY");
-
         if (user) {
             currentUser = user;
             if (sessionStorage.getItem('authType') !== 'collaborator') {
@@ -83,16 +42,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
-                if (orgsSnapshot.empty) {
-                    if (isDemo) loadDemoAnnouncements();
-                    else showToast('Organization not found.', 'error');
+                let orgSnap = await firestore.collection('organizations').where('ownerId', '==', user.uid).limit(1).get();
+                if (orgSnap.empty) {
+                    orgSnap = await firestore.collection('organizations').limit(1).get();
+                }
+
+                if (orgSnap.empty) {
+                    if (orgNameMeta) orgNameMeta.textContent = 'Student Organization';
+                    announcementsData = [];
+                    renderList();
                     return;
                 }
                 
-                const orgDoc = orgsSnapshot.docs[0];
+                const orgDoc = orgSnap.docs[0];
                 currentOrgId = orgDoc.id;
-                orgNameMeta.textContent = orgDoc.data().name;
+                if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Student Organization';
 
                 // Wire up public links
                 if (viewBoardLink) {
@@ -102,15 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 setupRealtimeListeners();
                 
             } catch (error) {
-                if (isDemo) loadDemoAnnouncements();
-                else {
-                    console.error("Initialization error:", error);
-                    showToast('Failed to load announcements data.', 'error');
-                }
+                console.error("Initialization error:", error);
+                showToast('Failed to load announcements from Firestore.', 'error');
             }
-        } else if (isDemo) {
-            currentUser = { uid: 'demo-organizer', email: 'organizer@nmit.ac.in' };
-            loadDemoAnnouncements();
         } else {
             window.location.href = '../index.html';
         }
@@ -201,37 +159,10 @@ document.addEventListener('DOMContentLoaded', () => {
             listEl.innerHTML = `
                 <div class="empty-state" style="padding: 40px; text-align: center; color: var(--text-muted);">
                     <i class="ph-bold ph-megaphone" style="font-size: 2.5rem; margin-bottom: 10px; display: block; color: var(--primary);"></i>
-                    <p style="font-weight: 600; margin-bottom: 12px;">No announcements published yet.</p>
-                    <button type="button" id="seed-sample-btn" class="secondary-btn" style="display: inline-flex; margin: 0 auto; gap: 8px;">
-                        <i class="ph-bold ph-sparkle"></i> <span>Publish Sample Hackathon Notice</span>
-                    </button>
+                    <p style="font-weight: 600; margin-bottom: 6px;">No announcements published yet.</p>
+                    <p style="font-size: 0.85rem; margin: 0;">Click "Post Announcement" above to publish your first notice to members.</p>
                 </div>
             `;
-            const seedBtn = document.getElementById('seed-sample-btn');
-            if (seedBtn) {
-                seedBtn.onclick = async () => {
-                    seedBtn.disabled = true;
-                    seedBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> <span>Publishing...</span>';
-                    try {
-                        await firestore.collection('announcements').add({
-                            orgId: currentOrgId,
-                            title: '🎉 Welcome to Hack 2026: Official Check-in & Event Briefing',
-                            content: `Welcome all participants and club members to **Hack 2026**!\n\n### Important Instructions & Event Timeline:\n1. **Check-in Timing:** Station check-ins open sharply at \`09:00 AM IST\` at the main auditorium.\n2. **Digital Pass Required:** Keep your QR pass handy on your mobile phone via the Pass Viewer.\n3. **Merchandise Desk:** Official hoodies and badges can be claimed at Booth #2 upon showing your order QR.\n4. **Food & Snacks:** Lunch coupons will be distributed to active members at 1:00 PM.\n\nGood luck, have fun, and build something epic! 🚀`,
-                            category: 'Important',
-                            pinned: true,
-                            authorName: currentUser.displayName || 'Event Organizer',
-                            authorEmail: currentUser.email || null,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        showToast('Sample announcement published to Firebase!', 'success');
-                    } catch (err) {
-                        console.error("Error creating sample:", err);
-                        showToast('Failed to publish sample announcement.', 'error');
-                        seedBtn.disabled = false;
-                    }
-                };
-            }
             return;
         }
         

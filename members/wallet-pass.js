@@ -27,75 +27,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const lookupBtn = document.getElementById('lookup-member-btn');
     const quickPills = document.querySelectorAll('.pill-btn');
 
-    // Demo Data
-    const DEMO_MEMBERS = [
-        {
-            id: 'mem-1',
-            name: 'Arjun Nambiar',
-            email: 'arjun.nambiar@nmit.ac.in',
-            usn: '1NT23CS042',
-            department: 'Computer Science',
-            clubRole: 'President',
-            tier: 'core',
-            membershipStatus: 'active',
-            membershipEndDate: '2026-07-31',
-            joinedDate: '2025-08-01',
-            serial: 'PT-MEM-2026-9481'
-        },
-        {
-            id: 'mem-2',
-            name: 'Ananya Sharma',
-            email: 'ananya.s@nmit.ac.in',
-            usn: '1NT23IS019',
-            department: 'Information Science',
-            clubRole: 'Vice President & Tech Lead',
-            tier: 'core',
-            membershipStatus: 'active',
-            membershipEndDate: '2026-07-31',
-            joinedDate: '2025-08-01',
-            serial: 'PT-MEM-2026-9482'
-        },
-        {
-            id: 'mem-3',
-            name: 'Karthik Hegde',
-            email: 'karthik.hegde@nmit.ac.in',
-            usn: '1NT23EC088',
-            department: 'Electronics & Comm.',
-            clubRole: 'Treasury Lead',
-            tier: 'core',
-            membershipStatus: 'active',
-            membershipEndDate: '2026-07-31',
-            joinedDate: '2025-08-01',
-            serial: 'PT-MEM-2026-9483'
-        },
-        {
-            id: 'mem-4',
-            name: 'Pooja Kulkarni',
-            email: 'pooja.k@nmit.ac.in',
-            usn: '1NT23CS112',
-            department: 'Computer Science',
-            clubRole: 'Active Member',
-            tier: 'active',
-            membershipStatus: 'active',
-            membershipEndDate: '2026-06-30',
-            joinedDate: '2025-09-10',
-            serial: 'PT-MEM-2026-9484'
-        },
-        {
-            id: 'mem-5',
-            name: 'Vikramaditya Rao',
-            email: 'vikram.rao@nmit.ac.in',
-            usn: '1NT20CS099',
-            department: 'Computer Science',
-            clubRole: 'Alumni Mentor',
-            tier: 'alumni',
-            membershipStatus: 'active',
-            membershipEndDate: '2027-12-31',
-            joinedDate: '2021-08-01',
-            serial: 'PT-MEM-2026-9485'
-        }
-    ];
-
     let currentMember = null;
     let qrInstance = null;
 
@@ -123,14 +54,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- RENDER MEMBER DATA ON PASS ---
-    function renderMemberPass(member, orgName = 'ACM Student Chapter • NMIT') {
+    function renderMemberPass(member, orgName = 'Student Organization') {
         currentMember = member;
 
         orgNameEl.textContent = orgName;
-        memberNameEl.textContent = member.name || member.fullName || 'Club Member';
+        memberNameEl.textContent = member.name || member.fullName || 'Student Member';
         memberRoleEl.textContent = member.clubRole || 'Active Member';
         memberDeptEl.textContent = member.department || 'Engineering';
-        memberUsnEl.textContent = member.usn || member.studentId || '1NT23CS000';
+        memberUsnEl.textContent = member.usn || member.studentId || 'N/A';
 
         // Calculate Tier
         const roleLower = (member.clubRole || '').toLowerCase();
@@ -145,11 +76,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         tierText.textContent = tier === 'core' ? 'CORE TEAM' : (tier === 'alumni' ? 'ALUMNI' : 'ACTIVE MEMBER');
 
         // Dates & Serials
-        const endDate = member.membershipEndDate ? new Date(member.membershipEndDate) : new Date(Date.now() + 300*24*60*60*1000);
+        const endDate = member.membershipEndDate ? new Date(member.membershipEndDate) : new Date(Date.now() + 365*24*60*60*1000);
         validDateEl.textContent = `${String(endDate.getMonth() + 1).padStart(2, '0')}/${endDate.getFullYear()}`;
         
-        serialNoEl.textContent = member.serial || `PT-MEM-2026-${(member.usn || '0000').slice(-4)}`;
-        issuedDateEl.textContent = member.joinedDate ? new Date(member.joinedDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase() : 'AUG 2025';
+        serialNoEl.textContent = member.serial || `PT-MEM-${(member.usn || (member.id || '0000')).slice(-6)}`;
+        issuedDateEl.textContent = member.joinedDate || member.membershipStartDate ? new Date(member.joinedDate || member.membershipStartDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase() : new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
 
         // Dynamic QR Generation
         generatePassQR(member);
@@ -164,10 +95,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             app: 'PassTrack',
             type: 'MEMBERSHIP_PASS',
             id: member.id || member.email,
-            name: member.name,
+            name: member.name || member.fullName,
             usn: member.usn || member.studentId,
             exp: member.membershipEndDate,
-            sig: 'PT_VERIFIED_' + (member.usn || 'OK')
+            sig: 'PT_VERIFIED_' + (member.usn || member.id || 'VALID')
         });
 
         qrInstance = new QRCode(qrContainer, {
@@ -180,74 +111,148 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- RESOLVE MEMBER FROM URL / FIRESTORE / DEMO ---
+    // --- RESOLVE MEMBER FROM URL / FIRESTORE ---
     const urlParams = new URLSearchParams(window.location.search);
     const memberId = urlParams.get('id');
     const memberEmail = urlParams.get('email');
     const memberUsn = urlParams.get('usn');
 
     async function loadMember() {
-        // 1. Try finding in demo dataset first if query matches
-        const queryTerm = (memberId || memberEmail || memberUsn || '').toLowerCase();
-        if (queryTerm) {
-            const foundDemo = DEMO_MEMBERS.find(m => 
-                m.id.toLowerCase() === queryTerm ||
-                m.email.toLowerCase() === queryTerm ||
-                m.usn.toLowerCase() === queryTerm
-            );
-            if (foundDemo) {
-                renderMemberPass(foundDemo);
+        if (!firestore) return;
+
+        try {
+            // 1. Direct Document ID lookup
+            if (memberId) {
+                const doc = await firestore.collection('members').doc(memberId).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    const orgName = await fetchOrgName(data.orgId);
+                    renderMemberPass({ id: doc.id, ...data }, orgName);
+                    return;
+                }
+            }
+
+            // 2. Email lookup
+            if (memberEmail) {
+                const snap = await firestore.collection('members').where('email', '==', memberEmail.trim().toLowerCase()).limit(1).get();
+                if (!snap.empty) {
+                    const doc = snap.docs[0];
+                    const data = doc.data();
+                    const orgName = await fetchOrgName(data.orgId);
+                    renderMemberPass({ id: doc.id, ...data }, orgName);
+                    return;
+                }
+            }
+
+            // 3. USN lookup
+            if (memberUsn) {
+                const snap = await firestore.collection('members').where('usn', '==', memberUsn.trim().toUpperCase()).limit(1).get();
+                if (!snap.empty) {
+                    const doc = snap.docs[0];
+                    const data = doc.data();
+                    const orgName = await fetchOrgName(data.orgId);
+                    renderMemberPass({ id: doc.id, ...data }, orgName);
+                    return;
+                }
+            }
+
+            // 4. Logged-in user email lookup
+            const user = auth.currentUser;
+            if (user && user.email) {
+                const snap = await firestore.collection('members').where('email', '==', user.email.toLowerCase()).limit(1).get();
+                if (!snap.empty) {
+                    const doc = snap.docs[0];
+                    const data = doc.data();
+                    const orgName = await fetchOrgName(data.orgId);
+                    renderMemberPass({ id: doc.id, ...data }, orgName);
+                    return;
+                }
+            }
+
+            // 5. Fetch first member from Firestore
+            const firstSnap = await firestore.collection('members').limit(1).get();
+            if (!firstSnap.empty) {
+                const doc = firstSnap.docs[0];
+                const data = doc.data();
+                const orgName = await fetchOrgName(data.orgId);
+                renderMemberPass({ id: doc.id, ...data }, orgName);
                 return;
             }
-        }
 
-        // 2. Query Firestore if live credentials exist
-        if (firestore && (memberId || memberEmail)) {
-            try {
-                if (memberId) {
-                    const doc = await firestore.collection('members').doc(memberId).get();
-                    if (doc.exists) {
-                        renderMemberPass({ id: doc.id, ...doc.data() });
-                        return;
-                    }
-                }
-                if (memberEmail) {
-                    const snap = await firestore.collection('members').where('email', '==', memberEmail).limit(1).get();
-                    if (!snap.empty) {
-                        renderMemberPass({ id: snap.docs[0].id, ...snap.docs[0].data() });
-                        return;
-                    }
-                }
-            } catch (err) {
-                console.warn("Firestore member query note:", err);
-            }
-        }
+            // 6. If database has 0 members, render placeholder card
+            renderMemberPass({
+                id: 'none',
+                name: 'No Registered Members',
+                clubRole: 'Register in Directory',
+                department: 'Student Affairs',
+                usn: 'NOT REGISTERED',
+                membershipEndDate: new Date(Date.now() + 365*24*60*60*1000).toISOString()
+            }, 'PassTrack Network');
 
-        // 3. Fallback: Default to demo leader Arjun
-        renderMemberPass(DEMO_MEMBERS[0]);
+        } catch (err) {
+            console.error("Error loading membership pass:", err);
+        }
     }
 
-    await loadMember();
+    async function fetchOrgName(orgId) {
+        if (!orgId) return 'Student Organization';
+        try {
+            const orgDoc = await firestore.collection('organizations').doc(orgId).get();
+            if (orgDoc.exists) return orgDoc.data().name || 'Student Organization';
+        } catch(e) {}
+        return 'Student Organization';
+    }
+
+    auth.onAuthStateChanged(async () => {
+        await loadMember();
+    });
 
     // --- LOOKUP MEMBER CONTROLLER ---
-    function executeLookup() {
-        const query = (lookupInput.value || '').trim().toLowerCase();
+    async function executeLookup() {
+        const query = (lookupInput.value || '').trim();
         if (!query) return;
 
-        const match = DEMO_MEMBERS.find(m => 
-            m.email.toLowerCase().includes(query) ||
-            m.usn.toLowerCase().includes(query) ||
-            m.name.toLowerCase().includes(query)
-        );
+        lookupBtn.disabled = true;
+        lookupBtn.textContent = 'Searching...';
 
-        if (match) {
-            renderMemberPass(match);
-            lookupInput.value = '';
-            if (walletCard.classList.contains('is-flipped')) {
-                toggleCardFlip();
+        try {
+            // Search by Email
+            let snap = await firestore.collection('members').where('email', '==', query.toLowerCase()).limit(1).get();
+            
+            // Search by USN
+            if (snap.empty) {
+                snap = await firestore.collection('members').where('usn', '==', query.toUpperCase()).limit(1).get();
             }
-        } else {
-            alert(`No member pass found matching: "${query}". Try quick demo buttons below.`);
+
+            // Search by ID
+            if (snap.empty) {
+                const directDoc = await firestore.collection('members').doc(query).get();
+                if (directDoc.exists) {
+                    const data = directDoc.data();
+                    const orgName = await fetchOrgName(data.orgId);
+                    renderMemberPass({ id: directDoc.id, ...data }, orgName);
+                    lookupInput.value = '';
+                    if (walletCard.classList.contains('is-flipped')) toggleCardFlip();
+                    return;
+                }
+            }
+
+            if (!snap.empty) {
+                const doc = snap.docs[0];
+                const data = doc.data();
+                const orgName = await fetchOrgName(data.orgId);
+                renderMemberPass({ id: doc.id, ...data }, orgName);
+                lookupInput.value = '';
+                if (walletCard.classList.contains('is-flipped')) toggleCardFlip();
+            } else {
+                alert(`No verified member record found in Firestore matching "${query}".`);
+            }
+        } catch (e) {
+            console.error("Lookup error:", e);
+            alert("Error searching Firestore members: " + e.message);
+        } finally {
+            lookupBtn.disabled = false;
+            lookupBtn.textContent = 'Lookup';
         }
     }
 

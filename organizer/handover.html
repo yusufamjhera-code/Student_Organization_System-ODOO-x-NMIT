@@ -83,19 +83,19 @@
                 <div class="org-credential-strip">
                     <div class="cred-cell">
                         <span class="cred-label">STUDENT ORGANIZATION</span>
-                        <strong class="cred-val" id="dossier-org-name">ACM Student Chapter • NMIT</strong>
+                        <strong class="cred-val" id="dossier-org-name">—</strong>
                     </div>
                     <div class="cred-cell">
                         <span class="cred-label">ACADEMIC PERIOD</span>
-                        <strong class="cred-val" id="dossier-term">Academic Year 2025 – 2026</strong>
+                        <strong class="cred-val" id="dossier-term">—</strong>
                     </div>
                     <div class="cred-cell">
                         <span class="cred-label">OUTGOING PRESIDENT</span>
-                        <strong class="cred-val">Arjun Nambiar (1NT23CS042)</strong>
+                        <strong class="cred-val" id="dossier-outgoing-pres">—</strong>
                     </div>
                     <div class="cred-cell">
                         <span class="cred-label">TREASURY CUSTODIAN</span>
-                        <strong class="cred-val">Karthik Hegde (1NT23EC088)</strong>
+                        <strong class="cred-val" id="dossier-treasury-lead">—</strong>
                     </div>
                 </div>
             </header>
@@ -109,22 +109,22 @@
                 <div class="kpi-banner-grid">
                     <div class="kpi-banner-card">
                         <span class="kpi-top-label"><i class="ph-bold ph-ticket"></i> Verified Attendance</span>
-                        <div class="kpi-banner-val" id="kpi-total-attendees">520</div>
-                        <span class="kpi-foot-label">Turnout across 4 major events</span>
+                        <div class="kpi-banner-val" id="kpi-total-attendees">0</div>
+                        <span class="kpi-foot-label" id="kpi-attendance-foot">Turnout across active events</span>
                     </div>
                     <div class="kpi-banner-card">
                         <span class="kpi-top-label"><i class="ph-bold ph-currency-inr"></i> Gross Revenue</span>
-                        <div class="kpi-banner-val" id="kpi-gross-revenue">₹1,40,500</div>
+                        <div class="kpi-banner-val" id="kpi-gross-revenue">₹0</div>
                         <span class="kpi-foot-label">Tickets, Merch & Dues combined</span>
                     </div>
                     <div class="kpi-banner-card">
                         <span class="kpi-top-label"><i class="ph-bold ph-receipt"></i> Total Expenditures</span>
-                        <div class="kpi-banner-val" id="kpi-total-expenses">₹30,500</div>
+                        <div class="kpi-banner-val" id="kpi-total-expenses">₹0</div>
                         <span class="kpi-foot-label">Operations & verified claims</span>
                     </div>
                     <div class="kpi-banner-card highlight">
                         <span class="kpi-top-label"><i class="ph-bold ph-vault"></i> Net Treasury Surplus</span>
-                        <div class="kpi-banner-val good" id="kpi-net-surplus">₹1,10,000</div>
+                        <div class="kpi-banner-val good" id="kpi-net-surplus">₹0</div>
                         <span class="kpi-foot-label">Closing balance handed over</span>
                     </div>
                 </div>
@@ -148,7 +148,7 @@
                         </tr>
                     </thead>
                     <tbody id="events-table-body">
-                        <!-- Populated by JS -->
+                        <!-- Populated dynamically from Firestore -->
                     </tbody>
                 </table>
             </section>
@@ -164,10 +164,10 @@
                     <div class="finance-card">
                         <h4>Revenue Inflows (Credit)</h4>
                         <ul class="breakdown-list" id="income-breakdown-list">
-                            <li><span>Event Ticket Sales:</span> <strong id="income-tickets">₹84,000</strong></li>
-                            <li><span>Official Merchandise Store:</span> <strong id="income-merch">₹24,500</strong></li>
-                            <li><span>Annual Membership Dues:</span> <strong id="income-dues">₹32,000</strong></li>
-                            <li class="total-row"><span>Total Inflow:</span> <strong id="income-total">₹1,40,500</strong></li>
+                            <li><span>Event Ticket Sales:</span> <strong id="income-tickets">₹0</strong></li>
+                            <li><span>Official Merchandise Store:</span> <strong id="income-merch">₹0</strong></li>
+                            <li><span>Annual Membership Dues:</span> <strong id="income-dues">₹0</strong></li>
+                            <li class="total-row"><span>Total Inflow:</span> <strong id="income-total">₹0</strong></li>
                         </ul>
                     </div>
 
@@ -175,10 +175,10 @@
                     <div class="finance-card">
                         <h4>Expenditure Outflows (Debit)</h4>
                         <ul class="breakdown-list" id="expense-breakdown-list">
-                            <li><span>Venue & AV Infrastructure:</span> <strong>₹18,000</strong></li>
-                            <li><span>Catering & Volunteer Refreshments:</span> <strong>₹12,500</strong></li>
-                            <li><span>Approved Volunteer Reimbursements:</span> <strong id="expense-reimbursements">₹1,450</strong></li>
-                            <li class="total-row"><span>Total Outflow:</span> <strong id="expense-total">₹31,950</strong></li>
+                            <li><span>Venue & AV Infrastructure:</span> <strong id="expense-venue">₹0</strong></li>
+                            <li><span>Catering & Volunteer Refreshments:</span> <strong id="expense-hospitality">₹0</strong></li>
+                            <li><span>Approved Volunteer Reimbursements:</span> <strong id="expense-reimbursements">₹0</strong></li>
+                            <li class="total-row"><span>Total Outflow:</span> <strong id="expense-total">₹0</strong></li>
                         </ul>
                     </div>
                 </div>
@@ -197,7 +197,7 @@
                         </tr>
                     </thead>
                     <tbody id="reimbursements-table-body">
-                        <!-- Populated by JS -->
+                        <!-- Populated dynamically from Firestore -->
                     </tbody>
                 </table>
             </section>
@@ -220,7 +220,7 @@
                         </tr>
                     </thead>
                     <tbody id="members-table-body">
-                        <!-- Populated by JS -->
+                        <!-- Populated dynamically from Firestore -->
                     </tbody>
                 </table>
             </section>
@@ -241,35 +241,8 @@
                             <th>Typical Terms</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Apparel & Hoodies</strong></td>
-                            <td>Bangalore Screen Prints Ltd.</td>
-                            <td>Venkatesh Rao</td>
-                            <td>+91 98450 11223 • sales@blrprints.in</td>
-                            <td>Net 15 Days • 50% Advance</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Stage & AV Setup</strong></td>
-                            <td>ProSound & Lightings Hub</td>
-                            <td>Sathish Kumar</td>
-                            <td>+91 98860 44556 • support@prosound.co</td>
-                            <td>On-day setup & live sound technician</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Catering & Snacks</strong></td>
-                            <td>Campus Cafeteria & Fast Food</td>
-                            <td>Mohan Reddy</td>
-                            <td>+91 99000 88771 • canteen@nmit.ac.in</td>
-                            <td>Verified UPI invoice on delivery</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Badges & Stationery</strong></td>
-                            <td>Navrang Digital Xerox & Badges</td>
-                            <td>Kiran G.</td>
-                            <td>+91 97412 33445 • navrangprint@gmail.com</td>
-                            <td>Instant 2-hour turnaround for hackathons</td>
-                        </tr>
+                    <tbody id="vendors-table-body">
+                        <!-- Populated dynamically from Firestore -->
                     </tbody>
                 </table>
             </section>
@@ -287,40 +260,40 @@
                 <div class="signatures-grid">
                     <div class="sig-block">
                         <div class="sig-line">
-                            <span class="sig-digital-mark">Arjun Nambiar</span>
+                            <span class="sig-digital-mark" id="sig-pres-mark">—</span>
                         </div>
-                        <span class="sig-name">Arjun Nambiar</span>
+                        <span class="sig-name" id="sig-pres-name">Outgoing President</span>
                         <span class="sig-role">Outgoing Chapter President</span>
                     </div>
 
                     <div class="sig-block">
                         <div class="sig-line">
-                            <span class="sig-digital-mark">Karthik Hegde</span>
+                            <span class="sig-digital-mark" id="sig-treas-mark">—</span>
                         </div>
-                        <span class="sig-name">Karthik Hegde</span>
+                        <span class="sig-name" id="sig-treas-name">Outgoing Treasury Lead</span>
                         <span class="sig-role">Outgoing Treasury Lead</span>
                     </div>
 
                     <div class="sig-block">
                         <div class="sig-line">
-                            <span class="sig-digital-mark">Ananya Sharma</span>
+                            <span class="sig-digital-mark" id="sig-incoming-mark">—</span>
                         </div>
-                        <span class="sig-name">Ananya Sharma</span>
+                        <span class="sig-name" id="sig-incoming-name">Incoming President</span>
                         <span class="sig-role">Incoming Chapter President</span>
                     </div>
 
                     <div class="sig-block">
                         <div class="sig-line">
-                            <span class="sig-stamp">VERIFIED FACULTY SEAL</span>
+                            <span class="sig-stamp">FACULTY SEAL</span>
                         </div>
-                        <span class="sig-name">Dr. Sanjay M.</span>
+                        <span class="sig-name" id="sig-advisor-name">Faculty Advisor</span>
                         <span class="sig-role">Faculty Club Advisor</span>
                     </div>
                 </div>
 
                 <div class="dossier-security-hash">
                     <span>PassTrack Cryptographic Handover Digest:</span>
-                    <code id="dossier-hash">SHA256: 8f4e2b9c71a0d8e4f16b39c0e2a5d7c8e9b1a2f3e4d5c6b7a8f9e0d1c2b3a4</code>
+                    <code id="dossier-hash">—</code>
                 </div>
             </section>
 

@@ -92,55 +92,10 @@
                     }
 
                     if (!eventDoc || !eventDoc.exists) {
-                        if (isDemo) {
-                            document.getElementById('event-name-meta').textContent = 'HackNMIT 2026 Annual Hackathon';
-                            document.getElementById('stat-sold').textContent = '240';
-                            document.getElementById('stat-revenue').textContent = '₹84,000';
-                            
-                            const demoTickets = [
-                                { name: 'Aarav Sharma', email: 'aarav.sharma@nmit.ac.in', token: 'TKN-ACM-8821', type: 'member', price: 250 },
-                                { name: 'Priya Patel', email: 'priya.p@nmit.ac.in', token: 'TKN-ACM-9104', type: 'member', price: 250 },
-                                { name: 'Rohan Deshmukh', email: 'rohan.d@nmit.ac.in', token: 'TKN-ACM-5532', type: 'general', price: 350 },
-                                { name: 'Sneha Kulkarni', email: 'sneha.k@nmit.ac.in', token: 'TKN-ACM-4419', type: 'member', price: 250 },
-                                { name: 'Aditya Nair', email: 'aditya.n@nmit.ac.in', token: 'TKN-ACM-7720', type: 'general', price: 350 }
-                            ];
-                            
-                            function renderDemoTickets(filter = '') {
-                                const listEl = document.getElementById('ticket-list');
-                                const filtered = demoTickets.filter(t => 
-                                    t.name.toLowerCase().includes(filter) ||
-                                    t.email.toLowerCase().includes(filter) ||
-                                    t.token.toLowerCase().includes(filter)
-                                );
-                                
-                                if (filtered.length === 0) {
-                                    listEl.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-muted); font-weight:600;">No matching tickets found.</div>';
-                                    return;
-                                }
-
-                                listEl.innerHTML = filtered.map(t => `
-                                    <div class="ticket-item">
-                                        <div class="ticket-buyer-wrap">
-                                            <div class="buyer-avatar"><i class="ph-bold ph-user"></i></div>
-                                            <div>
-                                                <div class="buyer-name">${t.name}</div>
-                                                <div class="buyer-meta">${t.email} &bull; Token: <strong>${t.token}</strong></div>
-                                            </div>
-                                        </div>
-                                        <span class="pass-badge ${t.type}">
-                                            ${t.type === 'member' ? 'MEMBER PASS' : 'GENERAL PASS'} (₹${t.price})
-                                        </span>
-                                    </div>
-                                `).join('');
-                            }
-                            
-                            renderDemoTickets();
-                            const searchEl = document.getElementById('ticket-search');
-                            if (searchEl) {
-                                searchEl.addEventListener('input', (e) => renderDemoTickets(e.target.value.toLowerCase().trim()));
-                            }
-                            return;
-                        }
+                        document.getElementById('event-name-meta').textContent = 'Event Not Found';
+                        document.getElementById('stat-sold').textContent = '0';
+                        document.getElementById('stat-revenue').textContent = '₹0';
+                        document.getElementById('ticket-list').innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-muted); font-weight:600;"><i class="ph-bold ph-warning-circle" style="font-size:2rem; display:block; margin-bottom:8px;"></i>Event not found. No tickets available to display.</div>';
                         return;
                     }
                     

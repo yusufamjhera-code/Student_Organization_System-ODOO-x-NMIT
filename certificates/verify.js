@@ -79,30 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // 2. Cryptographic deterministic fallback verification
-            // Valid PassTrack Certificate IDs follow format: PT-CERT-YYYY-[EVENT]-[HEX]
-            if (!foundData) {
-                const certRegex = /^PT-CERT-(\d{4})-([A-Z0-9]+)-([A-F0-9]{4,8})$/i;
-                const match = certificateId.match(certRegex);
 
-                if (match) {
-                    const year = match[1];
-                    const eventCode = match[2];
-                    
-                    let resolvedEvent = fallbackHints.event || 'HackNMIT 2026 Annual Hackathon';
-                    if (eventCode.includes('SUMMIT')) resolvedEvent = 'Open Source Developer Summit';
-                    if (eventCode.includes('GALA')) resolvedEvent = 'Annual Spring Gala 2026';
-
-                    foundData = {
-                        name: fallbackHints.name || 'Rahul Sharma',
-                        eventName: resolvedEvent,
-                        orgName: 'Skyline Student Association • ACM Chapter',
-                        date: `March ${year === '2026' ? '28' : '15'}, ${year}`,
-                        certId: certificateId,
-                        status: 'Verified In-Person Attendance'
-                    };
-                }
-            }
 
             loadingBox.style.display = 'none';
 

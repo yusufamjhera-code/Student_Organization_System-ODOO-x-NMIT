@@ -59,11 +59,11 @@
                         </div>
                         <div class="kpi-icon accent"><i class="ph-bold ph-calendar-check"></i></div>
                     </div>
-                    <div class="kpi-val" id="kpi-events-count">2</div>
-                    <div class="kpi-sub"><span class="kpi-tag good">Live &bull; Verified</span> 1 draft scheduled</div>
+                    <div class="kpi-val" id="kpi-events-count">0</div>
+                    <div class="kpi-sub"><span class="kpi-tag good">Live &bull; Verified</span> Real-time events</div>
                 </a>
 
-                <a href="../tickets/view.html?event=hacknmit-2026" class="kpi-card" title="View attendee passes and check-in rosters">
+                <a href="#events-portfolio-section" class="kpi-card" title="View attendee passes and check-in rosters">
                     <div class="kpi-top">
                         <div style="display:flex; align-items:center; gap:6px;">
                             <span class="kpi-label">Total Passes Issued</span>
@@ -71,8 +71,8 @@
                         </div>
                         <div class="kpi-icon blue"><i class="ph-bold ph-ticket"></i></div>
                     </div>
-                    <div class="kpi-val">350</div>
-                    <div class="kpi-sub"><span class="kpi-tag blue">82% Capacity</span> 300 hackathon &bull; 50 summit</div>
+                    <div class="kpi-val" id="kpi-passes-count">0</div>
+                    <div class="kpi-sub"><span class="kpi-tag blue">Live Check-ins</span> Real-time attendance</div>
                 </a>
 
                 <a href="../tasks/board.html" class="kpi-card" title="Open task sprint and kanban deliverables">
@@ -83,8 +83,8 @@
                         </div>
                         <div class="kpi-icon amber"><i class="ph-bold ph-kanban"></i></div>
                     </div>
-                    <div class="kpi-val">4</div>
-                    <div class="kpi-sub"><span class="kpi-tag amber">Sprint Active</span> 3 in progress &bull; 1 done</div>
+                    <div class="kpi-val" id="kpi-tasks-count">0</div>
+                    <div class="kpi-sub"><span class="kpi-tag amber">Sprint Active</span> Tasks in progress</div>
                 </a>
 
                 <a href="../members/directory.html" class="kpi-card" title="Open member directory roster">
@@ -95,8 +95,8 @@
                         </div>
                         <div class="kpi-icon purple"><i class="ph-bold ph-users-three"></i></div>
                     </div>
-                    <div class="kpi-val">42</div>
-                    <div class="kpi-sub"><span class="kpi-tag purple">Active Roster</span> 6 core leads &bull; 36 members</div>
+                    <div class="kpi-val" id="kpi-members-count">0</div>
+                    <div class="kpi-sub"><span class="kpi-tag purple">Active Roster</span> Registered members</div>
                 </a>
             </div>
         </section>
@@ -117,7 +117,7 @@
                         <div class="hub-module-icon users">
                             <i class="ph-bold ph-users"></i>
                         </div>
-                        <span class="hub-badge">42 Members</span>
+                        <span class="hub-badge" id="hub-badge-members">Roster</span>
                     </div>
                     <h3 class="hub-module-title">Member Directory</h3>
                     <p class="hub-module-desc">Manage student roster, assign executive roles, filter departments, and verify active dues.</p>
@@ -133,7 +133,7 @@
                         <div class="hub-module-icon coins">
                             <i class="ph-bold ph-coins"></i>
                         </div>
-                        <span class="hub-badge good">₹1.27L Net</span>
+                        <span class="hub-badge good" id="hub-badge-treasury">Treasury</span>
                     </div>
                     <h3 class="hub-module-title">Treasury & Accounting</h3>
                     <p class="hub-module-desc">Real-time revenue ledgers, ticket payment reconciliation, expense approvals, and audit reports.</p>
