@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Announcement published to board!', 'success');
                 
                 if (notifyCb.checked) {
-                    await notifyMembers(data.title);
+                    await notifyMembers(data.title, data.content);
                 }
             }
             modal.classList.remove('active');
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    async function notifyMembers(title) {
+    async function notifyMembers(title, content = '') {
         try {
             const membersSnap = await firestore.collection('members')
                 .where('orgId', '==', currentOrgId)
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!window.GOOGLE_SCRIPT_URL || window.GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL") {
-                showToast(`Would notify ${membersSnap.size} active members.`, 'info');
+                showToast(`Simulated: Would notify ${membersSnap.size} active members.`, 'info');
                 return;
             }
 
@@ -338,7 +338,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             to_email: member.email,
                             to_name: member.name,
                             announcement_title: title,
-                            org_name: orgNameMeta.textContent
+                            announcement_content: content,
+                            org_name: orgNameMeta?.textContent || 'Student Organization'
                         })
                     });
                     sent++;

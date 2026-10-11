@@ -550,6 +550,59 @@ function doPost(e) {
       `;
     }
 
+    // ================= ANNOUNCEMENT BROADCAST TEMPLATE =================
+    else if (data.type === "announcement") {
+      subject = `[Announcement] ${data.announcement_title} | ${data.org_name || BRAND_NAME}`;
+
+      htmlBody = `
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; width:100%; max-width:580px; margin:0 auto; border:1px solid #e2e8f0; border-radius:18px; background:#ffffff; box-sizing:border-box;">
+        <div style="background:linear-gradient(135deg, #ea580c 0%, #f97316 100%); padding:28px 20px 24px; text-align:center; border-radius:18px 18px 0 0;">
+          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td align="center">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="width:52px; height:52px; border-radius:50%; background:rgba(255,255,255,0.2); text-align:center; vertical-align:middle;">
+                      <span style="font-size:24px; line-height:52px;">📢</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding-top:14px;">
+                <h1 style="margin:0; color:#ffffff; font-size:20px; font-weight:700; line-height:1.3;">
+                  ${data.announcement_title}
+                </h1>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding-top:6px;">
+                <p style="margin:0; color:rgba(255,255,255,0.9); font-size:14px; line-height:1.4;">
+                  ${data.org_name || 'Official Organization Notice'}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="padding:24px 20px; color:#1e293b; line-height:1.65;">
+          <p style="font-size:15px; margin:0 0 16px;">Hello <strong>${data.to_name || 'Member'}</strong>,</p>
+          <div style="font-size:14px; color:#334155; margin:0 0 20px; white-space:pre-wrap; background:#f8fafc; padding:16px; border-radius:12px; border:1px solid #e2e8f0;">
+${data.announcement_content || data.announcement_title}
+          </div>
+          <p style="font-size:13px; color:#64748b; margin:16px 0 0;">
+            This official update was published on your organization's PassTrack announcement board.
+          </p>
+        </div>
+
+        <div style="background:#f8fafc; padding:14px 20px; text-align:center; border-top:1px solid #e2e8f0; border-radius:0 0 18px 18px;">
+          <p style="margin:0; font-size:10px; color:#94a3b8; letter-spacing:0.5px;">ANNOUNCEMENTS BROADCAST &bull; ${BRAND_NAME.toUpperCase()}</p>
+        </div>
+      </div>
+      `;
+    }
+
     // ================= FALLBACK DEFAULT (UNCLASSIFIED REQUESTS) =================
     else {
       subject = `Your Access Voucher | ${data.event_name || BRAND_NAME}`;
