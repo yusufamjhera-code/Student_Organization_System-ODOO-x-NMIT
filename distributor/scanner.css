@@ -379,8 +379,9 @@ header {
     justify-content: center;
     align-items: center;
     padding: 1rem;
-    padding-bottom: clamp(6.5rem, 18vh, 9rem);
+    padding-bottom: 2rem;
     width: 100%;
+    overflow-y: auto;
 }
 
 /* ==================== SCANNER FRAME ==================== */
@@ -540,25 +541,24 @@ header {
 
 /* ==================== SWITCH STATION BUTTON ==================== */
 .secondary-action-btn {
-    position: fixed;
-    bottom: max(1.5rem, env(safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
+    position: static;
+    margin: 12px auto 0;
+    transform: none;
     background: linear-gradient(135deg, rgba(226, 91, 46, 0.3) 0%, rgba(23, 19, 15, 0.4) 100%);
     border: 1.5px solid rgba(226, 91, 46, 0.35);
     color: white;
-    padding: 0.9rem 2rem;
+    padding: 0.75rem 1.75rem;
     border-radius: 50px;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     font-weight: 800;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 12px 32px -8px rgba(226, 91, 46, 0.4);
+    box-shadow: 0 8px 24px -6px rgba(226, 91, 46, 0.3);
     z-index: 50;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
@@ -566,12 +566,12 @@ header {
 
 .secondary-action-btn:hover {
     background: linear-gradient(135deg, rgba(226, 91, 46, 0.45) 0%, rgba(23, 19, 15, 0.6) 100%);
-    transform: translateX(-50%) translateY(-2px);
-    box-shadow: 0 16px 40px -8px rgba(226, 91, 46, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px -6px rgba(226, 91, 46, 0.4);
 }
 
 .secondary-action-btn:active {
-    transform: translateX(-50%) scale(0.96);
+    transform: scale(0.96);
 }
 
 .secondary-action-btn svg {
