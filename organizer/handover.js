@@ -58,6 +58,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const dossierOrgName = document.getElementById('dossier-org-name');
             if (dossierOrgName) dossierOrgName.textContent = orgName;
 
+            const selectedTerm = yearSelect ? yearSelect.value : '2025-2026';
+            const [startYr, endYr] = selectedTerm.split('-');
+            const termEl = document.getElementById('dossier-term');
+            if (termEl) termEl.textContent = `Academic Year ${startYr} – ${endYr}`;
+
             // 2. Fetch Live Events from Firestore
             let eventsList = [];
             let totalAttendees = 0;
@@ -67,6 +72,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             eventsSnap.forEach(doc => {
                 const e = doc.data();
+                const evtDate = e.eventDate || '';
+                // Filter by selected academic year term
+                if (evtDate && !evtDate.includes(startYr) && !evtDate.includes(endYr)) {
+                    return;
+                }
+
                 const cap = Number(e.ticketConfig?.totalSeats || 100);
                 const sold = Number(e.ticketConfig?.seatsSold || 0);
                 const rev = sold * Number(e.ticketConfig?.memberPrice || 0);
@@ -90,6 +101,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const txnsSnap = await firestore.collection('transactions').where('orgId', '==', currentOrgId).get();
                 txnsSnap.forEach(doc => {
                     const t = doc.data();
+                    const tDate = t.date || '';
+                    if (tDate && !tDate.includes(startYr) && !tDate.includes(endYr)) {
+                        return;
+                    }
+
                     const amt = Number(t.amount || 0);
                     if (t.type === 'income') {
                         txnsIncome.total += amt;
@@ -111,6 +127,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const reimbSnap = await firestore.collection('reimbursements').where('orgId', '==', currentOrgId).get();
                 reimbSnap.forEach(doc => {
                     const r = doc.data();
+                    const rDate = r.date || '';
+                    if (rDate && !rDate.includes(startYr) && !rDate.includes(endYr)) {
+                        return;
+                    }
+
                     reimbursementsList.push({
                         id: doc.id.slice(-8),
                         claimant: `${r.claimantName || 'Volunteer'} (${r.upiId || 'UPI'})`,
@@ -134,7 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         dept: m.department || 'Engineering',
                         role: m.clubRole || 'Active Member',
                         status: m.membershipStatus || 'active',
-                        expiry: m.membershipEndDate || '2026-12-31'
+                        expiry: m.membershipEndDate || `${endYr}-12-31`
                     });
                 });
             }
@@ -142,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Update Dossier Data Object
             dossierData = {
                 organization: orgName,
-                academicYear: `Academic Year ${new Date().getFullYear()} – ${new Date().getFullYear() + 1}`,
+                academicYear: `Academic Year ${startYr} – ${endYr}`,
                 kpis: {
                     totalAttendees: totalAttendees,
                     grossRevenue: txnsIncome.total,

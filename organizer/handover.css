@@ -101,16 +101,25 @@ body {
 
 /* Document Header */
 .dossier-header {
-    border-bottom: 2px solid var(--ink);
-    padding-bottom: 30px;
-    margin-bottom: 35px;
+    display: block !important;
+    position: static !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid var(--ink) !important;
+    padding-bottom: 30px !important;
+    margin-bottom: 35px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .header-top-seal {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
     margin-bottom: 24px;
+    width: 100%;
 }
 
 .emblem-box {
