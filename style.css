@@ -223,8 +223,43 @@ body.sonnet-home {
 
 .guest-btn-group {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+.guest-btn-group .btn {
+    background: #ffffff !important;
+    border: 1.5px solid var(--line-strong, #cbd5e1) !important;
+    color: var(--ink, #17130f) !important;
+    border-radius: var(--r-pill, 9999px) !important;
+    padding: 7px 15px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 4px rgba(23, 19, 15, 0.06) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    cursor: pointer !important;
+}
+
+.guest-btn-group .btn:hover {
+    background: #ffffff !important;
+    border-color: var(--accent, #e0533c) !important;
+    color: var(--accent, #e0533c) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 14px rgba(224, 83, 60, 0.18) !important;
+}
+
+.guest-btn-group .btn i {
+    font-size: 1.05rem;
+    color: var(--accent, #e0533c);
+    transition: transform 0.2s ease;
+}
+
+.guest-btn-group .btn:hover i {
+    transform: scale(1.12);
 }
 
 /* Mobile Quick Auth & Close Buttons: strictly hidden on desktop */

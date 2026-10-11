@@ -304,6 +304,139 @@ body {
     transform: translateY(0) scale(1);
 }
 
+.close-modal {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10;
+}
+
+.close-modal:hover {
+    background: #f1f5f9;
+    color: var(--primary);
+    transform: rotate(90deg);
+}
+
+/* Modern Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #cbd5e1;
+    border-radius: 24px;
+    transition: 0.25s ease;
+}
+
+.toggle-slider::before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.25s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.all-days-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Toast Container (Fixed top right, never pushes document flow) */
+.toast-container {
+    position: fixed !important;
+    top: 24px !important;
+    right: 24px !important;
+    z-index: 99999 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    pointer-events: none !important;
+    max-width: 90vw !important;
+}
+
+.toast {
+    pointer-events: auto !important;
+    background: #ffffff;
+    color: var(--text-main);
+    border-radius: 14px;
+    padding: 0.85rem 1.25rem;
+    box-shadow: 0 12px 30px -5px rgba(23, 19, 15, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: fit-content;
+    max-width: 100%;
+    border: 1px solid var(--border);
+    animation: toastEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.toast i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.toast.success {
+    background: #f0fdf4;
+    border-left: 4px solid var(--success);
+    color: #166534;
+}
+
+.toast.error {
+    background: #fef2f2;
+    border-left: 4px solid var(--danger);
+    color: #991b1b;
+}
+
+.toast.info {
+    background: #f8fafc;
+    border-left: 4px solid var(--primary);
+    color: var(--text-main);
+}
+
 .modal-header {
     text-align: center;
     margin-bottom: 20px;
