@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Transition & Semester Handover Dossier | PassTrack</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Styles -->
+    <link rel="stylesheet" href="../lib/theme.css">
+    <link rel="stylesheet" href="../lib/components.css">
+    <link rel="stylesheet" href="handover.css">
+</head>
+<body>
+    <!-- Screen Control Toolbar (Hidden in Print) -->
+    <header class="handover-toolbar no-print">
+        <div class="toolbar-inner">
+            <div class="toolbar-left">
+                <a href="dashboard.html" class="btn btn--quiet btn--sm">
+                    <i class="ph-bold ph-arrow-left"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div class="toolbar-title">
+                    <i class="ph-fill ph-file-text" style="color:var(--accent);"></i>
+                    <span>Executive Handover Dossier</span>
+                </div>
+            </div>
+
+            <div class="toolbar-center">
+                <label for="handover-year-select" style="font-size:0.8rem; color:var(--faint);">Academic Year:</label>
+                <select id="handover-year-select" class="year-select">
+                    <option value="2025-2026" selected>2025 – 2026 (Current Term)</option>
+                    <option value="2024-2025">2024 – 2025 (Previous Term)</option>
+                    <option value="2026-2027">2026 – 2027 (Next Term Plan)</option>
+                </select>
+            </div>
+
+            <div class="toolbar-actions">
+                <button type="button" id="refresh-data-btn" class="btn btn--quiet btn--sm" title="Refresh Live Metrics">
+                    <i class="ph-bold ph-arrows-clockwise"></i>
+                    <span>Sync Live Data</span>
+                </button>
+                <button type="button" id="export-json-btn" class="btn btn--secondary btn--sm">
+                    <i class="ph-bold ph-file-arrow-down"></i>
+                    <span>Export JSON</span>
+                </button>
+                <button type="button" id="print-dossier-btn" class="btn btn--primary btn--sm">
+                    <i class="ph-bold ph-printer"></i>
+                    <span>Print / Save PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Printable Dossier Canvas -->
+    <main class="dossier-wrapper">
+        <article class="dossier-document" id="dossier-document">
+            
+            <!-- OFFICIAL DOSSIER HEADER -->
+            <header class="dossier-header">
+                <div class="header-top-seal">
+                    <div class="emblem-box">
+                        <i class="ph-fill ph-shield-check"></i>
+                    </div>
+                    <div class="institution-meta">
+                        <span class="inst-name">NMIT AUTONOMOUS INSTITUTE • DEPT. OF STUDENT AFFAIRS</span>
+                        <span class="inst-sub">PassTrack Verified Organization Governance & Transition Framework</span>
+                    </div>
+                    <div class="dossier-status-stamp">
+                        <span>CERTIFIED AUDIT</span>
+                        <small id="stamp-date">OCTOBER 2026</small>
+                    </div>
+                </div>
+
+                <div class="dossier-title-banner">
+                    <h1 class="dossier-main-title">Executive Semester Handover Packet</h1>
+                    <p class="dossier-sub-title">Annual Operational Performance, Financial Audit, and Leadership Transition Records</p>
+                </div>
+
+                <div class="org-credential-strip">
+                    <div class="cred-cell">
+                        <span class="cred-label">STUDENT ORGANIZATION</span>
+                        <strong class="cred-val" id="dossier-org-name">ACM Student Chapter • NMIT</strong>
+                    </div>
+                    <div class="cred-cell">
+                        <span class="cred-label">ACADEMIC PERIOD</span>
+                        <strong class="cred-val" id="dossier-term">Academic Year 2025 – 2026</strong>
+                    </div>
+                    <div class="cred-cell">
+                        <span class="cred-label">OUTGOING PRESIDENT</span>
+                        <strong class="cred-val">Arjun Nambiar (1NT23CS042)</strong>
+                    </div>
+                    <div class="cred-cell">
+                        <span class="cred-label">TREASURY CUSTODIAN</span>
+                        <strong class="cred-val">Karthik Hegde (1NT23EC088)</strong>
+                    </div>
+                </div>
+            </header>
+
+            <!-- PART 1: EXECUTIVE KPI SCORECARD -->
+            <section class="dossier-section">
+                <div class="section-heading">
+                    <span class="sec-num">01</span>
+                    <h2>Executive Performance Scorecard</h2>
+                </div>
+                <div class="kpi-banner-grid">
+                    <div class="kpi-banner-card">
+                        <span class="kpi-top-label"><i class="ph-bold ph-ticket"></i> Verified Attendance</span>
+                        <div class="kpi-banner-val" id="kpi-total-attendees">520</div>
+                        <span class="kpi-foot-label">Turnout across 4 major events</span>
+                    </div>
+                    <div class="kpi-banner-card">
+                        <span class="kpi-top-label"><i class="ph-bold ph-currency-inr"></i> Gross Revenue</span>
+                        <div class="kpi-banner-val" id="kpi-gross-revenue">₹1,40,500</div>
+                        <span class="kpi-foot-label">Tickets, Merch & Dues combined</span>
+                    </div>
+                    <div class="kpi-banner-card">
+                        <span class="kpi-top-label"><i class="ph-bold ph-receipt"></i> Total Expenditures</span>
+                        <div class="kpi-banner-val" id="kpi-total-expenses">₹30,500</div>
+                        <span class="kpi-foot-label">Operations & verified claims</span>
+                    </div>
+                    <div class="kpi-banner-card highlight">
+                        <span class="kpi-top-label"><i class="ph-bold ph-vault"></i> Net Treasury Surplus</span>
+                        <div class="kpi-banner-val good" id="kpi-net-surplus">₹1,10,000</div>
+                        <span class="kpi-foot-label">Closing balance handed over</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PART 2: ANNUAL EVENT PORTFOLIO & ATTENDANCE AUDIT -->
+            <section class="dossier-section">
+                <div class="section-heading">
+                    <span class="sec-num">02</span>
+                    <h2>Annual Event Portfolio & Turnout Ledger</h2>
+                </div>
+                <table class="dossier-table" id="events-table">
+                    <thead>
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Date Conducted</th>
+                            <th>Seats Capacity</th>
+                            <th>Tickets Issued</th>
+                            <th>Turnout %</th>
+                            <th>Revenue Generated</th>
+                        </tr>
+                    </thead>
+                    <tbody id="events-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- PART 3: FINANCIAL RECONCILIATION & REIMBURSEMENT AUDIT -->
+            <section class="dossier-section">
+                <div class="section-heading">
+                    <span class="sec-num">03</span>
+                    <h2>Treasury Reconciliation & Volunteer Reimbursements</h2>
+                </div>
+                <div class="finance-grid">
+                    <!-- Revenue breakdown -->
+                    <div class="finance-card">
+                        <h4>Revenue Inflows (Credit)</h4>
+                        <ul class="breakdown-list" id="income-breakdown-list">
+                            <li><span>Event Ticket Sales:</span> <strong id="income-tickets">₹84,000</strong></li>
+                            <li><span>Official Merchandise Store:</span> <strong id="income-merch">₹24,500</strong></li>
+                            <li><span>Annual Membership Dues:</span> <strong id="income-dues">₹32,000</strong></li>
+                            <li class="total-row"><span>Total Inflow:</span> <strong id="income-total">₹1,40,500</strong></li>
+                        </ul>
+                    </div>
+
+                    <!-- Expense breakdown -->
+                    <div class="finance-card">
+                        <h4>Expenditure Outflows (Debit)</h4>
+                        <ul class="breakdown-list" id="expense-breakdown-list">
+                            <li><span>Venue & AV Infrastructure:</span> <strong>₹18,000</strong></li>
+                            <li><span>Catering & Volunteer Refreshments:</span> <strong>₹12,500</strong></li>
+                            <li><span>Approved Volunteer Reimbursements:</span> <strong id="expense-reimbursements">₹1,450</strong></li>
+                            <li class="total-row"><span>Total Outflow:</span> <strong id="expense-total">₹31,950</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Volunteer Reimbursements Table -->
+                <h4 style="margin: 20px 0 10px 0; font-size: 0.95rem; color: var(--ink);">Audit of Volunteer Reimbursement Claims</h4>
+                <table class="dossier-table" id="reimbursements-table">
+                    <thead>
+                        <tr>
+                            <th>Claim ID</th>
+                            <th>Claimant & UPI ID</th>
+                            <th>Event / Activity</th>
+                            <th>Merchant / Purpose</th>
+                            <th>Amount</th>
+                            <th>Audit Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reimbursements-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- PART 4: ACTIVE MEMBERSHIP ROSTER SNAPSHOT -->
+            <section class="dossier-section">
+                <div class="section-heading">
+                    <span class="sec-num">04</span>
+                    <h2>Active Executive Council & Member Roster Snapshot</h2>
+                </div>
+                <table class="dossier-table" id="members-table">
+                    <thead>
+                        <tr>
+                            <th>Member Name</th>
+                            <th>Student ID (USN)</th>
+                            <th>Department</th>
+                            <th>Leadership Role</th>
+                            <th>Dues Status</th>
+                            <th>Term Expiry</th>
+                        </tr>
+                    </thead>
+                    <tbody id="members-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- PART 5: VERIFIED VENDOR & LOGISTICS DIRECTORY -->
+            <section class="dossier-section">
+                <div class="section-heading">
+                    <span class="sec-num">05</span>
+                    <h2>Authorized Campus Vendors & Supplier Contacts</h2>
+                </div>
+                <table class="dossier-table">
+                    <thead>
+                        <tr>
+                            <th>Service Category</th>
+                            <th>Supplier Name</th>
+                            <th>Point of Contact</th>
+                            <th>Phone / Email</th>
+                            <th>Typical Terms</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Apparel & Hoodies</strong></td>
+                            <td>Bangalore Screen Prints Ltd.</td>
+                            <td>Venkatesh Rao</td>
+                            <td>+91 98450 11223 • sales@blrprints.in</td>
+                            <td>Net 15 Days • 50% Advance</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Stage & AV Setup</strong></td>
+                            <td>ProSound & Lightings Hub</td>
+                            <td>Sathish Kumar</td>
+                            <td>+91 98860 44556 • support@prosound.co</td>
+                            <td>On-day setup & live sound technician</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Catering & Snacks</strong></td>
+                            <td>Campus Cafeteria & Fast Food</td>
+                            <td>Mohan Reddy</td>
+                            <td>+91 99000 88771 • canteen@nmit.ac.in</td>
+                            <td>Verified UPI invoice on delivery</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Badges & Stationery</strong></td>
+                            <td>Navrang Digital Xerox & Badges</td>
+                            <td>Kiran G.</td>
+                            <td>+91 97412 33445 • navrangprint@gmail.com</td>
+                            <td>Instant 2-hour turnaround for hackathons</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- PART 6: FORMAL HANDOVER SIGN-OFF & CERTIFICATION -->
+            <section class="dossier-section page-break-inside-avoid">
+                <div class="section-heading">
+                    <span class="sec-num">06</span>
+                    <h2>Leadership Transition Attestation & Protocols</h2>
+                </div>
+                <p class="signoff-disclaimer">
+                    By affixing signatures below, the Outgoing Executive Board formally attests that all operational records, ticket inventories, digital access tokens, and treasury surplus funds listed herein are true, accurate, and completely transferred to the Incoming Officers in compliance with institute guidelines.
+                </p>
+
+                <div class="signatures-grid">
+                    <div class="sig-block">
+                        <div class="sig-line">
+                            <span class="sig-digital-mark">Arjun Nambiar</span>
+                        </div>
+                        <span class="sig-name">Arjun Nambiar</span>
+                        <span class="sig-role">Outgoing Chapter President</span>
+                    </div>
+
+                    <div class="sig-block">
+                        <div class="sig-line">
+                            <span class="sig-digital-mark">Karthik Hegde</span>
+                        </div>
+                        <span class="sig-name">Karthik Hegde</span>
+                        <span class="sig-role">Outgoing Treasury Lead</span>
+                    </div>
+
+                    <div class="sig-block">
+                        <div class="sig-line">
+                            <span class="sig-digital-mark">Ananya Sharma</span>
+                        </div>
+                        <span class="sig-name">Ananya Sharma</span>
+                        <span class="sig-role">Incoming Chapter President</span>
+                    </div>
+
+                    <div class="sig-block">
+                        <div class="sig-line">
+                            <span class="sig-stamp">VERIFIED FACULTY SEAL</span>
+                        </div>
+                        <span class="sig-name">Dr. Sanjay M.</span>
+                        <span class="sig-role">Faculty Club Advisor</span>
+                    </div>
+                </div>
+
+                <div class="dossier-security-hash">
+                    <span>PassTrack Cryptographic Handover Digest:</span>
+                    <code id="dossier-hash">SHA256: 8f4e2b9c71a0d8e4f16b39c0e2a5d7c8e9b1a2f3e4d5c6b7a8f9e0d1c2b3a4</code>
+                </div>
+            </section>
+
+        </article>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="../lib/firebase-config.js"></script>
+    <script src="../lib/contracts/passtrack-core.js"></script>
+    <script src="handover.js"></script>
+</body>
+</html>
