@@ -937,6 +937,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const isCheckedIn = p.status === 'used' || Object.values(p.permissions || {}).some(v => v.status === 'used');
         const certId = p.certificateId || (window.PassTrackCertificate ? window.PassTrackCertificate.generateCertificateId(eventDocId, p.qrToken) : `PT-CERT-2026-${(p.qrToken || 'TOKEN').slice(0, 6)}`);
 
+        // Persist certificateId and event details to participant document if checked in
+        if (isCheckedIn && !p.certificateId && firestore) {
+            p.certificateId = certId;
+            firestore.collection('users').doc(p.id).update({
+                certificateId: certId,
+                eventName: currentEventName || 'Campus Event',
+                orgName: currentOrgName || currentEventName || 'Student Organization',
+                eventDate: eventDateRangeEl ? (eventDateRangeEl.textContent || '') : ''
+            }).catch(e => console.warn('Could not persist certificateId:', e));
+        }
+
         const certBadge = document.getElementById('modal-cert-status-badge');
         const certDownloadBtn = document.getElementById('modal-download-cert-btn');
         const certVerifyLink = document.getElementById('modal-verify-cert-link');
