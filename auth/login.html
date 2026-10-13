@@ -12,62 +12,176 @@
 <body>
 
     <div class="login-wrapper">
-        <div class="form-container">
+        <div class="form-container" style="max-width: 460px; max-height: calc(100vh - 40px); overflow-y: auto;">
             <!-- Branding Header -->
-            <div class="login-header">
-                <div class="icon-circle">
-                    <i class="ph-fill ph-shield-check"></i>
+            <div class="login-header" style="margin-bottom: 1.25rem;">
+                <div class="demo-hub-badge">
+                    <i class="ph-bold ph-lightning"></i>
+                    <span>Showcase &bull; Live Demonstration Hub</span>
                 </div>
-                <h2>Welcome to <em>PassTrack</em></h2>
-                <p class="subtitle">Unified portal sign-in. You will be automatically routed to your assigned organization or workspace.</p>
+                <h2>Direct Access <em>Portals</em></h2>
+                <p class="subtitle">1-Click entry into every PassTrack module with live mock data. No Google API or sign-in required.</p>
             </div>
 
-            <!-- 1. Instant Google Sign-In -->
-            <div class="auth-actions">
-                <button id="google-signin-btn" class="google-btn" type="button">
-                    <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
-                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
-                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
-                        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.904,36.218,44,30.638,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
-                    </svg>
-                    <span>Continue with Google</span>
+            <!-- Demonstration Access Hub (Default) -->
+            <div class="demo-launcher-container" id="demo-launcher-container">
+                <div class="demo-role-grid">
+                    <!-- 1. Organizer Command Center -->
+                    <button type="button" class="demo-role-card" onclick="launchDemoSection('organizer')">
+                        <div class="role-card-icon icon-organizer"><i class="ph-bold ph-squares-four"></i></div>
+                        <div class="role-card-info">
+                            <div class="role-card-top">
+                                <h4>Organizer Dashboard</h4>
+                                <span class="role-chip chip-organizer">Executive</span>
+                            </div>
+                            <p>Events, ticket tiers, live gate meters &amp; staff keys</p>
+                        </div>
+                        <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
+
+                    <!-- 2. Staff Scanner -->
+                    <button type="button" class="demo-role-card" onclick="launchDemoSection('scanner')">
+                        <div class="role-card-icon icon-scanner"><i class="ph-bold ph-qr-code"></i></div>
+                        <div class="role-card-info">
+                            <div class="role-card-top">
+                                <h4>Staff Door Scanner</h4>
+                                <span class="role-chip chip-staff">Volunteer</span>
+                            </div>
+                            <p>Camera QR check-in, scan points &amp; pass validation</p>
+                        </div>
+                        <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
+
+                    <!-- 3. Treasury & Finance -->
+                    <button type="button" class="demo-role-card" onclick="launchDemoSection('treasury')">
+                        <div class="role-card-icon icon-treasury"><i class="ph-bold ph-coins"></i></div>
+                        <div class="role-card-info">
+                            <div class="role-card-top">
+                                <h4>Treasury &amp; Ledger</h4>
+                                <span class="role-chip chip-treasury">Finance</span>
+                            </div>
+                            <p>Real-time income/expenses, analytics &amp; CSV export</p>
+                        </div>
+                        <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
+
+                    <!-- 4. Volunteer Expense Reimbursements -->
+                    <button type="button" class="demo-role-card" onclick="launchDemoSection('reimbursements')">
+                        <div class="role-card-icon icon-reimburse"><i class="ph-bold ph-receipt"></i></div>
+                        <div class="role-card-info">
+                            <div class="role-card-top">
+                                <h4>Expense Claims &amp; Receipts</h4>
+                                <span class="role-chip chip-reimburse">Reimbursement</span>
+                            </div>
+                            <p>Photo receipt upload &amp; Treasurer approval queue</p>
+                        </div>
+                        <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
+
+                    <!-- 5. Member Directory -->
+                    <button type="button" class="demo-role-card" onclick="launchDemoSection('members')">
+                        <div class="role-card-icon icon-members"><i class="ph-bold ph-users-three"></i></div>
+                        <div class="role-card-info">
+                            <div class="role-card-top">
+                                <h4>Member Directory</h4>
+                                <span class="role-chip chip-members">Roster</span>
+                            </div>
+                            <p>Active members, club dues &amp; induction badges</p>
+                        </div>
+                        <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
+
+                    <!-- 6. Attendee Ticketing & Passes -->
+                    <button type="button" class="demo-role-card" onclick="launchDemoSection('tickets')">
+                        <div class="role-card-icon icon-tickets"><i class="ph-bold ph-ticket"></i></div>
+                        <div class="role-card-info">
+                            <div class="role-card-top">
+                                <h4>Passes &amp; Ticketing</h4>
+                                <span class="role-chip chip-attendee">Attendee</span>
+                            </div>
+                            <p>Simulated UPI checkout, ticket lookup &amp; QR passes</p>
+                        </div>
+                        <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
+
+                    <!-- 7. Merchandise Store -->
+                    <button type="button" class="demo-role-card" onclick="launchDemoSection('merch')">
+                        <div class="role-card-icon icon-merch"><i class="ph-bold ph-t-shirt"></i></div>
+                        <div class="role-card-info">
+                            <div class="role-card-top">
+                                <h4>Merchandise Store</h4>
+                                <span class="role-chip chip-merch">Storefront</span>
+                            </div>
+                            <p>Club hoodies, size inventory &amp; item pre-orders</p>
+                        </div>
+                        <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
+
+                    <!-- 8. Certificate Verifier -->
+                    <button type="button" class="demo-role-card" onclick="launchDemoSection('certificates')">
+                        <div class="role-card-icon icon-cert"><i class="ph-bold ph-seal-check"></i></div>
+                        <div class="role-card-info">
+                            <div class="role-card-top">
+                                <h4>Certificate Verifier</h4>
+                                <span class="role-chip chip-cert">Credential</span>
+                            </div>
+                            <p>Instant participation &amp; authenticity verification</p>
+                        </div>
+                        <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
+
+                    <!-- 9. Notice Board & Announcements -->
+                    <button type="button" class="demo-role-card" onclick="launchDemoSection('announcements')">
+                        <div class="role-card-icon icon-announce"><i class="ph-bold ph-megaphone"></i></div>
+                        <div class="role-card-info">
+                            <div class="role-card-top">
+                                <h4>Campus Notice Board</h4>
+                                <span class="role-chip chip-announce">Broadcast</span>
+                            </div>
+                            <p>Pinned alerts, event updates &amp; newsletters</p>
+                        </div>
+                        <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Optional Custom Account Sign-In Drawer -->
+            <div class="custom-auth-accordion">
+                <button type="button" class="accordion-toggle-btn" id="toggle-custom-auth-btn" aria-expanded="false">
+                    <span><i class="ph-bold ph-sliders"></i> Custom Account Sign-In (Optional)</span>
+                    <i class="ph-bold ph-caret-down accordion-caret"></i>
                 </button>
-            </div>
-
-            <!-- Divider -->
-            <div class="auth-divider">
-                <span>or with credentials</span>
-            </div>
-
-            <!-- 2. Email & Password / Staff Access Key Form -->
-            <form id="delegated-login-form" class="delegated-form">
-                <div class="input-group">
-                    <label for="delegated-email">Email Address</label>
-                    <div class="input-wrapper">
-                        <i class="ph ph-envelope"></i>
-                        <input type="email" id="delegated-email" placeholder="name@college.edu" required autocomplete="email">
-                    </div>
+                <div class="custom-auth-drawer" id="custom-auth-drawer" style="display: none;">
+                    <p class="custom-auth-hint">Connect custom credentials or staff volunteer keys when configured.</p>
+                    <form id="delegated-login-form" class="delegated-form">
+                        <div class="input-group">
+                            <label for="delegated-email">Email Address</label>
+                            <div class="input-wrapper">
+                                <i class="ph ph-envelope"></i>
+                                <input type="email" id="delegated-email" placeholder="name@college.edu" autocomplete="email">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="access-code">Password / Staff Access Code</label>
+                            <div class="input-wrapper">
+                                <i class="ph ph-lock-key"></i>
+                                <input type="password" id="access-code" placeholder="Password or 8-char code" autocomplete="current-password">
+                            </div>
+                            <span class="input-hint">Staff &amp; volunteers can use their 8-character access key</span>
+                        </div>
+                        <button type="submit" id="delegated-signin-btn" class="primary-btn">
+                            <i class="ph-bold ph-sign-in"></i>
+                            <span>Sign In</span>
+                        </button>
+                    </form>
                 </div>
-                <div class="input-group">
-                    <label for="access-code">Password / Staff Access Code</label>
-                    <div class="input-wrapper">
-                        <i class="ph ph-lock-key"></i>
-                        <input type="password" id="access-code" placeholder="Password or 8-char code" required autocomplete="current-password">
-                    </div>
-                    <span class="input-hint">Staff &amp; volunteers can use their 8-character access key</span>
-                </div>
-                <button type="submit" id="delegated-signin-btn" class="primary-btn">
-                    <i class="ph-bold ph-sign-in"></i>
-                    <span>Sign In</span>
-                </button>
-            </form>
+            </div>
 
             <!-- Feedback Message Area -->
-            <div id="message" class="message-area" role="alert"></div>
+            <div id="message" class="message-area" role="alert" style="margin-top: 10px;"></div>
 
             <!-- Registration Link Callout -->
-            <div style="margin-top: 1.25rem; text-align: center; font-size: 0.9rem; color: var(--muted);">
+            <div style="margin-top: 1rem; text-align: center; font-size: 0.85rem; color: var(--muted);">
                 <span>New to PassTrack?</span>
                 <a href="register.html" style="font-weight: 700; color: var(--accent); text-decoration: none; margin-left: 5px;">
                     Create an Account &rarr;
@@ -75,7 +189,7 @@
             </div>
 
             <!-- Footer Navigation -->
-            <div class="login-footer">
+            <div class="login-footer" style="margin-top: 0.75rem;">
                 <a href="../index.html" class="back-link">
                     <i class="ph ph-caret-left"></i>
                     Back to Home
