@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PassTrack | Student Organization Operating System</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20261014a">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
         // Immediate Synchronous Demonstration Section Launcher (No Database Requirement)
@@ -162,15 +162,6 @@
                         <button type="button" onclick="openSelector('org', 'announcements/board.html')" class="btn btn--quiet btn--sm">
                             <i class="ph-bold ph-megaphone"></i> Notice Board
                         </button>
-                        <a href="certificates/verify.html" class="btn btn--quiet btn--sm" style="text-decoration:none;">
-                            <i class="ph-bold ph-seal-check"></i> Verify Credential
-                        </a>
-                        <a href="treasury/reimbursements.html" class="btn btn--quiet btn--sm" style="text-decoration:none;">
-                            <i class="ph-bold ph-receipt"></i> Claim Reimbursement
-                        </a>
-                        <a href="members/wallet-pass.html" class="btn btn--quiet btn--sm" style="text-decoration:none;">
-                            <i class="ph-bold ph-wallet"></i> Member Wallet Pass
-                        </a>
                     </div>
                 </div>
             </div>
@@ -197,7 +188,7 @@
                 </div>
 
                 <!-- Demonstration Access Hub (Default) -->
-                <div id="unauth-container">
+                <div id="unauth-container" style="display: block !important;">
                     <div class="demo-launcher-container" id="demo-launcher-container">
                         <div class="demo-role-grid">
                             <!-- 1. Organizer Command Center -->
@@ -364,7 +355,7 @@
                 </div>
 
                 <!-- Authenticated Session View (Auto-Displayed If User Is Already Signed In) -->
-                <div id="auth-session-container" style="display: none;">
+                <div id="auth-session-container" style="display: none !important;">
                     <div class="active-session-card">
                         <div class="user-avatar-circle" id="user-avatar-initials">
                             <i class="ph-bold ph-user"></i>
@@ -418,11 +409,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="lib/firebase-config.js"></script>
-    <script src="lib/contracts/passtrack-core.js"></script>
-    <script src="lib/session-manager.js"></script>
-    <script src="lib/auth-guard.js"></script>
-    <script src="lib/toast.js"></script>
-    <script src="index.js"></script>
+    <script src="lib/firebase-config.js?v=20261014a"></script>
+    <script src="lib/contracts/passtrack-core.js?v=20261014a"></script>
+    <script src="lib/session-manager.js?v=20261014a"></script>
+    <script src="lib/auth-guard.js?v=20261014a"></script>
+    <script src="lib/toast.js?v=20261014a"></script>
+    <script src="index.js?v=20261014a"></script>
 </body>
 </html>
