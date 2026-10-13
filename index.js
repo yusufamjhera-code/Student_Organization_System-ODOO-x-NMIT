@@ -208,29 +208,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // AUTH STATE LISTENER (Keeps Active Session Synchronized)
+    // AUTH STATE LISTENER (Keeps Demonstration Portal Options Permanently Visible)
     // =========================================================================
     if (auth) {
         auth.onAuthStateChanged(async (user) => {
-            if (user && !user.isAnonymous) {
-                if (unauthContainer) unauthContainer.style.display = 'none';
-                if (authSessionContainer) authSessionContainer.style.display = 'block';
-
-                if (userNameEl) userNameEl.textContent = user.displayName || user.email.split('@')[0];
-                if (userEmailEl) userEmailEl.textContent = user.email;
-                if (authSubtitle) authSubtitle.textContent = "You are currently signed in. Jump right into your active workspace:";
-                if (mobileAuthJumpBtn) {
-                    mobileAuthJumpBtn.innerHTML = '<i class="ph-bold ph-squares-four"></i> <span>Workspace</span>';
-                }
-
-                await resolveRoleAndNavigate(user, false);
-            } else {
-                if (unauthContainer) unauthContainer.style.display = 'block';
-                if (authSessionContainer) authSessionContainer.style.display = 'none';
-                if (authSubtitle) authSubtitle.textContent = "Universal sign-in. Your verified role is determined automatically.";
-                if (mobileAuthJumpBtn) {
-                    mobileAuthJumpBtn.innerHTML = '<i class="ph-bold ph-sign-in"></i> <span>Login / Sign Up</span>';
-                }
+            // Keep demonstration portal options permanently displayed on landing page
+            if (unauthContainer) unauthContainer.style.display = 'block';
+            if (authSessionContainer) authSessionContainer.style.display = 'none';
+            if (authSubtitle) authSubtitle.textContent = "Universal sign-in. Your verified role is determined automatically.";
+            if (mobileAuthJumpBtn) {
+                mobileAuthJumpBtn.innerHTML = '<i class="ph-bold ph-squares-four"></i> <span>Direct Portals</span>';
             }
         });
     }
