@@ -16,8 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const clubNameInput = document.getElementById('reg-club-name');
     const studentIdInput = document.getElementById('reg-student-id');
 
-    const auth = window.firebase ? firebase.auth() : null;
-    const firestore = window.firebase ? firebase.firestore() : null;
+    let auth = window.auth || null;
+    let firestore = window.firestore || window.db || null;
+    try {
+        if (window.firebase && firebase.apps && firebase.apps.length) {
+            auth = firebase.auth();
+            firestore = firebase.firestore();
+        }
+    } catch (e) {
+        console.warn("[PassTrack] Register Firebase note:", e.message);
+    }
 
     // Helper: Show feedback message
     const showMessage = (text, type = 'info') => {

@@ -87,19 +87,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderMembers();
             }
         } else {
-            // Check active session or resolve any organization
+            // Check active session or resolve any organization (demo friendly)
+            const isDemo = sessionStorage.getItem('demoUser') === 'true' ||
+                window.location.search.includes('demo=true') ||
+                window.location.hostname.includes('github.io');
+
             try {
                 const anyOrg = await firestore.collection('organizations').limit(1).get();
                 if (!anyOrg.empty) {
                     const orgDoc = anyOrg.docs[0];
                     currentOrgId = orgDoc.id;
-                    if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Student Organization';
+                    if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'ACM Student Chapter • NMIT';
+                    setupRealtimeListeners();
+                } else if (isDemo) {
+                    currentOrgId = 'demo-org-acm';
+                    if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
                     setupRealtimeListeners();
                 } else {
                     window.location.href = '../index.html';
                 }
             } catch(e) {
-                window.location.href = '../index.html';
+                if (isDemo) {
+                    currentOrgId = 'demo-org-acm';
+                    if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
+                    setupRealtimeListeners();
+                } else {
+                    window.location.href = '../index.html';
+                }
             }
         }
     });

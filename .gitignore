@@ -28,8 +28,6 @@ npm-debug.log*
 
 # Local Netlify folder
 .netlify
-# Firebase config (secrets)
-lib/firebase-config.js
 # Reports & Documentation artifacts
 *.docx
 generate_report.py

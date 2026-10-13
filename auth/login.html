@@ -8,6 +8,67 @@
     <link rel="stylesheet" href="../lib/components.css">
     <link rel="stylesheet" href="login.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        // Immediate Synchronous Demonstration Section Launcher (Relative from /auth/ folder)
+        window.launchDemoSection = function(sectionKey, evt) {
+            if (evt && evt.preventDefault) evt.preventDefault();
+            sessionStorage.setItem('demoUser', 'true');
+            sessionStorage.setItem('userId', 'demo-organizer-uid');
+            sessionStorage.setItem('orgId', 'demo-org-acm');
+            sessionStorage.setItem('collaboratorEmail', 'organizer@nmit.ac.in');
+
+            let target = '../organizer/dashboard.html';
+            switch(sectionKey) {
+                case 'organizer':
+                    sessionStorage.setItem('authType', 'admin');
+                    target = '../organizer/dashboard.html';
+                    break;
+                case 'scanner':
+                    sessionStorage.setItem('authType', 'staff');
+                    sessionStorage.setItem('distributorEventDocId', 'hacknmit-2026');
+                    sessionStorage.setItem('distributorEventId', 'hacknmit-2026');
+                    sessionStorage.setItem('distributorEventName', 'HackNMIT 2026');
+                    sessionStorage.setItem('collaboratorEmail', 'volunteer@nmit.ac.in');
+                    target = '../distributor/scanner.html?id=hacknmit-2026';
+                    break;
+                case 'treasury':
+                    sessionStorage.setItem('authType', 'admin');
+                    sessionStorage.setItem('collaboratorEmail', 'treasurer@nmit.ac.in');
+                    target = '../treasury/dashboard.html?demo=true';
+                    break;
+                case 'reimbursements':
+                    sessionStorage.setItem('authType', 'staff');
+                    sessionStorage.setItem('collaboratorEmail', 'volunteer@nmit.ac.in');
+                    target = '../treasury/reimbursements.html?demo=true';
+                    break;
+                case 'members':
+                    sessionStorage.setItem('authType', 'admin');
+                    sessionStorage.setItem('collaboratorEmail', 'membership@nmit.ac.in');
+                    target = '../members/directory.html';
+                    break;
+                case 'tickets':
+                    sessionStorage.setItem('authType', 'guest');
+                    target = '../tickets/buy.html?event=hacknmit-2026';
+                    break;
+                case 'merch':
+                    sessionStorage.setItem('authType', 'guest');
+                    target = '../merch/store.html?org=demo-org-acm';
+                    break;
+                case 'certificates':
+                    sessionStorage.setItem('authType', 'guest');
+                    target = '../certificates/verify.html';
+                    break;
+                case 'announcements':
+                    sessionStorage.setItem('authType', 'guest');
+                    target = '../announcements/board.html?org=demo-org-acm';
+                    break;
+                default:
+                    target = '../organizer/dashboard.html';
+            }
+            window.location.href = target;
+            return false;
+        };
+    </script>
 </head>
 <body>
 
@@ -27,7 +88,7 @@
             <div class="demo-launcher-container" id="demo-launcher-container">
                 <div class="demo-role-grid">
                     <!-- 1. Organizer Command Center -->
-                    <button type="button" class="demo-role-card" onclick="launchDemoSection('organizer')">
+                    <a href="../organizer/dashboard.html" class="demo-role-card" onclick="return launchDemoSection('organizer', event)">
                         <div class="role-card-icon icon-organizer"><i class="ph-bold ph-squares-four"></i></div>
                         <div class="role-card-info">
                             <div class="role-card-top">
@@ -37,10 +98,10 @@
                             <p>Events, ticket tiers, live gate meters &amp; staff keys</p>
                         </div>
                         <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
-                    </button>
+                    </a>
 
                     <!-- 2. Staff Scanner -->
-                    <button type="button" class="demo-role-card" onclick="launchDemoSection('scanner')">
+                    <a href="../distributor/scanner.html?id=hacknmit-2026" class="demo-role-card" onclick="return launchDemoSection('scanner', event)">
                         <div class="role-card-icon icon-scanner"><i class="ph-bold ph-qr-code"></i></div>
                         <div class="role-card-info">
                             <div class="role-card-top">
@@ -50,10 +111,10 @@
                             <p>Camera QR check-in, scan points &amp; pass validation</p>
                         </div>
                         <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
-                    </button>
+                    </a>
 
                     <!-- 3. Treasury & Finance -->
-                    <button type="button" class="demo-role-card" onclick="launchDemoSection('treasury')">
+                    <a href="../treasury/dashboard.html?demo=true" class="demo-role-card" onclick="return launchDemoSection('treasury', event)">
                         <div class="role-card-icon icon-treasury"><i class="ph-bold ph-coins"></i></div>
                         <div class="role-card-info">
                             <div class="role-card-top">
@@ -63,10 +124,10 @@
                             <p>Real-time income/expenses, analytics &amp; CSV export</p>
                         </div>
                         <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
-                    </button>
+                    </a>
 
                     <!-- 4. Volunteer Expense Reimbursements -->
-                    <button type="button" class="demo-role-card" onclick="launchDemoSection('reimbursements')">
+                    <a href="../treasury/reimbursements.html?demo=true" class="demo-role-card" onclick="return launchDemoSection('reimbursements', event)">
                         <div class="role-card-icon icon-reimburse"><i class="ph-bold ph-receipt"></i></div>
                         <div class="role-card-info">
                             <div class="role-card-top">
@@ -76,10 +137,10 @@
                             <p>Photo receipt upload &amp; Treasurer approval queue</p>
                         </div>
                         <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
-                    </button>
+                    </a>
 
                     <!-- 5. Member Directory -->
-                    <button type="button" class="demo-role-card" onclick="launchDemoSection('members')">
+                    <a href="../members/directory.html" class="demo-role-card" onclick="return launchDemoSection('members', event)">
                         <div class="role-card-icon icon-members"><i class="ph-bold ph-users-three"></i></div>
                         <div class="role-card-info">
                             <div class="role-card-top">
@@ -89,10 +150,10 @@
                             <p>Active members, club dues &amp; induction badges</p>
                         </div>
                         <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
-                    </button>
+                    </a>
 
                     <!-- 6. Attendee Ticketing & Passes -->
-                    <button type="button" class="demo-role-card" onclick="launchDemoSection('tickets')">
+                    <a href="../tickets/buy.html?event=hacknmit-2026" class="demo-role-card" onclick="return launchDemoSection('tickets', event)">
                         <div class="role-card-icon icon-tickets"><i class="ph-bold ph-ticket"></i></div>
                         <div class="role-card-info">
                             <div class="role-card-top">
@@ -102,10 +163,10 @@
                             <p>Simulated UPI checkout, ticket lookup &amp; QR passes</p>
                         </div>
                         <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
-                    </button>
+                    </a>
 
                     <!-- 7. Merchandise Store -->
-                    <button type="button" class="demo-role-card" onclick="launchDemoSection('merch')">
+                    <a href="../merch/store.html?org=demo-org-acm" class="demo-role-card" onclick="return launchDemoSection('merch', event)">
                         <div class="role-card-icon icon-merch"><i class="ph-bold ph-t-shirt"></i></div>
                         <div class="role-card-info">
                             <div class="role-card-top">
@@ -115,10 +176,10 @@
                             <p>Club hoodies, size inventory &amp; item pre-orders</p>
                         </div>
                         <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
-                    </button>
+                    </a>
 
                     <!-- 8. Certificate Verifier -->
-                    <button type="button" class="demo-role-card" onclick="launchDemoSection('certificates')">
+                    <a href="../certificates/verify.html" class="demo-role-card" onclick="return launchDemoSection('certificates', event)">
                         <div class="role-card-icon icon-cert"><i class="ph-bold ph-seal-check"></i></div>
                         <div class="role-card-info">
                             <div class="role-card-top">
@@ -128,10 +189,10 @@
                             <p>Instant participation &amp; authenticity verification</p>
                         </div>
                         <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
-                    </button>
+                    </a>
 
                     <!-- 9. Notice Board & Announcements -->
-                    <button type="button" class="demo-role-card" onclick="launchDemoSection('announcements')">
+                    <a href="../announcements/board.html?org=demo-org-acm" class="demo-role-card" onclick="return launchDemoSection('announcements', event)">
                         <div class="role-card-icon icon-announce"><i class="ph-bold ph-megaphone"></i></div>
                         <div class="role-card-info">
                             <div class="role-card-top">
@@ -141,7 +202,7 @@
                             <p>Pinned alerts, event updates &amp; newsletters</p>
                         </div>
                         <div class="role-card-arrow"><i class="ph-bold ph-arrow-right"></i></div>
-                    </button>
+                    </a>
                 </div>
             </div>
 

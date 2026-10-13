@@ -15,8 +15,19 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('distributorEventDocId', paramId);
         sessionStorage.setItem('distributorEventId', paramId);
     } else if (!eventDocId) {
-        window.location.href = 'distributor.html';
-        return;
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' ||
+            window.location.search.includes('demo=true') ||
+            window.location.hostname.includes('github.io');
+        if (isDemo) {
+            eventDocId = 'hacknmit-2026';
+            eventId = 'hacknmit-2026';
+            sessionStorage.setItem('distributorEventDocId', 'hacknmit-2026');
+            sessionStorage.setItem('distributorEventId', 'hacknmit-2026');
+            sessionStorage.setItem('distributorEventName', 'HackNMIT 2026');
+        } else {
+            window.location.href = 'distributor.html';
+            return;
+        }
     }
 
     // DOM Elements

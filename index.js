@@ -6,8 +6,16 @@ let currentTargetUrl = '';
 let currentType = ''; // 'org' or 'event'
 
 document.addEventListener('DOMContentLoaded', () => {
-    const auth = (window.firebase && firebase.auth) ? firebase.auth() : null;
-    const firestore = (window.firebase && firebase.firestore) ? firebase.firestore() : null;
+    let auth = null;
+    let firestore = window.firestore || window.db || null;
+    try {
+        if (window.firebase && firebase.apps && firebase.apps.length) {
+            auth = firebase.auth();
+            firestore = firebase.firestore();
+        }
+    } catch (e) {
+        console.warn("[PassTrack] Firebase reference note:", e.message);
+    }
 
     const unauthContainer = document.getElementById('unauth-container');
     const authSessionContainer = document.getElementById('auth-session-container');

@@ -282,6 +282,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     auth.onAuthStateChanged(async (user) => {
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' ||
+            window.location.search.includes('demo=true') ||
+            window.location.hostname.includes('github.io');
+
         if (user) {
             currentOrganizer = user;
             if (isCollaborator) {
@@ -300,18 +304,28 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (isCollaborator && collaboratorEmail) {
             setupCollaboratorView();
             revealDashboard();
-        } else {
-            // Check if there is an active session or redirect to login
-            const activeUid = sessionStorage.getItem('userId');
-            if (activeUid) {
-                currentOrganizer = { uid: activeUid };
+        } else if (isDemo || sessionStorage.getItem('userId')) {
+            const activeUid = sessionStorage.getItem('userId') || 'demo-organizer-uid';
+            currentOrganizer = { uid: activeUid, email: 'organizer@nmit.ac.in', displayName: 'Demo Organizer' };
+            sessionStorage.setItem('userId', activeUid);
+            sessionStorage.setItem('orgId', sessionStorage.getItem('orgId') || 'demo-org-acm');
+            try {
                 await fetchOrganizerDetails(activeUid);
-                renderTags();
-                listenForEvents(activeUid);
-                revealDashboard();
-            } else {
-                window.location.href = '../index.html';
+            } catch (e) {
+                console.warn("Using demo organizer details:", e);
+                orgNameHeader.textContent = "ACM Student Chapter • NMIT";
+                currentOrgId = "demo-org-acm";
+                loadOrgStats(currentOrgId);
             }
+            renderTags();
+            try {
+                listenForEvents(activeUid);
+            } catch (e) {
+                console.warn("Using demo events:", e);
+            }
+            revealDashboard();
+        } else {
+            window.location.href = '../index.html';
         }
     });
 
@@ -332,20 +346,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const fetchOrganizerDetails = async (uid) => {
-        // Read org name from the organizations collection (user-provided name)
-        let orgSnap = await firestore.collection('organizations')
-            .where('ownerId', '==', uid)
-            .limit(1)
-            .get();
-        if (orgSnap.empty) {
-            orgSnap = await firestore.collection('organizations').limit(1).get();
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' ||
+            window.location.hostname.includes('github.io');
+
+        try {
+            // Read org name from the organizations collection
+            let orgSnap = await firestore.collection('organizations')
+                .where('ownerId', '==', uid)
+                .limit(1)
+                .get();
+            if (orgSnap.empty) {
+                orgSnap = await firestore.collection('organizations').limit(1).get();
+            }
+            if (!orgSnap.empty) {
+                orgNameHeader.textContent = orgSnap.docs[0].data().name;
+                currentOrgId = orgSnap.docs[0].id;
+                loadOrgStats(currentOrgId);
+                return;
+            }
+        } catch (orgErr) {
+            console.warn("Firestore organizations lookup note:", orgErr);
         }
-        if (!orgSnap.empty) {
-            orgNameHeader.textContent = orgSnap.docs[0].data().name;
-            currentOrgId = orgSnap.docs[0].id;
+
+        // Demo fallback: never force setup-org in demo mode
+        if (isDemo) {
+            orgNameHeader.textContent = "ACM Student Chapter • NMIT";
+            currentOrgId = "demo-org-acm";
             loadOrgStats(currentOrgId);
         } else {
-            // No org found — redirect to setup page
             window.location.href = 'setup-org.html';
         }
     };

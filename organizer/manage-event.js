@@ -173,10 +173,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. AUTH & INITIALIZATION ---
     auth.onAuthStateChanged(async (user) => {
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' ||
+            window.location.search.includes('demo=true') ||
+            window.location.hostname.includes('github.io');
+
         if (user) {
             currentOrganizer = user;
             await fetchEventDetails();
         } else if (isCollaboratorUser && collaboratorEmail) {
+            await fetchEventDetails();
+        } else if (isDemo) {
+            currentOrganizer = { uid: 'demo-organizer-uid', email: 'organizer@nmit.ac.in', displayName: 'Demo Organizer' };
             await fetchEventDetails();
         } else {
             window.location.href = '../index.html';
@@ -184,6 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const fetchEventDetails = async () => {
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' ||
+            window.location.search.includes('demo=true') ||
+            window.location.hostname.includes('github.io');
+
         try {
             if (!eventDocId) {
                 window.location.href = 'dashboard.html';
@@ -193,13 +204,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const doc = await firestore.collection('events').doc(eventDocId).get();
             const data = doc.data();
 
-            // Check access: either owner or collaborator
+            // Check access: either owner or collaborator or demo
             const isOwner = data && currentOrganizer && data.organizerId === currentOrganizer.uid;
             const isCollaborator = isCollaboratorUser && data.collaborators?.some(
                 c => c.email.toLowerCase() === collaboratorEmail.toLowerCase()
             );
 
-            if (doc.exists && (isOwner || isCollaborator)) {
+            if (doc.exists && (isOwner || isCollaborator || isDemo)) {
                 eventOwnerId = data.organizerId || "";
                 currentEventName = data.name;
                 currentEventStartDate = data.eventDate;

@@ -5,8 +5,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const delegatedBtn = document.getElementById('delegated-signin-btn');
     const messageEl = document.getElementById('message');
 
-    const auth = firebase.auth();
-    const firestore = firebase.firestore();
+    let auth = window.auth || null;
+    let firestore = window.firestore || window.db || null;
+    try {
+        if (window.firebase && firebase.apps && firebase.apps.length) {
+            auth = firebase.auth();
+            firestore = firebase.firestore();
+        }
+    } catch (e) {
+        console.warn("[PassTrack] Auth/Login Firebase note:", e.message);
+    }
 
     // Helper: show feedback message
     const showMessage = (text, type = 'info') => {

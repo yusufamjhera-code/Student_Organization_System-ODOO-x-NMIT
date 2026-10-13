@@ -35,28 +35,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- AUTH GUARD ---
     auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            currentUser = user;
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' ||
+            window.location.search.includes('demo=true') ||
+            window.location.hostname.includes('github.io');
+
+        if (user || isDemo) {
+            currentUser = user || {
+                uid: 'demo-organizer-uid',
+                email: 'organizer@nmit.ac.in',
+                displayName: 'Demo Host'
+            };
+
             if (sessionStorage.getItem('authType') !== 'collaborator') {
                 sessionStorage.setItem('authType', 'admin');
             }
 
             try {
-                let orgSnap = await firestore.collection('organizations').where('ownerId', '==', user.uid).limit(1).get();
+                let orgSnap = await firestore.collection('organizations').where('ownerId', '==', currentUser.uid).limit(1).get();
                 if (orgSnap.empty) {
                     orgSnap = await firestore.collection('organizations').limit(1).get();
                 }
 
                 if (orgSnap.empty) {
-                    if (orgNameMeta) orgNameMeta.textContent = 'Student Organization';
-                    announcementsData = [];
-                    renderList();
+                    if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
+                    currentOrgId = 'demo-org-acm';
+                    if (viewBoardLink) {
+                        viewBoardLink.href = `board.html?org=${currentOrgId}`;
+                    }
+                    setupRealtimeListeners();
                     return;
                 }
                 
                 const orgDoc = orgSnap.docs[0];
                 currentOrgId = orgDoc.id;
-                if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'Student Organization';
+                if (orgNameMeta) orgNameMeta.textContent = orgDoc.data().name || 'ACM Student Chapter • NMIT';
 
                 // Wire up public links
                 if (viewBoardLink) {
@@ -67,7 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 
             } catch (error) {
                 console.error("Initialization error:", error);
-                showToast('Failed to load announcements from Firestore.', 'error');
+                if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • NMIT';
+                currentOrgId = 'demo-org-acm';
+                if (viewBoardLink) {
+                    viewBoardLink.href = `board.html?org=${currentOrgId}`;
+                }
+                setupRealtimeListeners();
             }
         } else {
             window.location.href = '../index.html';

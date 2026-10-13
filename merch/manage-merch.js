@@ -67,13 +67,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- AUTH GUARD & DYNAMIC INITIALIZATION ---
     auth.onAuthStateChanged(async (user) => {
-        if (user) {
+        const isDemo = sessionStorage.getItem('demoUser') === 'true' ||
+            window.location.search.includes('demo=true') ||
+            window.location.hostname.includes('github.io');
+
+        if (user || isDemo) {
+            const activeUser = user || {
+                uid: 'demo-organizer-uid',
+                email: 'organizer@nmit.ac.in'
+            };
+
             if (sessionStorage.getItem('authType') !== 'collaborator') {
                 sessionStorage.setItem('authType', 'admin');
             }
 
             try {
-                const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', user.uid).get();
+                const orgsSnapshot = await firestore.collection('organizations').where('ownerId', '==', activeUser.uid).get();
                 if (!orgsSnapshot.empty) {
                     const orgDoc = orgsSnapshot.docs[0];
                     currentOrgId = orgDoc.id;
@@ -89,20 +98,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
                         setupRealtimeListeners();
                     } else {
-                        productsData = [];
-                        ordersData = [];
-                        if (badgeProductsCount) badgeProductsCount.textContent = '0';
-                        if (badgeOrdersCount) badgeOrdersCount.textContent = '0';
-                        renderProducts();
-                        renderOrders();
+                        currentOrgId = 'demo-org-acm';
+                        if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • Merch Store';
+                        if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
+                        setupRealtimeListeners();
                     }
                 }
             } catch (error) {
                 console.error("Auth init error:", error);
-                productsData = [];
-                ordersData = [];
-                renderProducts();
-                renderOrders();
+                currentOrgId = 'demo-org-acm';
+                if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • Merch Store';
+                if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
+                setupRealtimeListeners();
             }
         } else {
             // Check active session or resolve any organization
@@ -115,10 +122,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
                     setupRealtimeListeners();
                 } else {
-                    window.location.href = '../index.html';
+                    currentOrgId = 'demo-org-acm';
+                    if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • Merch Store';
+                    if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
+                    setupRealtimeListeners();
                 }
             } catch(e) {
-                window.location.href = '../index.html';
+                currentOrgId = 'demo-org-acm';
+                if (orgNameMeta) orgNameMeta.textContent = 'ACM Student Chapter • Merch Store';
+                if (viewStoreLink) viewStoreLink.href = `store.html?org=${currentOrgId}`;
+                setupRealtimeListeners();
             }
         }
     });
